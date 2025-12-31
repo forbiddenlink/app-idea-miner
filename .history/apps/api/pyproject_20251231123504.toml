@@ -1,0 +1,21 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "FastAPI backend service for App-Idea Miner"
+requires-python = ">=3.12"
+
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.13.0",
+    "asyncpg>=0.30.0",
+    "redis>=5.2.0",
+    "python-dotenv>=1.0.0",
+    "httpx>=0.28.0",
+    "python-multipart>=0.0.18",
+    "slowapi>=0.1.9",
+    "websockets>=14.0",
+]

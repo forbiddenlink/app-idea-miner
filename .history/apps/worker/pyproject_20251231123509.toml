@@ -1,0 +1,14 @@
+[project]
+name = "worker"
+version = "0.1.0"
+description = "Celery worker service for App-Idea Miner"
+requires-python = ">=3.12"
+
+dependencies = [
+    "celery>=5.4.0",
+    "redis>=5.2.0",
+    "flower>=2.0.0",
+    "httpx>=0.28.0",
+    "feedparser>=6.0.0",
+    "python-dotenv>=1.0.0",
+]

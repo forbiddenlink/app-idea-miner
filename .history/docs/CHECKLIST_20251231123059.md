@@ -1,0 +1,527 @@
+# 🎯 Implementation Checklist
+
+Use this checklist to track progress as you build App-Idea Miner.
+
+**📚 IMPORTANT:** Before Phase 0, review:
+- [RESEARCH_RECOMMENDATIONS_2025.md](./RESEARCH_RECOMMENDATIONS_2025.md) - Comprehensive best practices research
+- [QUICK_START_IMPROVEMENTS.md](./QUICK_START_IMPROVEMENTS.md) - Priority 0 implementation guide
+
+---
+
+## 📋 Phase -1: Pre-Implementation Setup (2-4 hours) ⭐ NEW
+
+### Modern Dependency Management (UV)
+- [ ] Install UV: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- [ ] Create root `pyproject.toml` with workspace config
+- [ ] Create `apps/api/pyproject.toml` with FastAPI dependencies
+- [ ] Create `apps/worker/pyproject.toml` with Celery dependencies
+- [ ] Create `packages/core/pyproject.toml` with shared dependencies
+- [ ] Run `uv lock` to generate lockfile
+- [ ] Delete old `requirements.txt` files
+- [ ] Test: `uv sync` installs all dependencies
+
+### Service Layer Architecture Setup
+- [ ] Create `apps/api/app/services/` directory
+- [ ] Create `apps/api/app/services/__init__.py`
+- [ ] Create `apps/api/app/services/cluster_service.py` (template)
+- [ ] Create `apps/api/app/services/idea_service.py` (template)
+- [ ] Create `apps/api/app/services/analytics_service.py` (template)
+- [ ] Test: Import services without errors
+
+### Production-Ready Database Config
+- [ ] Update `apps/api/app/database.py` with async SQLAlchemy patterns
+- [ ] Use `postgresql+asyncpg://` connection string
+- [ ] Configure connection pool: size=10, max_overflow=20, pool_recycle=1800
+- [ ] Implement proper `get_db()` dependency with transaction handling
+- [ ] Set `expire_on_commit=False` in sessionmaker
+- [ ] Test: Connection pool works correctly
+
+### Code Quality Tooling
+- [ ] Add Ruff to dev dependencies in root `pyproject.toml`
+- [ ] Create `.ruff.toml` or add `[tool.ruff]` config
+- [ ] Create `.pre-commit-config.yaml` with Ruff hooks
+- [ ] Run `pre-commit install`
+- [ ] Test: `uv run ruff check .` passes
+
+**Checkpoint:** Modern foundation ready (UV + Service Layer + Async DB) ✅
+
+---
+
+## 📋 Phase 0: Bootstrap & Infrastructure (Days 1-2)
+
+### Docker & Orchestration (Production-Ready)
+- [ ] Create `docker-compose.yml` with health checks for all services
+- [ ] Add PostgreSQL health check: `pg_isready -U postgres`
+- [ ] Add Redis health check: `redis-cli ping`
+- [ ] Add API health check: `curl -f http://localhost:8000/health`
+- [ ] Configure `depends_on` with `condition: service_healthy`
+- [ ] Add restart policies: `restart: unless-stopped`
+- [ ] Add resource limits: CPU and memory constraints
+- [ ] Create `infra/Dockerfile.api` with UV and multi-stage build
+- [ ] Create `infra/Dockerfile.worker` with UV
+- [ ] Add non-root user to Dockerfiles (security)
+- [ ] Create `infra/.dockerignore`
+- [ ] Create `infra/postgres/init.sql` (basic schema setup)
+- [ ] Test: `docker-compose up` starts all services with health checks passing
+
+### Development Tooling
+- [ ] Create `Makefile` with all commands from README
+- [ ] Create `.env.example` with all required variables
+- [ ] Create `.gitignore` (Python, Node, Docker, IDE)
+- [ ] ~~Create `requirements.txt` for API~~ (replaced by pyproject.toml)
+- [ ] ~~Create `requirements.txt` for Worker~~ (replaced by pyproject.toml)
+- [ ] ~~Create `requirements.txt` for Core package~~ (replaced by pyproject.toml)
+- [ ] Test: `make dev` starts everything
+
+### Database Setup
+- [ ] Install Alembic: `uv add alembic` (adds to workspace)
+- [ ] Initialize Alembic: `alembic init migrations`
+- [ ] Configure `migrations/env.py` with DB connection
+- [ ] Create `migrations/versions/001_initial_schema.py`
+- [ ] Test: `make migrate` runs without errors
+
+### Base API Application
+- [ ] Create `apps/api/app/main.py` (FastAPI instance)
+- [ ] Create `apps/api/app/config.py` (settings from env)
+- [ ] Create `apps/api/app/database.py` (SQLAlchemy setup)
+- [ ] Create `apps/api/app/dependencies.py` (DB session DI)
+- [ ] Add `/health` endpoint
+- [ ] Add CORS middleware
+- [ ] Test: `curl http://localhost:8000/health` returns 200
+
+### Base Worker Application
+- [ ] Create `apps/worker/celery_app.py` (Celery instance)
+- [ ] Create `apps/worker/config.py` (Redis connection)
+- [ ] Create dummy task in `apps/worker/tasks/__init__.py`
+- [ ] Test: Worker connects to Redis
+- [ ] Test: `celery -A worker.celery_app worker -l info` starts
+
+### Core Package Structure
+- [ ] Create `packages/core/models.py` (SQLAlchemy models stub)
+- [ ] Create `packages/core/clustering.py` (placeholder)
+- [ ] Create `packages/core/nlp.py` (placeholder)
+- [ ] Create `packages/core/dedupe.py` (placeholder)
+- [ ] Create `packages/core/utils.py` (logging, date helpers)
+
+**Checkpoint:** All services start, health check passes ✅
+
+---
+
+## 📋 Phase 1: Data Foundation (Days 3-4)
+
+### Database Models
+- [ ] Implement `RawPost` model in `packages/core/models.py`
+- [ ] Add indexes (url_hash, source, published_at, is_processed)
+- [ ] Add GIN index for JSONB metadata
+- [ ] Create migration: `make migration name=add_raw_posts`
+- [ ] Test: Run migration, inspect table in PostgreSQL
+
+### Deduplication Logic
+- [ ] Implement `Deduplicator` class in `packages/core/dedupe.py`
+- [ ] Method: `generate_url_hash(url) -> str`
+- [ ] Method: `is_duplicate_title(title1, title2) -> bool`
+- [ ] Unit tests in `tests/unit/test_dedupe.py`
+- [ ] Test: Duplicate detection accuracy > 95%
+
+### RSS Feed Fetching
+- [ ] Install: `uv add --package apps/worker feedparser httpx`
+- [ ] Create `apps/worker/tasks/ingestion.py`
+- [ ] Implement `fetch_rss_feeds()` task
+- [ ] Parse RSS items to RawPost format
+- [ ] Add deduplication check before insert
+- [ ] Test: Fetch from `https://hnrss.org/newest` (5 posts)
+
+### Sample Data Loader
+- [ ] Create `data/sample_posts.json` (100+ curated posts)
+- [ ] Create `apps/api/app/routes/jobs.py`
+- [ ] Implement `POST /api/v1/posts/seed` endpoint
+- [ ] Load JSON, insert with deduplication
+- [ ] Test: `make seed` loads 100+ posts
+
+### API: Posts Endpoints
+- [ ] Implement `GET /api/v1/posts` (list with pagination)
+- [ ] Implement `GET /api/v1/posts/{id}` (single post)
+- [ ] Add Pydantic schemas in `apps/api/app/schemas/post.py`
+- [ ] Test: `curl http://localhost:8000/api/v1/posts?limit=10`
+
+**Checkpoint:** 100+ posts in database, API returns data ✅
+
+---
+
+## 📋 Phase 2: Normalization & Extraction (Days 5-6)
+
+### Database Models
+- [ ] Implement `IdeaCandidate` model
+- [ ] Add foreign key to RawPost
+- [ ] Add indexes (sentiment, quality_score, domain)
+- [ ] Add full-text search index on problem_statement
+- [ ] Create migration: `make migration name=add_idea_candidates`
+
+### Text Processing
+- [ ] Install: `uv add nltk vaderSentiment` (core NLP deps)
+- [ ] Implement `TextProcessor` class in `packages/core/nlp.py`
+- [ ] Method: `extract_need_statements(text) -> List[str]`
+- [ ] Regex patterns: "I wish", "there should be", "need an app"
+- [ ] Unit tests: Pattern matching accuracy
+
+### Sentiment Analysis
+- [ ] Implement `analyze_sentiment(text)` in nlp.py
+- [ ] VADER sentiment scores (-1 to 1)
+- [ ] Classify: positive (> 0.05), neutral, negative (< -0.05)
+- [ ] Extract emotions (frustration, hope, urgency keywords)
+- [ ] Test: Sentiment classification on sample texts
+
+### Quality Scoring
+- [ ] Implement `calculate_quality_score(idea_text)` in nlp.py
+- [ ] Metrics: specificity, actionability, clarity
+- [ ] Weighted combination: 0-1 scale
+- [ ] Test: Quality scores make intuitive sense
+
+### Processing Worker Task
+- [ ] Create `apps/worker/tasks/processing.py`
+- [ ] Implement `process_raw_post(post_id)` task
+- [ ] Extract need statements
+- [ ] Analyze sentiment
+- [ ] Calculate quality
+- [ ] Insert IdeaCandidates
+- [ ] Filter: quality_score > 0.4 (configurable)
+- [ ] Test: Process 10 posts, check extracted ideas
+
+### API: Ideas Endpoints
+- [ ] Implement `GET /api/v1/ideas` (list with filters)
+- [ ] Implement `GET /api/v1/ideas/{id}` (single idea)
+- [ ] Implement `GET /api/v1/ideas/search?q=query` (full-text)
+- [ ] Add Pydantic schemas
+- [ ] Test: Search for "budget tracking"
+
+**Checkpoint:** 85+ ideas extracted from 100 posts ✅
+
+---
+
+## 📋 Phase 3: Intelligent Clustering (Days 7-9)
+
+### Database Models
+- [ ] Implement `Cluster` model
+- [ ] Implement `ClusterMembership` model (many-to-many)
+- [ ] Add indexes for performance
+- [ ] Create migration: `make migration name=add_clusters`
+
+### Clustering Engine
+- [ ] Install: `uv add scikit-learn hdbscan umap-learn`
+- [ ] Implement `ClusterEngine` class in `packages/core/clustering.py`
+- [ ] TF-IDF vectorization (500 features, 1-3 grams)
+- [ ] HDBSCAN clustering (min_cluster_size=3)
+- [ ] Test: Cluster 20 test ideas
+
+### Keyword Extraction
+- [ ] Implement `extract_cluster_keywords()` in clustering.py
+- [ ] Average TF-IDF scores per cluster
+- [ ] Top 10 terms per cluster
+- [ ] Test: Keywords are semantically meaningful
+
+### Cluster Label Generation
+- [ ] Implement `generate_cluster_label()` in clustering.py
+- [ ] Strategy: Top 3 keywords joined
+- [ ] Alternative: Most central idea text
+- [ ] Test: Labels are human-readable
+
+### Cluster Scoring
+- [ ] Implement `score_cluster()` in clustering.py
+- [ ] Factors: size, sentiment, quality, trend
+- [ ] Weighted combination
+- [ ] Test: High-quality clusters score higher
+
+### Clustering Worker Task
+- [ ] Create `apps/worker/tasks/clustering.py`
+- [ ] Implement `run_clustering()` task
+- [ ] Fetch all valid ideas
+- [ ] Run clustering engine
+- [ ] Insert Clusters and ClusterMemberships
+- [ ] Mark top 5 ideas as representative (is_representative=true)
+- [ ] Test: `make cluster` creates 10-15 clusters
+
+### API: Cluster Endpoints
+- [ ] Implement `GET /api/v1/clusters` (list, sort, filter)
+- [ ] Implement `GET /api/v1/clusters/{id}` (detail + evidence)
+- [ ] Implement `GET /api/v1/clusters/{id}/similar` (similarity search)
+- [ ] Implement `GET /api/v1/clusters/trending` (high trend_score)
+- [ ] Add Pydantic schemas
+- [ ] Test: All endpoints return correct data
+
+**Checkpoint:** 10-15 clusters with evidence ✅
+
+---
+
+## 📋 Phase 4: Modern API Layer (Days 10-11)
+
+### Analytics Endpoints
+- [ ] Implement `GET /api/v1/analytics/summary` (dashboard stats)
+- [ ] Implement `GET /api/v1/analytics/trends?metric=ideas&interval=day`
+- [ ] Implement `GET /api/v1/analytics/domains` (domain breakdown)
+- [ ] Add caching with Redis (5 min TTL)
+- [ ] Test: Analytics return correct aggregations
+
+### Job Management
+- [ ] Implement `POST /api/v1/jobs/ingest` (trigger ingestion)
+- [ ] Implement `POST /api/v1/jobs/recluster` (trigger clustering)
+- [ ] Implement `GET /api/v1/jobs/{job_id}` (check status)
+- [ ] Return Celery task ID
+- [ ] Test: Job endpoints work, tasks execute
+
+### WebSocket Support
+- [ ] Install: `uv add websockets`
+- [ ] Create `apps/api/app/websocket/updates.py`
+- [ ] WebSocket endpoint: `ws://localhost:8000/ws/updates`
+- [ ] Broadcast events: cluster_created, ideas_added, job_status
+- [ ] Test: Connect with wscat, receive events
+
+### Rate Limiting
+- [ ] Install: `uv add slowapi`
+- [ ] Add rate limiter middleware
+- [ ] Limit: 100 req/min per IP
+- [ ] Add rate limit headers
+- [ ] Test: Exceed limit, get 429 response
+
+### API Documentation
+- [ ] Configure Swagger UI at `/docs`
+- [ ] Configure ReDoc at `/redoc`
+- [ ] Add descriptions to all endpoints
+- [ ] Add request/response examples
+- [ ] Test: Documentation is complete and accurate
+
+### Health & Metrics
+- [ ] Enhance `/health` with service checks (DB, Redis, Worker)
+- [ ] Add `/metrics` (Prometheus format)
+- [ ] Track: request counts, latencies, cluster count
+- [ ] Test: Metrics endpoint returns valid data
+
+**Checkpoint:** 25+ API endpoints, all documented ✅
+
+---
+
+## 📋 Phase 5: Beautiful Web UI (Days 12-14)
+
+### React Setup
+- [ ] Create `apps/web/package.json` (React, Vite, TypeScript)
+- [ ] Install dependencies: `cd apps/web && npm install`
+- [ ] Create `vite.config.ts` (proxy API to :8000)
+- [ ] Create `tailwind.config.js` (custom colors)
+- [ ] Create `tsconfig.json` (TypeScript config)
+- [ ] Test: `npm run dev` starts on :3000
+
+### Core App Structure
+- [ ] Create `src/main.tsx` (entry point)
+- [ ] Create `src/App.tsx` (router setup)
+- [ ] Install: `npm install react-router-dom zustand axios recharts framer-motion`
+- [ ] Create `src/services/api.ts` (Axios client)
+- [ ] Create `src/store/appStore.ts` (Zustand store)
+- [ ] Test: App renders "Hello World"
+
+### Components (Reusable)
+- [ ] Create `src/components/Navbar.tsx` (top nav with logo)
+- [ ] Create `src/components/ClusterCard.tsx` (cluster summary)
+- [ ] Create `src/components/IdeaCard.tsx` (idea display)
+- [ ] Create `src/components/StatCard.tsx` (metric card)
+- [ ] Create `src/components/SearchBar.tsx` (search input)
+- [ ] Create `src/components/FilterSidebar.tsx` (filters)
+- [ ] Test: Each component renders correctly
+
+### Charts
+- [ ] Create `src/components/charts/TrendChart.tsx` (line chart)
+- [ ] Create `src/components/charts/SentimentPie.tsx` (pie chart)
+- [ ] Create `src/components/charts/TimelineChart.tsx` (area chart)
+- [ ] Use Recharts library
+- [ ] Test: Charts display sample data
+
+### Pages
+- [ ] Create `src/pages/Dashboard.tsx`
+  - [ ] Hero stats cards
+  - [ ] Top clusters grid
+  - [ ] Recent activity feed
+  - [ ] Quick actions (buttons)
+- [ ] Create `src/pages/ClusterExplorer.tsx`
+  - [ ] Filter sidebar
+  - [ ] Cluster cards grid
+  - [ ] Sort & pagination
+- [ ] Create `src/pages/ClusterDetail.tsx`
+  - [ ] Cluster header with metrics
+  - [ ] Keywords display
+  - [ ] Evidence list (top 5)
+  - [ ] Trend chart
+  - [ ] Related clusters
+- [ ] Create `src/pages/IdeaBrowser.tsx`
+  - [ ] Search bar
+  - [ ] Filter chips
+  - [ ] Infinite scroll list
+- [ ] Create `src/pages/Analytics.tsx`
+  - [ ] Time-series charts
+  - [ ] Domain breakdown
+  - [ ] Sentiment distribution
+  - [ ] Top sources table
+
+### Services (API Calls)
+- [ ] Create `src/services/clusterService.ts`
+  - [ ] `getAll()`, `getById()`, `getTrending()`
+- [ ] Create `src/services/ideaService.ts`
+  - [ ] `getAll()`, `getById()`, `search()`
+- [ ] Create `src/services/analyticsService.ts`
+  - [ ] `getSummary()`, `getTrends()`, `getDomains()`
+
+### Hooks
+- [ ] Create `src/hooks/useClusters.ts` (fetch clusters)
+- [ ] Create `src/hooks/useIdeas.ts` (fetch ideas)
+- [ ] Create `src/hooks/useWebSocket.ts` (WebSocket connection)
+- [ ] Create `src/hooks/useAnalytics.ts` (fetch analytics)
+
+### Styling
+- [ ] Configure Tailwind with custom theme
+- [ ] Dark mode as default
+- [ ] Smooth animations with Framer Motion
+- [ ] Responsive design (mobile-friendly)
+- [ ] Test: UI looks professional on all screen sizes
+
+**Checkpoint:** Full UI working, looks amazing ✅
+
+---
+
+## 📋 Phase 6: Operations & Polish (Days 15-16)
+
+### Logging
+- [ ] Configure structured JSON logging
+- [ ] Log levels: DEBUG, INFO, WARNING, ERROR
+- [ ] Add request IDs to traces
+- [ ] Test: Logs are readable and useful
+
+### Testing
+- [ ] Write unit tests for clustering (`tests/unit/test_clustering.py`)
+- [ ] Write unit tests for NLP (`tests/unit/test_nlp.py`)
+- [ ] Write unit tests for deduplication (`tests/unit/test_dedupe.py`)
+- [ ] Write integration tests (`tests/integration/`)
+- [ ] Run: `make test` - all pass
+- [ ] Run: `make test-coverage` - 85%+ coverage
+
+### Documentation
+- [ ] Create `docs/DATA_SOURCES.md` (how to add sources)
+- [ ] Create `docs/DEPLOYMENT.md` (production guide)
+- [ ] Create `docs/TESTING.md` (testing strategy)
+- [ ] Create `docs/CONTRIBUTING.md` (contribution guide)
+- [ ] Add screenshots to `docs/assets/`
+- [ ] Update README with screenshots
+
+### Performance
+- [ ] Add Redis caching to cluster list endpoint
+- [ ] Add database connection pooling
+- [ ] Add response compression (gzip)
+- [ ] Test: API p95 latency < 200ms
+- [ ] Test: Clustering 100 ideas < 30s
+
+### Monitoring
+- [ ] Set up Flower for Celery monitoring (port 5555)
+- [ ] Add custom Prometheus metrics
+- [ ] Test: `/metrics` returns valid Prometheus format
+- [ ] Test: Flower UI accessible
+
+### Sample Data
+- [ ] Create comprehensive `data/sample_posts.json` (100+ posts)
+- [ ] Diverse domains (productivity, health, finance, etc.)
+- [ ] Mix of sentiments
+- [ ] Test: `make seed` loads all successfully
+
+### End-to-End Test
+- [ ] `make clean` - removes all data
+- [ ] `make dev` - starts all services
+- [ ] Wait 30 seconds for startup
+- [ ] `make seed` - loads sample data
+- [ ] Wait 60 seconds for processing + clustering
+- [ ] Open http://localhost:3000
+- [ ] See 10-15 clusters
+- [ ] Click cluster → see evidence
+- [ ] Search works
+- [ ] Analytics page loads
+- [ ] WebSocket updates work
+
+**Checkpoint:** Production-ready MVP! 🚀
+
+---
+
+## 📋 Final Validation
+
+### Functional Requirements
+- [ ] All 25+ API endpoints work correctly
+- [ ] UI displays clusters with evidence
+- [ ] Real-time updates via WebSocket
+- [ ] Search and filtering work
+- [ ] Analytics page shows correct data
+- [ ] `make dev` starts everything
+- [ ] `make seed` populates data
+- [ ] No placeholder functions
+
+### Non-Functional Requirements
+- [ ] API response time < 200ms (p95)
+- [ ] UI load time < 2s (first paint)
+- [ ] Test coverage ≥ 85%
+- [ ] All services start within 60s
+- [ ] Clustering completes in < 30s (100 ideas)
+- [ ] Memory usage < 4GB total
+
+### Documentation
+- [ ] README is comprehensive and accurate
+- [ ] All docs in `docs/` are complete
+- [ ] API documentation auto-generated
+- [ ] Code comments on complex logic
+- [ ] Setup instructions tested on fresh machine
+
+### Code Quality
+- [ ] Code follows PEP 8 (Python)
+- [ ] Code follows ESLint rules (TypeScript)
+- [ ] No TODO comments in main branch
+- [ ] No hardcoded credentials
+- [ ] Error handling on all external calls
+- [ ] Logging at appropriate levels
+
+---
+
+## 🎉 Launch Checklist
+
+### Pre-Launch
+- [ ] Create demo video (2 minutes)
+- [ ] Write launch blog post
+- [ ] Set up GitHub repository (public)
+- [ ] Add LICENSE file (MIT)
+- [ ] Add CONTRIBUTING.md
+- [ ] Add CODE_OF_CONDUCT.md
+- [ ] Create GitHub Issues templates
+- [ ] Set up CI/CD (GitHub Actions)
+
+### Launch Day
+- [ ] Tag v1.0.0 release
+- [ ] Push to GitHub
+- [ ] Post on Product Hunt
+- [ ] Share on Twitter/X
+- [ ] Post on Hacker News (Show HN)
+- [ ] Share on Reddit (r/SideProject, r/SaaS)
+- [ ] Post on LinkedIn
+- [ ] Send to email list
+
+### Post-Launch
+- [ ] Monitor GitHub issues
+- [ ] Respond to feedback
+- [ ] Fix critical bugs immediately
+- [ ] Plan Phase 2 features
+- [ ] Celebrate! 🎊
+
+---
+
+## 📊 Progress Tracking
+
+**Current Phase:** Planning Complete ✅
+
+**Next Phase:** Bootstrap & Infrastructure
+
+**Estimated Completion:** Day 0/16
+
+Use this checklist daily to track progress. Check off items as you complete them. Stay focused, ship fast, and build something amazing! 💪
+
+---
+
+**Pro Tip:** Work in order. Each phase builds on the previous. Don't skip ahead. Test frequently. Deploy early. Get feedback. Iterate. 🚀

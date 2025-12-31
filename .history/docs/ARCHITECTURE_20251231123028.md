@@ -1,0 +1,1045 @@
+# App-Idea Miner - System Architecture
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Technology Stack](#technology-stack)
+3. [System Components](#system-components)
+4. [Data Flow](#data-flow)
+5. [Scalability & Performance](#scalability--performance)
+6. [Security Considerations](#security-considerations)
+7. [Design Decisions](#design-decisions)
+
+---
+
+## Overview
+
+App-Idea Miner follows a **modern microservices-inspired architecture** with clear separation of concerns. The system is designed for:
+
+- **Modularity:** Each component has a single responsibility
+- **Scalability:** Async task processing, horizontal scaling ready
+- **Maintainability:** Clean interfaces, well-documented
+- **Developer Experience:** Fast local dev, easy debugging
+
+### Architecture Style
+- **Backend:** Event-driven + Task queue pattern
+- **Frontend:** SPA with real-time updates
+- **Data:** Write-heavy OLTP with read optimization
+- **Deployment:** Container-first with Docker Compose
+
+---
+
+## Technology Stack
+
+### Core Technologies (Required)
+
+| Layer | Technology | Version | Justification |
+|-------|------------|---------|---------------|
+| **Runtime** | Python | 3.12 | Latest stable, great typing support |
+| **Package Manager** | UV | 0.5+ | 10-100x faster than pip, native monorepo support ⭐ |
+| **Database** | PostgreSQL | 16 | JSONB support, full-text search, reliability |
+| **DB Driver** | asyncpg | 0.30+ | 8x faster than psycopg2, async-native ⭐ |
+| **Cache/Queue** | Redis | 7 | Fast, versatile (cache + broker) |
+| **API Framework** | FastAPI | 0.115+ | Modern, async, auto-docs, type-safe |
+| **Task Queue** | Celery | 5.4+ | Mature, monitoring (Flower), battle-tested |
+| **Frontend** | React + Vite | 18.3 / 6.0 | Fast HMR, modern DX |
+| **Migrations** | Alembic | 1.13+ | Standard for SQLAlchemy |
+| **Linter** | Ruff | 0.8+ | 100x faster than Black+Flake8, all-in-one ⭐ |
+| **Orchestration** | Docker Compose | v2 | Local dev simplicity |
+
+### Supporting Libraries
+
+**Python Backend (pyproject.toml format):**
+```toml
+# Managed with UV package manager (10-100x faster than pip)
+
+# Web & API
+fastapi = "^0.115.0"
+uvicorn = "^0.32.0"
+pydantic = "^2.10.0"
+sqlalchemy = "^2.0.0"
+alembic = "^1.13.0"
+asyncpg = "^0.30.0"  # 8x faster async PostgreSQL driver ⭐
+
+# Task Queue
+celery = "^5.4.0"
+redis = "^5.2.0"
+flower = "^2.0.0"  # Celery monitoring UI
+
+# Data Science & NLP
+scikit-learn = "^1.5.0"
+numpy = "^2.2.0"
+pandas = "^2.2.0"
+hdbscan = "^0.8.0"
+nltk = "^3.9.0"
+vaderSentiment = "^3.3.2"
+
+# Utilities
+python-dotenv = "^1.0.0"
+httpx = "^0.28.0"
+feedparser = "^6.0.0"  # RSS parsing
+python-multipart = "^0.0.18"
+
+# Code Quality
+ruff = "^0.8.0"  # All-in-one linter (Black+Flake8+isort) ⭐
+pytest = "^8.0.0"
+pytest-cov = "^6.0.0"
+```
+
+**Frontend:**
+```json
+{
+  "react": "^18.3.0",
+  "react-dom": "^18.3.0",
+  "vite": "^6.0.0",
+  "typescript": "^5.7.0",
+  "tailwindcss": "^3.4.0",
+  "framer-motion": "^11.0.0",
+  "recharts": "^2.15.0",
+  "@tanstack/react-query": "^5.62.0",
+  "zustand": "^4.5.0",
+  "axios": "^1.7.0",
+  "@headlessui/react": "^2.2.0",
+  "@heroicons/react": "^2.2.0"
+}
+```
+
+---
+
+## System Components
+
+### 1. API Service (`apps/api`)
+
+**Responsibility:** HTTP REST API, WebSocket connections, authentication
+
+**Technology:** FastAPI + Uvicorn (ASGI server)
+
+**Key Features:**
+- RESTful endpoints for clusters, ideas, analytics
+- WebSocket for real-time updates
+- Automatic OpenAPI docs (`/docs`)
+- Request validation with Pydantic
+- CORS middleware for web UI
+- Rate limiting (Redis-backed)
+
+**Structure:**
+```
+apps/api/
+├── pyproject.toml           # UV package definition ⭐
+├── app/
+│   ├── main.py              # FastAPI app setup
+│   ├── config.py            # Settings (from env)
+│   ├── dependencies.py      # DI for DB, Redis
+│   ├── database.py          # Async SQLAlchemy setup ⭐
+│   ├── models/              # SQLAlchemy ORM models
+│   │   ├── __init__.py
+│   │   ├── post.py
+│   │   ├── idea.py
+│   │   └── cluster.py
+│   ├── schemas/             # Pydantic models
+│   │   ├── __init__.py
+│   │   ├── cluster.py
+│   │   └── analytics.py
+│   ├── routes/              # API endpoints
+│   │   ├── __init__.py
+│   │   ├── clusters.py
+│   │   ├── ideas.py
+│   │   ├── analytics.py
+│   │   ├── jobs.py
+│   │   └── health.py
+│   ├── services/            # Business logic (service layer pattern) ⭐
+│   │   ├── cluster_service.py
+│   │   ├── idea_service.py
+│   │   └── analytics_service.py
+│   └── websocket/           # Real-time handlers
+│       └── updates.py
+└── tests/
+```
+
+**Port:** 8000 (mapped from container)
+
+**Environment Variables:**
+- `DATABASE_URL` - Postgres connection
+- `REDIS_URL` - Redis connection
+- `CORS_ORIGINS` - Allowed origins
+- `LOG_LEVEL` - debug/info/warning
+
+---
+
+### 2. Worker Service (`apps/worker`)
+
+**Responsibility:** Background task execution (ingestion, processing, clustering)
+
+**Technology:** Celery + Redis (broker & backend)
+
+**Key Features:**
+- Async task execution
+- Task retry logic
+- Result caching
+- Scheduled periodic tasks (beat)
+- Task monitoring (Flower UI)
+
+**Structure:**
+```
+apps/worker/
+├── celery_app.py           # Celery instance
+├── config.py               # Task routing, retry policies
+├── tasks/
+│   ├── __init__.py
+│   ├── ingestion.py        # Fetch posts from sources
+│   ├── processing.py       # Extract ideas, sentiment
+│   ├── clustering.py       # Run clustering algorithm
+│   └── maintenance.py      # Cleanup, reclustering
+└── tests/
+```
+
+**Task Types:**
+- **Immediate:** User-triggered ingestion
+- **Periodic:** Scheduled RSS checks (every 6 hours)
+- **Batch:** Large clustering jobs
+- **Maintenance:** Old data cleanup
+
+**Celery Configuration:**
+```python
+# Task routing
+task_routes = {
+    'tasks.ingestion.*': {'queue': 'ingestion'},
+    'tasks.processing.*': {'queue': 'processing'},
+    'tasks.clustering.*': {'queue': 'clustering'},
+}
+
+# Retry policy
+task_acks_late = True
+task_reject_on_worker_lost = True
+task_default_retry_delay = 60  # seconds
+task_max_retries = 3
+```
+
+**Flower Monitoring:** Port 5555
+- Task history
+- Worker status
+- Queue lengths
+- Task timings
+
+---
+
+### 3. Core Package (`packages/core`)
+
+**Responsibility:** Shared business logic, utilities
+
+**Technology:** Pure Python library
+
+**Modules:**
+
+**`models.py`** - SQLAlchemy 2.0 async models (shared across API & Worker)
+```python
+from sqlalchemy import Column, String, DateTime, Text, JSONB, Float, Integer
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import DeclarativeBase
+import uuid
+
+# SQLAlchemy 2.0 declarative base
+class Base(DeclarativeBase):
+    pass
+
+class RawPost(Base):
+    __tablename__ = 'raw_posts'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    url = Column(String, unique=True, nullable=False, index=True)
+    url_hash = Column(String, index=True)  # For fast deduplication
+    title = Column(String)
+    content = Column(Text)
+    source = Column(String, index=True)
+    published_at = Column(DateTime)
+    fetched_at = Column(DateTime)
+    metadata = Column(JSONB)
+    # ... relationships, indexes
+
+# Connection string uses asyncpg driver (8x faster):
+# postgresql+asyncpg://user:pass@host/db ⭐
+```
+
+**`clustering.py`** - Clustering algorithm
+```python
+from sklearn.feature_extraction.text import TfidfVectorizer
+from hdbscan import HDBSCAN
+import numpy as np
+
+class ClusterEngine:
+    def __init__(self):
+        self.vectorizer = TfidfVectorizer(
+            max_features=500,
+            ngram_range=(1, 3),
+            stop_words='english',
+            min_df=2,
+            max_df=0.85
+        )
+        self.clusterer = HDBSCAN(
+            min_cluster_size=3,
+            min_samples=2,
+            cluster_selection_method='eom'
+        )
+    
+    def cluster_ideas(self, texts: List[str]) -> ClusterResult:
+        # Vectorize
+        tfidf_matrix = self.vectorizer.fit_transform(texts)
+        
+        # Cluster
+        labels = self.clusterer.fit_predict(tfidf_matrix)
+        
+        # Extract keywords per cluster
+        keywords = self._extract_keywords(tfidf_matrix, labels)
+        
+        return ClusterResult(labels, keywords, self.clusterer.probabilities_)
+```
+
+**`nlp.py`** - Text processing
+```python
+import re
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+class TextProcessor:
+    def extract_need_statements(self, text: str) -> List[str]:
+        # Regex patterns for "I wish there was..."
+        patterns = [
+            r"I wish there (?:was|were) (?:an? )?(.+?)(?:[.!?]|$)",
+            r"(?:We|I) need (?:an? )?(.+?)(?:[.!?]|$)",
+            r"Why (?:isn't|doesn't|don't) there (?:an? )?(.+?)\?",
+        ]
+        # ... extraction logic
+    
+    def analyze_sentiment(self, text: str) -> SentimentResult:
+        analyzer = SentimentIntensityAnalyzer()
+        scores = analyzer.polarity_scores(text)
+        return SentimentResult(
+            label=self._classify(scores['compound']),
+            score=scores['compound'],
+            emotions={'frustration': ..., 'urgency': ...}
+        )
+```
+
+**`dedupe.py`** - Deduplication logic
+```python
+import hashlib
+from difflib import SequenceMatcher
+
+class Deduplicator:
+    def generate_url_hash(self, url: str) -> str:
+        # Normalize URL (remove tracking params, etc.)
+        canonical = self._canonicalize(url)
+        return hashlib.sha256(canonical.encode()).hexdigest()
+    
+    def is_duplicate_title(self, title1: str, title2: str, threshold=0.9) -> bool:
+        ratio = SequenceMatcher(None, title1.lower(), title2.lower()).ratio()
+        return ratio >= threshold
+```
+
+**`utils.py`** - Helpers (logging, date utils, etc.)
+
+---
+
+### 4. Web UI (`apps/web`)
+
+**Responsibility:** User interface, visualization
+
+**Technology:** React + TypeScript + Vite
+
+**Structure:**
+```
+apps/web/
+├── src/
+│   ├── main.tsx             # Entry point
+│   ├── App.tsx              # Root component
+│   ├── components/          # Reusable UI components
+│   │   ├── ClusterCard.tsx
+│   │   ├── IdeaCard.tsx
+│   │   ├── Navbar.tsx
+│   │   ├── StatCard.tsx
+│   │   └── charts/
+│   │       ├── TrendChart.tsx
+│   │       └── SentimentPie.tsx
+│   ├── pages/               # Route pages
+│   │   ├── Dashboard.tsx
+│   │   ├── ClusterExplorer.tsx
+│   │   ├── ClusterDetail.tsx
+│   │   ├── IdeaBrowser.tsx
+│   │   └── Analytics.tsx
+│   ├── hooks/               # Custom React hooks
+│   │   ├── useClusters.ts
+│   │   ├── useWebSocket.ts
+│   │   └── useAnalytics.ts
+│   ├── services/            # API client
+│   │   ├── api.ts           # Axios instance
+│   │   ├── clusterService.ts
+│   │   └── ideaService.ts
+│   ├── store/               # Zustand state management
+│   │   └── appStore.ts
+│   ├── types/               # TypeScript types
+│   │   ├── Cluster.ts
+│   │   └── Idea.ts
+│   └── styles/
+│       └── index.css        # Tailwind imports
+├── public/
+├── index.html
+├── vite.config.ts
+├── tailwind.config.js
+└── package.json
+```
+
+**State Management (Zustand):**
+```typescript
+import create from 'zustand';
+
+interface AppState {
+  clusters: Cluster[];
+  isLoading: boolean;
+  error: string | null;
+  fetchClusters: () => Promise<void>;
+  selectedCluster: Cluster | null;
+  setSelectedCluster: (cluster: Cluster) => void;
+}
+
+export const useAppStore = create<AppState>((set, get) => ({
+  clusters: [],
+  isLoading: false,
+  error: null,
+  fetchClusters: async () => {
+    set({ isLoading: true });
+    try {
+      const data = await clusterService.getAll();
+      set({ clusters: data, error: null });
+    } catch (error) {
+      set({ error: error.message });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+  // ...
+}));
+```
+
+**Real-Time Updates:**
+```typescript
+// useWebSocket.ts
+export function useWebSocket() {
+  const [isConnected, setIsConnected] = useState(false);
+  
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:8000/ws/updates');
+    
+    ws.onopen = () => setIsConnected(true);
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.event === 'new_cluster') {
+        // Update store
+        useAppStore.getState().addCluster(message.data);
+      }
+    };
+    
+    return () => ws.close();
+  }, []);
+  
+  return { isConnected };
+}
+```
+
+**Port:** 3000 (dev server)
+
+---
+
+### 5. Database (PostgreSQL 16)
+
+**Responsibility:** Persistent data storage
+
+**Key Features:**
+- JSONB for flexible metadata
+- Full-text search (GIN indexes)
+- ACID transactions
+- Efficient indexing
+
+**Schema Design Principles:**
+- Normalized for writes, optimized for reads
+- Foreign keys with cascading deletes
+- Partial indexes for filtered queries
+- Materialized views for analytics (future)
+
+**Extensions:**
+- `pg_trgm` - Fuzzy text matching
+- `uuid-ossp` - UUID generation
+
+**Connection Pooling:**
+```python
+# SQLAlchemy async engine config with asyncpg driver (8x faster)
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+
+engine = create_async_engine(
+    DATABASE_URL,  # postgresql+asyncpg://user:pass@host/db
+    pool_size=10,
+    max_overflow=20,
+    pool_recycle=1800,  # Recycle connections after 30 min
+    pool_pre_ping=True,  # Check connections before use
+    echo=False  # Set True for query logging
+)
+
+# Async session maker
+AsyncSessionLocal = sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False  # Prevent lazy loading issues ⭐
+)
+```
+
+**Port:** 5432
+
+---
+
+### 6. Redis (7)
+
+**Responsibility:** Caching, task queue, rate limiting
+
+**Use Cases:**
+
+1. **Celery Broker:** Task queue management
+2. **Celery Backend:** Result storage
+3. **API Cache:** Expensive queries (cluster list)
+4. **Rate Limiting:** IP-based throttling
+5. **Session Storage:** (future auth)
+
+**Key Patterns:**
+```python
+# Cache decorator example
+@cache(expire=300)  # 5 minutes
+def get_top_clusters():
+    return db.query(Cluster).order_by(Cluster.size.desc()).limit(10).all()
+
+# Rate limiting
+from slowapi import Limiter
+limiter = Limiter(key_func=get_remote_address)
+
+@app.get("/api/v1/clusters")
+@limiter.limit("100/minute")
+async def list_clusters():
+    ...
+```
+
+**Port:** 6379
+
+---
+
+## Data Flow
+
+### 1. Ingestion Flow
+
+```
+┌─────────────┐
+│ RSS Feed /  │
+│ Sample Data │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────────┐
+│ Celery Task:    │
+│ fetch_posts()   │
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Deduplication   │◄─── Check existing url_hash
+│ (Redis Cache)   │
+└──────┬──────────┘
+       │
+       ▼ (if new)
+┌─────────────────┐
+│ Insert RawPost  │
+│ to Postgres     │
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Queue:          │
+│ process_post()  │
+└─────────────────┘
+```
+
+### 2. Processing Flow
+
+```
+┌─────────────────┐
+│ RawPost         │
+│ (from DB)       │
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Extract Need    │
+│ Statements      │◄─── Regex patterns
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Sentiment       │
+│ Analysis        │◄─── VADER
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Quality         │
+│ Scoring         │
+└──────┬──────────┘
+       │
+       ▼ (if quality > threshold)
+┌─────────────────┐
+│ Insert          │
+│ IdeaCandidate   │
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Queue:          │
+│ trigger_cluster()│
+└─────────────────┘
+```
+
+### 3. Clustering Flow
+
+```
+┌─────────────────┐
+│ Fetch all       │
+│ IdeaCandidates  │
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ TF-IDF          │
+│ Vectorization   │
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ HDBSCAN         │
+│ Clustering      │
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Extract         │
+│ Keywords        │◄─── TF-IDF top terms
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Generate        │
+│ Cluster Metadata│
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Update DB:      │
+│ Clusters +      │
+│ Memberships     │
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Invalidate      │
+│ Redis Cache     │
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Broadcast       │
+│ WebSocket Event │◄─── "new_cluster"
+└─────────────────┘
+```
+
+### 4. UI Query Flow
+
+```
+User loads Dashboard
+       │
+       ▼
+┌─────────────────┐
+│ GET /clusters   │
+└──────┬──────────┘
+       │
+       ▼
+┌─────────────────┐
+│ Check Redis     │
+│ Cache           │
+└──────┬──────────┘
+       │
+       ├─ Cache Hit ──> Return cached data
+       │
+       └─ Cache Miss
+              │
+              ▼
+       ┌─────────────────┐
+       │ Query Postgres  │
+       └──────┬──────────┘
+              │
+              ▼
+       ┌─────────────────┐
+       │ Cache in Redis  │◄─── 5 min TTL
+       └──────┬──────────┘
+              │
+              ▼
+       Return data to UI
+```
+
+---
+
+## Scalability & Performance
+
+### Current (MVP) Limits
+- **Data Volume:** 10,000 posts, 100 clusters
+- **Concurrent Users:** 50
+- **Request Latency:** < 200ms (p95)
+- **Clustering Time:** < 30 seconds for 1,000 ideas
+
+### Horizontal Scaling (Future)
+
+**API Service:**
+- Add load balancer (Nginx)
+- Scale to N replicas (stateless)
+- Session affinity for WebSockets
+
+**Worker Service:**
+- Scale workers independently
+- Partition task queues by type
+- Add worker auto-scaling (K8s HPA)
+
+**Database:**
+- Read replicas for queries
+- Connection pooler (PgBouncer)
+- Partitioning for time-series data
+
+**Caching:**
+- Redis Cluster for HA
+- CDN for static assets
+
+### Performance Optimizations
+
+**Database:**
+- Indexes on frequently queried columns
+- Lazy loading relationships
+- Batch inserts for bulk operations
+- Query result pagination
+
+**API:**
+- Response compression (gzip)
+- Cache control headers
+- Database connection pooling
+- Async I/O (FastAPI native)
+
+**Clustering:**
+- Incremental clustering (update vs. full recluster)
+- Dimensionality reduction before clustering
+- Sparse matrix operations
+
+---
+
+## Security Considerations
+
+### MVP Security
+
+**Database:**
+- No root credentials in code (env vars)
+- Least privilege user accounts
+- SSL/TLS for connections (future)
+
+**API:**
+- CORS properly configured
+- Rate limiting (prevent DoS)
+- Input validation (Pydantic)
+- SQL injection prevention (ORM)
+
+**Docker:**
+- Non-root user in containers
+- Minimal base images
+- Secrets via environment files
+- Health checks for all services ⭐ NEW
+- Resource limits (CPU, memory) ⭐ NEW
+- Restart policies (`unless-stopped`) ⭐ NEW
+- `depends_on` with `condition: service_healthy` ⭐ NEW
+
+**Docker Compose Production Patterns:**
+```yaml
+services:
+  postgres:
+    image: postgres:16
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+  
+  api:
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+```
+
+### Future Enhancements
+- Authentication (OAuth2/JWT)
+- API key management
+- Encrypted data at rest
+- Audit logging
+- HTTPS/SSL certificates
+- Dependency vulnerability scanning
+
+---
+
+## Design Decisions
+
+### 1. **Celery vs. RQ**
+
+**Chosen:** Celery
+
+**Reasoning:**
+- More mature (12+ years)
+- Better monitoring (Flower)
+- Advanced routing/prioritization
+- Scheduling built-in (Beat)
+- Larger community
+
+**Tradeoff:** Slightly more complex setup
+
+---
+
+### 2. **React + Vite vs. FastAPI Templates**
+
+**Chosen:** React + Vite
+
+**Reasoning:**
+- Modern frontend best practices
+- Component reusability
+- State management (Zustand)
+- Real-time updates easier
+- Tailwind CSS ecosystem
+- Better developer experience
+
+**Tradeoff:** More setup, two servers (API + Vite)
+
+---
+
+### 3. **HDBSCAN vs. DBSCAN vs. K-Means**
+
+**Chosen:** HDBSCAN
+
+**Reasoning:**
+- No need to specify cluster count
+- Handles noise (outliers)
+- Varying density clusters
+- Better for text data
+- Hierarchical structure
+
+**Tradeoff:** Slower than K-Means, harder to tune
+
+---
+
+### 4. **Monorepo vs. Separate Repos**
+
+**Chosen:** Monorepo
+
+**Reasoning:**
+- Shared code (`packages/core`)
+- Atomic commits across services
+- Easier local development
+- Single Docker Compose
+
+**Tradeoff:** Slightly larger repo size
+
+---
+
+### 5. **PostgreSQL JSONB vs. NoSQL**
+
+**Chosen:** PostgreSQL with JSONB
+
+**Reasoning:**
+- ACID transactions for core data
+- Flexible metadata (JSONB)
+- Full-text search built-in
+- Mature tooling
+- One database to manage
+
+**Tradeoff:** Less "NoSQL flexibility" (but JSONB mitigates this)
+
+---
+
+### 6. **UV vs. pip vs. Poetry**
+
+**Chosen:** UV
+
+**Reasoning:**
+- 10-100x faster than pip (written in Rust)
+- Native workspace/monorepo support
+- Drop-in pip replacement (no workflow changes)
+- Single lockfile for reproducible builds
+- Better dependency resolution
+- Active development (Astral, creators of Ruff)
+
+**Tradeoff:** Newer tool (less mature than pip), but rapidly growing adoption
+
+---
+
+### 7. **Service Layer vs. Fat Controllers**
+
+**Chosen:** Service Layer Architecture
+
+**Reasoning:**
+- Separates business logic from HTTP concerns
+- Easier to test (no FastAPI dependencies)
+- Reusable across API routes and CLI tools
+- Industry standard in 2025
+- Better for team scaling
+
+**Tradeoff:** More files/folders, but better long-term maintainability
+
+---
+
+### 8. **asyncpg vs. psycopg2**
+
+**Chosen:** asyncpg
+
+**Reasoning:**
+- 8x faster than psycopg2 (benchmarks)
+- Native async support (no thread pool)
+- Works seamlessly with FastAPI async
+- Better connection pooling
+- Lower memory footprint
+
+**Tradeoff:** Can't use synchronous code patterns (but that's good for FastAPI)
+
+---
+
+### 9. **Ruff vs. Black + Flake8 + isort**
+
+**Chosen:** Ruff
+
+**Reasoning:**
+- 100x faster than traditional linters
+- All-in-one tool (formatting + linting)
+- Drop-in replacement for Black, Flake8, isort
+- Auto-fix capabilities
+- Written in Rust (performance)
+- Growing ecosystem (pre-commit, VSCode)
+
+**Tradeoff:** Slightly different rule behavior (minor adjustments needed)
+
+---
+
+## Deployment Architecture
+
+### Local Development
+
+```
+┌─────────────────────────────────────────────┐
+│               Docker Compose                 │
+│                                              │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐    │
+│  │ API     │  │ Worker  │  │ Web UI  │    │
+│  │ :8000   │  │ (Celery)│  │ :3000   │    │
+│  └────┬────┘  └────┬────┘  └────┬────┘    │
+│       │            │             │          │
+│  ┌────┴────────────┴─────┐  ┌───┴────┐    │
+│  │ PostgreSQL :5432      │  │ Redis  │    │
+│  └───────────────────────┘  └────────┘    │
+│                                              │
+│  ┌─────────────┐                            │
+│  │ Flower      │◄── Celery monitoring       │
+│  │ :5555       │                            │
+│  └─────────────┘                            │
+└─────────────────────────────────────────────┘
+```
+
+### Production (Future)
+
+```
+Internet
+    │
+    ▼
+┌─────────┐
+│ CDN     │◄──── Static assets
+└────┬────┘
+     │
+     ▼
+┌─────────┐
+│ Load    │
+│ Balancer│
+└────┬────┘
+     │
+     ├──────┬──────┬──────┐
+     ▼      ▼      ▼      ▼
+  API-1  API-2  API-3  API-N
+     │      │      │      │
+     └──────┴──────┴──────┘
+            │
+     ┌──────┴──────┐
+     ▼             ▼
+┌─────────┐  ┌─────────┐
+│ DB      │  │ Redis   │
+│ Primary │  │ Cluster │
+└────┬────┘  └─────────┘
+     │
+     ▼
+┌─────────┐
+│ DB      │
+│ Replica │
+└─────────┘
+
+Workers (auto-scaled)
+```
+
+---
+
+## Monitoring & Observability
+
+### Logs
+- Structured JSON format
+- Centralized (stdout → Docker logs)
+- Log levels: DEBUG, INFO, WARNING, ERROR
+
+### Metrics
+- Custom Prometheus metrics
+- System metrics (CPU, memory)
+- Business metrics (clusters/day, posts/hour)
+
+### Tracing (Future)
+- OpenTelemetry integration
+- Request tracing across services
+
+---
+
+## Testing Strategy
+
+### Unit Tests
+- Core logic (clustering, NLP, deduplication)
+- Service layers
+- Utility functions
+
+### Integration Tests
+- API endpoints (FastAPI TestClient)
+- Database operations
+- Redis caching
+
+### E2E Tests (Future)
+- Full user flows
+- Playwright/Cypress
+
+---
+
+**This architecture is designed to start simple but scale when needed. Every decision prioritizes developer experience and maintainability.** 🚀
