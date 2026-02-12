@@ -102,7 +102,7 @@ temp/
 *.tmp
 
 # UV
-uv.lock
+# uv.lock is needed for reproducible builds on Railway/Docker
 
 # Alembic
 alembic.ini
