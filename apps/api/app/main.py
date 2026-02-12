@@ -31,35 +31,57 @@ async def lifespan(app: FastAPI):
     """
     Application lifespan context manager.
     Handles startup and shutdown events.
+
+    Gracefully handles missing database/redis for serverless environments.
     """
+    import os
+
+    is_serverless = os.getenv("VERCEL", "") == "1"
+    has_database = bool(os.getenv("DATABASE_URL"))
+    has_redis = bool(os.getenv("REDIS_URL"))
+
     # Startup
     logger.info("Starting App-Idea Miner API...")
-    logger.info(
-        f"Database URL: {settings.DATABASE_URL.split('@')[-1]}"
-    )  # Hide credentials
+    logger.info(f"Environment: {'Vercel Serverless' if is_serverless else 'Standard'}")
+
+    if has_database:
+        logger.info(
+            f"Database URL: {settings.DATABASE_URL.split('@')[-1]}"
+        )  # Hide credentials
+    else:
+        logger.warning("DATABASE_URL not set - database features disabled")
+
     logger.info(f"CORS Origins: {settings.CORS_ORIGINS}")
 
     redis_client = None
 
-    # Initialize Redis client for caching
-    try:
-        redis_client = await aioredis.from_url(
-            settings.REDIS_URL,
-            encoding="utf-8",
-            decode_responses=False,  # We'll handle JSON encoding
-        )
-        await redis_client.ping()
-        set_redis_client(redis_client)
-        logger.info("Redis client initialized for caching")
-    except Exception as e:
-        logger.warning(f"Failed to connect to Redis: {e}. Caching disabled.")
+    # Initialize Redis client for caching (only if configured)
+    if has_redis:
+        try:
+            redis_client = await aioredis.from_url(
+                settings.REDIS_URL,
+                encoding="utf-8",
+                decode_responses=False,  # We'll handle JSON encoding
+            )
+            await redis_client.ping()
+            set_redis_client(redis_client)
+            logger.info("Redis client initialized for caching")
+        except Exception as e:
+            logger.warning(f"Failed to connect to Redis: {e}. Caching disabled.")
+    else:
+        logger.warning("REDIS_URL not set - caching disabled")
 
     yield
 
     # Shutdown
     logger.info("Shutting down App-Idea Miner API...")
-    await engine.dispose()
-    logger.info("Database connections closed")
+
+    if has_database:
+        try:
+            await engine.dispose()
+            logger.info("Database connections closed")
+        except Exception as e:
+            logger.warning(f"Error closing database connections: {e}")
 
     # Close Redis connection
     if redis_client:
@@ -102,103 +124,136 @@ async def health_check():
     Enhanced health check endpoint.
 
     Returns comprehensive service status and diagnostics:
-    - Database connection and latency
-    - Redis connection and latency
-    - Worker status and active tasks
+    - Database connection and latency (if configured)
+    - Redis connection and latency (if configured)
+    - Worker status and active tasks (if configured)
+
+    Works in degraded mode for serverless environments without full infra.
     """
+    import os
     import time
 
-    from celery import Celery
-
     from packages.core.cache import get_redis_client
+
+    is_serverless = os.getenv("VERCEL", "") == "1"
+    has_database = bool(os.getenv("DATABASE_URL"))
+    has_redis = bool(os.getenv("REDIS_URL"))
 
     overall_status = "healthy"
     services = {}
 
-    # 1. Database health check
-    try:
-        from sqlalchemy import text
-
-        from apps.api.app.database import AsyncSessionLocal
-
-        start_time = time.time()
-        async with AsyncSessionLocal() as session:
-            await session.execute(text("SELECT 1"))
-        db_latency_ms = round((time.time() - start_time) * 1000, 2)
-
-        services["database"] = {
-            "status": "up",
-            "latency_ms": db_latency_ms,
-            "message": "Connected",
-        }
-    except Exception as e:
-        logger.error(f"Database health check failed: {e}")
-        services["database"] = {"status": "down", "latency_ms": None, "error": str(e)}
-        overall_status = "degraded"
-
-    # 2. Redis health check
-    redis_client = get_redis_client()
-    if redis_client:
+    # 1. Database health check (only if configured)
+    if has_database:
         try:
-            start_time = time.time()
-            await redis_client.ping()
-            redis_latency_ms = round((time.time() - start_time) * 1000, 2)
+            from sqlalchemy import text
 
-            services["redis"] = {
+            from apps.api.app.database import AsyncSessionLocal
+
+            start_time = time.time()
+            async with AsyncSessionLocal() as session:
+                await session.execute(text("SELECT 1"))
+            db_latency_ms = round((time.time() - start_time) * 1000, 2)
+
+            services["database"] = {
                 "status": "up",
-                "latency_ms": redis_latency_ms,
+                "latency_ms": db_latency_ms,
                 "message": "Connected",
             }
         except Exception as e:
-            logger.error(f"Redis health check failed: {e}")
-            services["redis"] = {"status": "down", "latency_ms": None, "error": str(e)}
+            logger.error(f"Database health check failed: {e}")
+            services["database"] = {
+                "status": "down",
+                "latency_ms": None,
+                "error": str(e),
+            }
             overall_status = "degraded"
     else:
+        services["database"] = {
+            "status": "not_configured",
+            "message": "DATABASE_URL not set",
+        }
+        if not is_serverless:
+            overall_status = "degraded"
+
+    # 2. Redis health check (only if configured)
+    if has_redis:
+        redis_client = get_redis_client()
+        if redis_client:
+            try:
+                start_time = time.time()
+                await redis_client.ping()
+                redis_latency_ms = round((time.time() - start_time) * 1000, 2)
+
+                services["redis"] = {
+                    "status": "up",
+                    "latency_ms": redis_latency_ms,
+                    "message": "Connected",
+                }
+            except Exception as e:
+                logger.error(f"Redis health check failed: {e}")
+                services["redis"] = {
+                    "status": "down",
+                    "latency_ms": None,
+                    "error": str(e),
+                }
+                overall_status = "degraded"
+        else:
+            services["redis"] = {
+                "status": "not_initialized",
+                "message": "Redis client not ready",
+            }
+    else:
         services["redis"] = {
-            "status": "unknown",
-            "message": "Redis client not configured",
+            "status": "not_configured",
+            "message": "REDIS_URL not set",
         }
 
-    # 3. Worker health check
-    try:
-        celery_app = Celery(
-            "app-idea-miner",
-            broker=settings.REDIS_URL,
-            backend=settings.REDIS_URL.replace("/0", "/1"),
-        )
+    # 3. Worker health check (only in non-serverless environments)
+    if not is_serverless and has_redis:
+        try:
+            from celery import Celery
 
-        # Check worker availability
-        inspect = celery_app.control.inspect()
-        active_tasks = inspect.active()
-        stats = inspect.stats()
-
-        if active_tasks is not None and stats is not None:
-            # Count total active tasks across all workers
-            total_active = (
-                sum(len(tasks) for tasks in active_tasks.values())
-                if active_tasks
-                else 0
+            celery_app = Celery(
+                "app-idea-miner",
+                broker=settings.REDIS_URL,
+                backend=settings.REDIS_URL.replace("/0", "/1"),
             )
-            worker_count = len(stats)
 
-            services["worker"] = {
-                "status": "up",
-                "workers": worker_count,
-                "active_tasks": total_active,
-                "message": f"{worker_count} worker(s) connected",
-            }
-        else:
-            services["worker"] = {
-                "status": "down",
-                "workers": 0,
-                "active_tasks": 0,
-                "error": "No workers available",
-            }
-            overall_status = "degraded"
-    except Exception as e:
-        logger.error(f"Worker health check failed: {e}")
-        services["worker"] = {"status": "unknown", "error": str(e)}
-        # Worker down doesn't degrade overall status (async tasks only)
+            # Check worker availability
+            inspect = celery_app.control.inspect()
+            active_tasks = inspect.active()
+            stats = inspect.stats()
+
+            if active_tasks is not None and stats is not None:
+                # Count total active tasks across all workers
+                total_active = (
+                    sum(len(tasks) for tasks in active_tasks.values())
+                    if active_tasks
+                    else 0
+                )
+                worker_count = len(stats)
+
+                services["worker"] = {
+                    "status": "up",
+                    "workers": worker_count,
+                    "active_tasks": total_active,
+                    "message": f"{worker_count} worker(s) connected",
+                }
+            else:
+                services["worker"] = {
+                    "status": "down",
+                    "workers": 0,
+                    "active_tasks": 0,
+                    "error": "No workers available",
+                }
+        except Exception as e:
+            logger.error(f"Worker health check failed: {e}")
+            services["worker"] = {"status": "unknown", "error": str(e)}
+    else:
+        services["worker"] = {
+            "status": "not_applicable",
+            "message": "Workers not supported in serverless",
+        }
 
     # 4. API status (always up if we got here)
     services["api"] = {"status": "up", "message": "Responding"}
@@ -206,6 +261,7 @@ async def health_check():
     return {
         "status": overall_status,
         "version": "1.0.0",
+        "environment": "serverless" if is_serverless else "standard",
         "timestamp": time.time(),
         "services": services,
     }

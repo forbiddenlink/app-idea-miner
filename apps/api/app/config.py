@@ -31,6 +31,8 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:5173",
+        "https://app-idea-miner.vercel.app",
+        "https://*.vercel.app",
     ]
     LOG_LEVEL: str = "INFO"
     API_KEY: str = "dev-api-key"
