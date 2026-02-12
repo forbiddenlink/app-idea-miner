@@ -51,10 +51,15 @@ def run_clustering(
         f"Starting clustering task with min_quality={min_quality}, min_cluster_size={min_cluster_size}"
     )
 
-    # Run async logic
-    result = asyncio.run(
-        _run_clustering_async(min_quality, min_cluster_size, recreate_clusters)
-    )
+    # Run async logic with a fresh event loop to avoid conflicts
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        result = loop.run_until_complete(
+            _run_clustering_async(min_quality, min_cluster_size, recreate_clusters)
+        )
+    finally:
+        loop.close()
 
     logger.info(f"Clustering task complete: {result}")
     return result

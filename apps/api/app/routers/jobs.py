@@ -66,7 +66,9 @@ async def trigger_ingestion(
         )
     else:
         # Trigger RSS feed fetching task by name
-        task = celery_app.send_task("apps.worker.tasks.ingestion.fetch_rss_feeds")
+        task = celery_app.send_task(
+            "apps.worker.tasks.ingestion.fetch_rss_feeds", queue="ingestion"
+        )
 
     logger.info(f"Ingestion job queued: {task.id}")
 
@@ -75,6 +77,46 @@ async def trigger_ingestion(
         "status": "queued",
         "estimated_duration": "30s",
         "message": "Ingestion job started successfully",
+    }
+
+
+class ProcessJobRequest(BaseModel):
+    """Request model for processing job."""
+
+    batch_size: int = 100
+    min_quality: float = 0.3
+
+
+@router.post("/process")
+async def trigger_processing(
+    request: ProcessJobRequest = Body(default=ProcessJobRequest()),
+):
+    """
+    Trigger processing of raw posts into ideas.
+
+    Processes unprocessed posts using NLP to extract ideas.
+    """
+    logger.info(
+        f"Triggering processing job (batch_size={request.batch_size}, min_quality={request.min_quality})"
+    )
+
+    # Trigger processing task by name
+    task = celery_app.send_task(
+        "apps.worker.tasks.processing.process_raw_posts",
+        kwargs={
+            "batch_size": request.batch_size,
+            "min_quality": request.min_quality,
+        },
+        queue="processing",
+    )
+
+    logger.info(f"Processing job queued: {task.id}")
+
+    return {
+        "job_id": task.id,
+        "status": "queued",
+        "estimated_duration": "60s",
+        "message": "Processing job started successfully",
     }
 
 
@@ -100,6 +142,7 @@ async def trigger_reclustering(
             "min_cluster_size": request.min_cluster_size,
             "recreate_clusters": request.force,
         },
+        queue="clustering",
     )
 
     logger.info(f"Reclustering job queued: {task.id}")
