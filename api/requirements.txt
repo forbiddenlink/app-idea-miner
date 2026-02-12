@@ -1,0 +1,16 @@
+fastapi==0.128.0
+uvicorn==0.27.0
+pydantic==2.12.5
+pydantic-settings==2.12.0
+pydantic-core==2.41.5
+sqlalchemy==2.0.45
+asyncpg==0.31.0
+redis==7.1.0
+python-dotenv==1.2.1
+starlette==0.50.0
+typing-extensions==4.15.0
+annotated-types==0.7.0
+anyio==4.12.0
+greenlet==3.3.0
+pgvector==0.4.2
+numpy==2.4.0

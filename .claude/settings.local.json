@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Volumes/LizsDisk/app-idea-miner log --oneline)",
+      "Bash(vercel logs:*)",
+      "Bash(vercel env ls:*)",
+      "Bash(vercel curl https://app-idea-miner.vercel.app/)",
+      "Bash(uv run ruff format:*)",
+      "Bash(uv run ruff:*)",
+      "Bash(vercel:*)",
+      "Bash(git add:*)",
+      "Bash(git checkout:*)",
+      "Bash(git restore:*)",
+      "Bash(bash:*)",
+      "Bash(neonctl:*)",
+      "Bash(upstash:*)",
+      "Bash(uv pip install:*)",
+      "Bash(uv add:*)",
+      "Bash(DATABASE_URL=\"postgresql+asyncpg://neondb_owner:npg_MlpAx7Dh1EHb@ep-lingering-smoke-aifunayl.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require\" uv run python -c \"from packages.core.models import Base; print\\(''Models OK''\\)\")",
+      "Bash(DATABASE_URL=\"postgresql+asyncpg://neondb_owner:npg_MlpAx7Dh1EHb@ep-lingering-smoke-aifunayl.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require\" uv run alembic:*)",
+      "Bash(DATABASE_URL=\"postgresql+asyncpg://neondb_owner:npg_MlpAx7Dh1EHb@ep-lingering-smoke-aifunayl.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require\" uv run python -m alembic upgrade head:*)",
+      "Bash(DATABASE_URL=\"postgresql+asyncpg://neondb_owner:npg_MlpAx7Dh1EHb@ep-lingering-smoke-aifunayl.c-4.us-east-1.aws.neon.tech/neondb?ssl=require\" uv run python:*)",
+      "Bash(DATABASE_URL=\"postgresql+asyncpg://neondb_owner:npg_MlpAx7Dh1EHb@ep-lingering-smoke-aifunayl.c-4.us-east-1.aws.neon.tech/neondb?ssl=require\" uv run python -c \"\nimport asyncio\nfrom sqlalchemy.ext.asyncio import create_async_engine\nfrom sqlalchemy import text\n\nasync def enable_extensions\\(\\):\n    engine = create_async_engine\\(''postgresql+asyncpg://neondb_owner:npg_MlpAx7Dh1EHb@ep-lingering-smoke-aifunayl.c-4.us-east-1.aws.neon.tech/neondb?ssl=require''\\)\n    async with engine.begin\\(\\) as conn:\n        await conn.execute\\(text\\(''CREATE EXTENSION IF NOT EXISTS pg_trgm''\\)\\)\n        await conn.execute\\(text\\(''CREATE EXTENSION IF NOT EXISTS vector''\\)\\)\n        print\\(''Extensions created''\\)\n    await engine.dispose\\(\\)\n\nasyncio.run\\(enable_extensions\\(\\)\\)\n\")",
+      "Bash(git push:*)",
+      "Bash(curl:*)",
+      "Bash(uv export:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
