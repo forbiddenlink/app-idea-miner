@@ -1,0 +1,216 @@
+import { useState, useEffect, useRef } from 'react';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+
+interface SearchResult {
+  type: 'cluster' | 'idea';
+  id: string;
+  title: string;
+  description: string;
+  sentiment?: string;
+  idea_count?: number;
+}
+
+export const SearchAutocomplete = () => {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+
+  // Debounced search
+  useEffect(() => {
+    if (query.length < 2) {
+      setResults([]);
+      setIsOpen(false);
+      return;
+    }
+
+    setIsLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        // Search clusters
+        const clusterRes = await axios.get(`http://localhost:8000/api/v1/clusters?limit=5`);
+        const clusters = clusterRes.data.clusters.filter((c: any) =>
+          c.label.toLowerCase().includes(query.toLowerCase()) ||
+          c.keywords.some((k: string) => k.toLowerCase().includes(query.toLowerCase()))
+        ).map((c: any) => ({
+          type: 'cluster' as const,
+          id: c.id,
+          title: c.label,
+          description: c.keywords.slice(0, 3).join(', '),
+          idea_count: c.idea_count,
+        }));
+
+        // Search ideas
+        const ideaRes = await axios.get(`http://localhost:8000/api/v1/ideas/search/query?q=${encodeURIComponent(query)}&limit=5`);
+        const ideas = ideaRes.data.results.map((i: any) => ({
+          type: 'idea' as const,
+          id: i.id,
+          title: i.problem_statement.substring(0, 80) + (i.problem_statement.length > 80 ? '...' : ''),
+          description: i.cluster?.label || 'Unclustered',
+          sentiment: i.sentiment,
+        }));
+
+        setResults([...clusters, ...ideas]);
+        setIsOpen(true);
+      } catch (error) {
+        console.error('Search error:', error);
+        setResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : prev));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      handleSelect(results[selectedIndex]);
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+      inputRef.current?.blur();
+    }
+  };
+
+  const handleSelect = (result: SearchResult) => {
+    if (result.type === 'cluster') {
+      navigate(`/clusters/${result.id}`);
+    } else {
+      // Navigate to cluster that contains this idea
+      navigate(`/clusters?idea=${result.id}`);
+    }
+    setQuery('');
+    setIsOpen(false);
+    inputRef.current?.blur();
+  };
+
+  const getSentimentColor = (sentiment?: string) => {
+    if (!sentiment) return 'text-slate-400';
+    return sentiment === 'positive' ? 'text-green-400' : sentiment === 'negative' ? 'text-red-400' : 'text-slate-400';
+  };
+
+  return (
+    <div ref={searchRef} className="relative w-full max-w-md">
+      <div className="relative">
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <input
+          ref={inputRef}
+          type="search"
+          placeholder="Search clusters, ideas... (Ctrl + /)"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => query.length >= 2 && setIsOpen(true)}
+          className="w-full pl-10 pr-10 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          aria-label="Search"
+          aria-autocomplete="list"
+          aria-controls="search-results"
+          aria-expanded={isOpen}
+        />
+        {query && (
+          <button
+            onClick={() => {
+              setQuery('');
+              setResults([]);
+              setIsOpen(false);
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+            aria-label="Clear search"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {isOpen && (results.length > 0 || isLoading) && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.15 }}
+            id="search-results"
+            className="absolute top-full mt-2 w-full bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50"
+            role="listbox"
+          >
+            {isLoading ? (
+              <div className="px-4 py-3 text-slate-400 text-sm">Searching...</div>
+            ) : results.length === 0 ? (
+              <div className="px-4 py-3 text-slate-400 text-sm">No results found</div>
+            ) : (
+              <>
+                {results.map((result, index) => (
+                  <button
+                    key={`${result.type}-${result.id}`}
+                    onClick={() => handleSelect(result)}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                    className={`w-full text-left px-4 py-3 hover:bg-slate-700/50 transition-colors border-b border-slate-700/50 last:border-b-0 ${
+                      selectedIndex === index ? 'bg-slate-700/50' : ''
+                    }`}
+                    role="option"
+                    aria-selected={selectedIndex === index}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs font-medium ${
+                          result.type === 'cluster'
+                            ? 'bg-primary-500/20 text-primary-400'
+                            : 'bg-purple-500/20 text-purple-400'
+                        }`}
+                      >
+                        {result.type === 'cluster' ? 'Cluster' : 'Idea'}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-slate-200 font-medium truncate">{result.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-slate-400 text-sm truncate">{result.description}</p>
+                          {result.idea_count && (
+                            <span className="text-slate-500 text-xs whitespace-nowrap">
+                              {result.idea_count} ideas
+                            </span>
+                          )}
+                          {result.sentiment && (
+                            <span className={`text-xs font-medium ${getSentimentColor(result.sentiment)}`}>
+                              {result.sentiment}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};

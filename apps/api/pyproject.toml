@@ -18,4 +18,5 @@ dependencies = [
     "python-multipart>=0.0.18",
     "slowapi>=0.1.9",
     "websockets>=14.0",
+    "pgvector>=0.2.0",
 ]

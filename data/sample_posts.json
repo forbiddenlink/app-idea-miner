@@ -1,0 +1,2022 @@
+[
+  {
+    "url": "https://news.ycombinator.com/item?id=39901234",
+    "title": "I wish there was an app for tracking my book reading habits with analytics",
+    "content": "I read a lot but forget what I've read. I need something that can track my progress, show me stats about my reading speed, genres I prefer, and remind me to review books I've finished. Goodreads is too social-focused.",
+    "source": "hackernews",
+    "author": "bookworm_dev",
+    "published_at": "2025-12-20T14:30:00Z",
+    "metadata": {
+      "upvotes": 42,
+      "comments": 15,
+      "domain": "productivity",
+      "tags": [
+        "reading",
+        "books",
+        "tracking",
+        "analytics"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/AppIdeas/comments/abc123",
+    "title": "Need an app to split shared expenses automatically from photos",
+    "content": "When traveling with friends, we always struggle with splitting bills. I wish there was an app where I could just take a photo of the receipt and it automatically calculates who owes what. OCR + smart splitting logic.",
+    "source": "reddit",
+    "author": "travel_enthusiast",
+    "published_at": "2025-12-19T10:15:00Z",
+    "metadata": {
+      "upvotes": 89,
+      "comments": 23,
+      "domain": "finance",
+      "subreddit": "AppIdeas",
+      "tags": [
+        "finance",
+        "expense-tracking",
+        "ocr",
+        "travel"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/user123/status/1234567890",
+    "title": "Why isn't there an AI-powered meal planner that considers my dietary restrictions AND what's in my fridge?",
+    "content": "Every meal planning app either ignores my allergies or suggests ingredients I don't have. I want something smart that looks at my pantry inventory and creates recipes accordingly. This should exist!",
+    "source": "twitter",
+    "author": "healthyeater",
+    "published_at": "2025-12-18T08:45:00Z",
+    "metadata": {
+      "likes": 156,
+      "retweets": 34,
+      "domain": "health",
+      "tags": [
+        "health",
+        "nutrition",
+        "ai",
+        "meal-planning"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901235",
+    "title": "I need a minimalist habit tracker that focuses on streaks, not features",
+    "content": "All habit trackers are bloated with social features, gamification, and ads. I just want something clean that shows my streaks, sends a reminder, and nothing else. Think Hemingway Editor but for habits.",
+    "source": "hackernews",
+    "author": "minimalist_coder",
+    "published_at": "2025-12-17T16:20:00Z",
+    "metadata": {
+      "upvotes": 234,
+      "comments": 67,
+      "domain": "productivity",
+      "tags": [
+        "habits",
+        "minimalist",
+        "tracking",
+        "streaks"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/SomebodyMakeThis/comments/def456",
+    "title": "App idea: Local job board that only shows positions within 5 miles",
+    "content": "I'm tired of seeing remote jobs or positions 2 hours away. I want a hyper-local job board that uses geolocation and only shows openings I could bike to. Filter by commute time, not just location.",
+    "source": "reddit",
+    "author": "local_worker",
+    "published_at": "2025-12-16T11:00:00Z",
+    "metadata": {
+      "upvotes": 112,
+      "comments": 41,
+      "domain": "employment",
+      "subreddit": "SomebodyMakeThis",
+      "tags": [
+        "jobs",
+        "local",
+        "geolocation",
+        "commute"
+      ]
+    }
+  },
+  {
+    "url": "https://producthunt.com/posts/fitness-tracker-pro",
+    "title": "I wish fitness trackers could detect bad form during workouts automatically",
+    "content": "My Fitbit tracks steps and heart rate, but it doesn't tell me if I'm doing squats wrong. Computer vision should be able to analyze my form and give real-time feedback through my phone camera. Would prevent injuries.",
+    "source": "producthunt",
+    "author": "gym_rat_tech",
+    "published_at": "2025-12-15T09:30:00Z",
+    "metadata": {
+      "upvotes": 78,
+      "comments": 19,
+      "domain": "fitness",
+      "tags": [
+        "fitness",
+        "computer-vision",
+        "form-check",
+        "injury-prevention"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901236",
+    "title": "There should be a Duolingo for learning programming languages syntax",
+    "content": "Not algorithms or data structures—just pure syntax practice. Quick daily drills on Python list comprehensions, JavaScript promises, Rust ownership rules. Gamified, 5 minutes a day. Would be perfect for polyglot developers.",
+    "source": "hackernews",
+    "author": "syntax_learner",
+    "published_at": "2025-12-14T13:45:00Z",
+    "metadata": {
+      "upvotes": 423,
+      "comments": 156,
+      "domain": "education",
+      "tags": [
+        "programming",
+        "education",
+        "syntax",
+        "gamification"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/AppIdeas/comments/ghi789",
+    "title": "Need an app that tells me when to leave based on real-time traffic",
+    "content": "Google Maps tells me how long it'll take right now, but I need something that monitors traffic and notifies me 'Leave in 15 minutes to arrive on time.' Dynamic departure time calculator.",
+    "source": "reddit",
+    "author": "punctual_person",
+    "published_at": "2025-12-13T07:15:00Z",
+    "metadata": {
+      "upvotes": 67,
+      "comments": 12,
+      "domain": "productivity",
+      "subreddit": "AppIdeas",
+      "tags": [
+        "navigation",
+        "traffic",
+        "notifications",
+        "calendar-integration"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/user456/status/1234567891",
+    "title": "I want an app that blocks me from buying things online when I'm drunk",
+    "content": "Seriously. Late night Amazon binges are killing my budget. Some kind of sobriety test before checkout? Or just disable shopping apps after 10 PM with a hard lockout. Someone build this please.",
+    "source": "twitter",
+    "author": "impulse_buyer",
+    "published_at": "2025-12-12T22:30:00Z",
+    "metadata": {
+      "likes": 892,
+      "retweets": 234,
+      "domain": "finance",
+      "tags": [
+        "self-control",
+        "finance",
+        "impulse-buying",
+        "parental-controls"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901237",
+    "title": "Why doesn't anyone make a 'read it later' app that actually summarizes articles with AI?",
+    "content": "I have 200+ saved articles in Pocket. I'll never read them all. What if the app could give me AI-generated summaries with key takeaways? Like Blinkist but for web articles. Would save hours.",
+    "source": "hackernews",
+    "author": "info_consumer",
+    "published_at": "2025-12-11T15:00:00Z",
+    "metadata": {
+      "upvotes": 234,
+      "comments": 89,
+      "domain": "productivity",
+      "tags": [
+        "reading",
+        "ai",
+        "summarization",
+        "knowledge-management"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/SomebodyMakeThis/comments/jkl012",
+    "title": "App for finding public restrooms with ratings and cleanliness scores",
+    "content": "As someone with IBS, this would be life-changing. A map showing nearby restrooms, user ratings, whether they require keys, accessibility features. Like Yelp but for bathrooms. Essential for cities.",
+    "source": "reddit",
+    "author": "ibs_warrior",
+    "published_at": "2025-12-10T12:20:00Z",
+    "metadata": {
+      "upvotes": 456,
+      "comments": 123,
+      "domain": "health",
+      "subreddit": "SomebodyMakeThis",
+      "tags": [
+        "health",
+        "accessibility",
+        "maps",
+        "ratings"
+      ]
+    }
+  },
+  {
+    "url": "https://producthunt.com/posts/language-exchange",
+    "title": "I wish there was a language exchange app that matches you by interests, not just languages",
+    "content": "Learning Spanish but I'm into rock climbing. Would be cool to match with Spanish speakers who also climb. More engaging conversations, natural topics. Current apps just pair people randomly.",
+    "source": "producthunt",
+    "author": "polyglot_climber",
+    "published_at": "2025-12-09T10:45:00Z",
+    "metadata": {
+      "upvotes": 92,
+      "comments": 27,
+      "domain": "education",
+      "tags": [
+        "language-learning",
+        "social",
+        "matching",
+        "interests"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901238",
+    "title": "Someone needs to build a plant care app with image recognition for diagnosis",
+    "content": "My succulents keep dying and I don't know why. I want an app where I upload a photo and it tells me 'overwatered' or 'needs more sun.' Like WebMD for plants. Include care schedules too.",
+    "source": "hackernews",
+    "author": "plant_parent",
+    "published_at": "2025-12-08T14:10:00Z",
+    "metadata": {
+      "upvotes": 178,
+      "comments": 45,
+      "domain": "lifestyle",
+      "tags": [
+        "plants",
+        "image-recognition",
+        "care",
+        "diagnosis"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/user789/status/1234567892",
+    "title": "Need an app for tracking how much time I waste on my phone PER APP with accountability",
+    "content": "Screen Time shows me I use my phone 5 hours a day but doesn't shame me enough. I want something that sends my stats to a friend or charges me $1 per hour over my limit. Real accountability.",
+    "source": "twitter",
+    "author": "phone_addict",
+    "published_at": "2025-12-07T19:25:00Z",
+    "metadata": {
+      "likes": 234,
+      "retweets": 67,
+      "domain": "productivity",
+      "tags": [
+        "screen-time",
+        "accountability",
+        "digital-wellbeing",
+        "social-contract"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/AppIdeas/comments/mno345",
+    "title": "App that finds the cheapest time to fly flexible dates using historical data",
+    "content": "I'm flexible on when I travel. Show me the cheapest week to fly to Tokyo in the next 6 months based on historical pricing data. Not just 'prices usually drop on Tuesdays' but actual ML predictions.",
+    "source": "reddit",
+    "author": "budget_traveler",
+    "published_at": "2025-12-06T08:50:00Z",
+    "metadata": {
+      "upvotes": 345,
+      "comments": 78,
+      "domain": "travel",
+      "subreddit": "AppIdeas",
+      "tags": [
+        "travel",
+        "flights",
+        "price-tracking",
+        "ml",
+        "flexibility"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901239",
+    "title": "I want a podcast app that skips ads automatically using audio fingerprinting",
+    "content": "SponsorBlock works for YouTube. Why not podcasts? Crowdsourced timestamp data or audio analysis to detect and skip ads/sponsors. I'd pay for this. The current crop of podcast apps don't have it.",
+    "source": "hackernews",
+    "author": "podcast_listener",
+    "published_at": "2025-12-05T16:35:00Z",
+    "metadata": {
+      "upvotes": 567,
+      "comments": 189,
+      "domain": "media",
+      "tags": [
+        "podcasts",
+        "ad-blocking",
+        "audio-analysis",
+        "crowdsourcing"
+      ]
+    }
+  },
+  {
+    "url": "https://producthunt.com/posts/meditation-timer",
+    "title": "Meditation app with progressive difficulty and unlockable techniques",
+    "content": "All meditation apps assume you can sit still for 20 minutes immediately. I need progression: start with 2 minutes, unlock breathing techniques as I level up. Gamify mindfulness without making it stressful.",
+    "source": "producthunt",
+    "author": "meditation_newbie",
+    "published_at": "2025-12-04T11:15:00Z",
+    "metadata": {
+      "upvotes": 123,
+      "comments": 34,
+      "domain": "health",
+      "tags": [
+        "meditation",
+        "mindfulness",
+        "gamification",
+        "progressive"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/SomebodyMakeThis/comments/pqr678",
+    "title": "App for practicing difficult conversations with AI before the real thing",
+    "content": "Need to ask for a raise? Fire someone? Break up? Practice with an AI that simulates realistic responses. Record it, get feedback on tone, pacing, word choice. Like a flight simulator for awkward talks.",
+    "source": "reddit",
+    "author": "communication_coach",
+    "published_at": "2025-12-03T13:40:00Z",
+    "metadata": {
+      "upvotes": 289,
+      "comments": 91,
+      "domain": "communication",
+      "subreddit": "SomebodyMakeThis",
+      "tags": [
+        "ai",
+        "communication",
+        "practice",
+        "simulations",
+        "coaching"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/user012/status/1234567893",
+    "title": "Why isn't there a 'Netflix Party' equivalent for reading books together?",
+    "content": "Book clubs are hard to coordinate. I want an app where you can read the same book at the same pace, see where friends are at, leave annotations they can see. Synchronized reading experience.",
+    "source": "twitter",
+    "author": "social_reader",
+    "published_at": "2025-12-02T20:05:00Z",
+    "metadata": {
+      "likes": 145,
+      "retweets": 43,
+      "domain": "social",
+      "tags": [
+        "reading",
+        "social",
+        "book-clubs",
+        "annotations",
+        "synchronization"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901240",
+    "title": "Someone build a password manager that uses biometric data as the master password",
+    "content": "Instead of memorizing one more password, use fingerprint + face ID + voice recognition combined. Multi-factor biometric authentication. Can't be phished, can't forget it. More secure than alphanumeric passwords.",
+    "source": "hackernews",
+    "author": "security_researcher",
+    "published_at": "2025-12-01T17:20:00Z",
+    "metadata": {
+      "upvotes": 234,
+      "comments": 189,
+      "domain": "security",
+      "tags": [
+        "security",
+        "passwords",
+        "biometrics",
+        "authentication",
+        "privacy"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902001",
+    "title": "I wish there was a Git client that visualizes code changes in 3D over time",
+    "content": "Understanding code evolution through text diffs is limiting. I want to see my codebase as a 3D tree structure where branches grow, merge, and evolve. Visualize complexity hotspots, contributor impact, and architecture drift.",
+    "source": "hackernews",
+    "author": "code_visualizer",
+    "published_at": "2025-12-26T17:52:35.274803Z",
+    "metadata": {
+      "upvotes": 312,
+      "comments": 87,
+      "domain": "developer-tools",
+      "tags": [
+        "git",
+        "visualization",
+        "code-review",
+        "3d",
+        "devtools"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/webdev/comments/xyz789",
+    "title": "Need an AI-powered code reviewer that learns from my team's style guide",
+    "content": "Generic linters don't understand our company's specific conventions. I want an AI that reviews PRs, catches logic bugs, suggests refactors, and enforces our custom patterns. Train it on our best PRs.",
+    "source": "reddit",
+    "author": "tech_lead_dev",
+    "published_at": "2025-12-24T17:52:35.274826Z",
+    "metadata": {
+      "upvotes": 267,
+      "comments": 94,
+      "domain": "developer-tools",
+      "subreddit": "webdev",
+      "tags": [
+        "ai",
+        "code-review",
+        "automation",
+        "style-guide",
+        "devtools"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/dev_lead/status/1234570001",
+    "title": "Why isn't there a tool that automatically documents API changes between versions?",
+    "content": "Maintaining changelogs is tedious and error-prone. Give me a tool that diffs my OpenAPI specs, generates human-readable release notes, and creates migration guides automatically. Semantic versioning built-in.",
+    "source": "twitter",
+    "author": "api_architect",
+    "published_at": "2025-12-21T17:52:35.274829Z",
+    "metadata": {
+      "likes": 189,
+      "retweets": 56,
+      "domain": "developer-tools",
+      "tags": [
+        "api",
+        "documentation",
+        "versioning",
+        "automation",
+        "devtools"
+      ]
+    }
+  },
+  {
+    "url": "https://dev.to/article123",
+    "title": "I need a database query analyzer that suggests indexes based on production traffic",
+    "content": "Slow queries plague every app. I want a tool that monitors real production queries, identifies patterns, suggests optimal indexes, and shows expected performance gains. Automated database optimization.",
+    "source": "dev.to",
+    "author": "dba_expert",
+    "published_at": "2025-12-19T17:52:35.274831Z",
+    "metadata": {
+      "reactions": 145,
+      "comments": 34,
+      "domain": "developer-tools",
+      "tags": [
+        "database",
+        "performance",
+        "optimization",
+        "indexing",
+        "devtools"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902002",
+    "title": "Someone build a CLI tool that converts natural language to shell commands",
+    "content": "I forget complex commands like tar, ffmpeg, and awk syntax constantly. I want to type 'extract this tar.gz file' and get the right command with explanations. AI-powered shell assistant.",
+    "source": "hackernews",
+    "author": "cli_user",
+    "published_at": "2025-12-16T17:52:35.274832Z",
+    "metadata": {
+      "upvotes": 401,
+      "comments": 156,
+      "domain": "developer-tools",
+      "tags": [
+        "cli",
+        "ai",
+        "natural-language",
+        "automation",
+        "productivity"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/programming/comments/abc456",
+    "title": "Need a debugging tool that records and replays HTTP requests in development",
+    "content": "Bugs happen in specific request sequences that are hard to reproduce. I want a proxy that records all HTTP traffic, lets me replay it step-by-step, modify requests, and see what breaks. Time-travel debugging for APIs.",
+    "source": "reddit",
+    "author": "backend_dev",
+    "published_at": "2025-12-13T17:52:35.274833Z",
+    "metadata": {
+      "upvotes": 178,
+      "comments": 42,
+      "domain": "developer-tools",
+      "subreddit": "programming",
+      "tags": [
+        "debugging",
+        "http",
+        "api",
+        "testing",
+        "devtools"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/devops_eng/status/1234570002",
+    "title": "Why isn't there a visual Docker Compose editor with live validation?",
+    "content": "Writing docker-compose.yml by hand is error-prone. I want a GUI where I drag-and-drop services, define networks/volumes visually, and get real-time validation. Export to YAML when done. Kubernetes too!",
+    "source": "twitter",
+    "author": "devops_engineer",
+    "published_at": "2025-12-10T17:52:35.274835Z",
+    "metadata": {
+      "likes": 234,
+      "retweets": 78,
+      "domain": "developer-tools",
+      "tags": [
+        "docker",
+        "devops",
+        "visualization",
+        "containers",
+        "kubernetes"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902003",
+    "title": "I wish there was a tool that automatically generates integration tests from OpenAPI specs",
+    "content": "Writing integration tests manually is tedious. My API spec has all the info needed: endpoints, schemas, validation rules. Auto-generate test suites with property-based testing. Update tests when specs change.",
+    "source": "hackernews",
+    "author": "qa_automation",
+    "published_at": "2025-12-07T17:52:35.274836Z",
+    "metadata": {
+      "upvotes": 289,
+      "comments": 71,
+      "domain": "developer-tools",
+      "tags": [
+        "testing",
+        "openapi",
+        "automation",
+        "integration-tests",
+        "devtools"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/gaming/comments/game001",
+    "title": "Need an app that tracks my gaming backlog and suggests what to play next based on mood",
+    "content": "I have 200+ unplayed games. I want an app that knows my mood (relaxing vs challenging), available time (30 min vs 3 hours), and current interests. Recommend from my backlog, track completion rates.",
+    "source": "reddit",
+    "author": "gamer_backlog",
+    "published_at": "2025-12-25T17:52:35.274837Z",
+    "metadata": {
+      "upvotes": 445,
+      "comments": 189,
+      "domain": "gaming",
+      "subreddit": "gaming",
+      "tags": [
+        "gaming",
+        "recommendation",
+        "mood-tracking",
+        "backlog",
+        "organization"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/esports_fan/status/1234570003",
+    "title": "Why isn't there a tournament bracket creator with live score updates and stream integration?",
+    "content": "Running local esports tournaments is a pain. I need: bracket generation, score tracking, automatic tweet updates, Twitch stream embeds, player profiles. All-in-one tournament management.",
+    "source": "twitter",
+    "author": "esports_organizer",
+    "published_at": "2025-12-22T17:52:35.274840Z",
+    "metadata": {
+      "likes": 312,
+      "retweets": 94,
+      "domain": "gaming",
+      "tags": [
+        "esports",
+        "tournaments",
+        "streaming",
+        "competition",
+        "organization"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902004",
+    "title": "Someone build a voice chat analyzer that gives real-time communication tips for team games",
+    "content": "Toxicity and poor communication ruin team games. Analyze voice chat in real-time, give feedback like 'you interrupted 3 times' or 'suggest strategy instead of blaming'. Improve team coordination.",
+    "source": "hackernews",
+    "author": "game_psychologist",
+    "published_at": "2025-12-20T17:52:35.274841Z",
+    "metadata": {
+      "upvotes": 234,
+      "comments": 156,
+      "domain": "gaming",
+      "tags": [
+        "gaming",
+        "communication",
+        "ai",
+        "voice-analysis",
+        "teamwork"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/GameDev/comments/gamedev001",
+    "title": "I wish there was a tool that analyzes game balance from replay data using ML",
+    "content": "Balancing multiplayer games is hard. Upload match replays, let ML find overpowered strategies, underused mechanics, and suggest balance tweaks. Data-driven game design.",
+    "source": "reddit",
+    "author": "indie_gamedev",
+    "published_at": "2025-12-17T17:52:35.274843Z",
+    "metadata": {
+      "upvotes": 267,
+      "comments": 78,
+      "domain": "gaming",
+      "subreddit": "GameDev",
+      "tags": [
+        "game-design",
+        "balance",
+        "machine-learning",
+        "analytics",
+        "gamedev"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/streamer_pro/status/1234570004",
+    "title": "Need a stream overlay editor that integrates with game events in real-time",
+    "content": "Static overlays are boring. I want animations triggered by in-game events: health drops, kills, achievements. Visual programming for stream overlays. No coding required. Works with all games.",
+    "source": "twitter",
+    "author": "twitch_streamer",
+    "published_at": "2025-12-14T17:52:35.274844Z",
+    "metadata": {
+      "likes": 389,
+      "retweets": 112,
+      "domain": "gaming",
+      "tags": [
+        "streaming",
+        "overlays",
+        "automation",
+        "twitch",
+        "content-creation"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902005",
+    "title": "I need a matchmaking platform for finding co-op gaming partners based on playstyle compatibility",
+    "content": "Playing with randoms is hit-or-miss. Match me with players who have compatible schedules, communication styles, skill levels, and game preferences. Tinder for gaming buddies.",
+    "source": "hackernews",
+    "author": "coop_gamer",
+    "published_at": "2025-12-11T17:52:35.274846Z",
+    "metadata": {
+      "upvotes": 412,
+      "comments": 145,
+      "domain": "gaming",
+      "tags": [
+        "gaming",
+        "social",
+        "matchmaking",
+        "multiplayer",
+        "community"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/Parenting/comments/parent001",
+    "title": "Need an app that coordinates childcare schedules between divorced parents with automatic conflict resolution",
+    "content": "Co-parenting calendars are chaotic. I want shared custody scheduling, pickup/dropoff reminders, expense tracking, and document storage. When conflicts arise, suggest fair compromises based on history.",
+    "source": "reddit",
+    "author": "divorced_parent",
+    "published_at": "2025-12-23T17:52:35.274847Z",
+    "metadata": {
+      "upvotes": 567,
+      "comments": 234,
+      "domain": "parenting",
+      "subreddit": "Parenting",
+      "tags": [
+        "parenting",
+        "custody",
+        "scheduling",
+        "co-parenting",
+        "organization"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/new_parent/status/1234570005",
+    "title": "Why isn't there a baby sleep tracker that uses room audio instead of wearables?",
+    "content": "Babies hate wearables. Use my phone's mic to detect sleep patterns, crying, and sleep quality. ML-powered sleep coaching. Knows when they're in deep sleep vs light sleep. Privacy-first, local processing.",
+    "source": "twitter",
+    "author": "tech_parent",
+    "published_at": "2025-12-18T17:52:35.274848Z",
+    "metadata": {
+      "likes": 445,
+      "retweets": 123,
+      "domain": "parenting",
+      "tags": [
+        "parenting",
+        "baby",
+        "sleep",
+        "audio-detection",
+        "ml"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902006",
+    "title": "Someone build a kid-friendly video call app that detects when they wander off and alerts parents",
+    "content": "Video calling grandparents with toddlers is chaos. Use computer vision to detect when the kid leaves the frame, pause the call, send a notification. Resume when they return. Kid-safe, no recording.",
+    "source": "hackernews",
+    "author": "remote_grandparent",
+    "published_at": "2025-12-15T17:52:35.274850Z",
+    "metadata": {
+      "upvotes": 389,
+      "comments": 167,
+      "domain": "parenting",
+      "tags": [
+        "parenting",
+        "video-calls",
+        "computer-vision",
+        "family",
+        "safety"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/daddit/comments/dad001",
+    "title": "I wish there was an app that gamifies chores for kids with a virtual reward system",
+    "content": "Sticker charts don't work. I want a mobile app where kids complete chores, earn points, unlock rewards (extra screen time, special treats). Parents control reward catalog. Progress tracking and motivation.",
+    "source": "reddit",
+    "author": "gamification_dad",
+    "published_at": "2025-12-12T17:52:35.274851Z",
+    "metadata": {
+      "upvotes": 512,
+      "comments": 198,
+      "domain": "parenting",
+      "subreddit": "daddit",
+      "tags": [
+        "parenting",
+        "gamification",
+        "chores",
+        "motivation",
+        "rewards"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/busy_parent/status/1234570006",
+    "title": "Need a meal planning app specifically for picky eaters with texture/sensory sensitivities",
+    "content": "Generic meal planners don't account for sensory issues. I need recipes filtered by texture (no mushy foods), temperature preferences, and gradual exposure therapy plans. Help expand their palate safely.",
+    "source": "twitter",
+    "author": "sensory_parent",
+    "published_at": "2025-12-09T17:52:35.274853Z",
+    "metadata": {
+      "likes": 378,
+      "retweets": 145,
+      "domain": "parenting",
+      "tags": [
+        "parenting",
+        "nutrition",
+        "picky-eaters",
+        "sensory",
+        "meal-planning"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902007",
+    "title": "I need a pediatric symptom checker that actually knows when to say 'go to the ER'",
+    "content": "WebMD makes everything seem fatal. Give me an evidence-based symptom checker trained on pediatric data. Triage: home care vs urgent care vs ER. Saves unnecessary ER visits and catches serious issues early.",
+    "source": "hackernews",
+    "author": "worried_parent",
+    "published_at": "2025-12-06T17:52:35.274854Z",
+    "metadata": {
+      "upvotes": 678,
+      "comments": 289,
+      "domain": "parenting",
+      "tags": [
+        "parenting",
+        "health",
+        "pediatrics",
+        "symptom-checker",
+        "triage"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/dogs/comments/dog001",
+    "title": "Need an app that uses computer vision to analyze my dog's behavior and detect health issues early",
+    "content": "Dogs hide pain. Use my phone camera to track gait changes, appetite patterns, lethargy levels, and alert me to potential health problems before they're obvious. Preventive care through AI.",
+    "source": "reddit",
+    "author": "dog_health_tech",
+    "published_at": "2025-12-24T17:52:35.274855Z",
+    "metadata": {
+      "upvotes": 489,
+      "comments": 156,
+      "domain": "pets",
+      "subreddit": "dogs",
+      "tags": [
+        "pets",
+        "health",
+        "computer-vision",
+        "dogs",
+        "ai"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/cat_owner/status/1234570007",
+    "title": "Why isn't there a smart cat litter box that tracks health metrics and predicts vet visits?",
+    "content": "Cats are masters of hiding illness. Litter box with sensors: weight changes, urination frequency, stool consistency. ML predicts health issues days before symptoms. Automatic vet alerts.",
+    "source": "twitter",
+    "author": "cat_tech_enthusiast",
+    "published_at": "2025-12-19T17:52:35.274856Z",
+    "metadata": {
+      "likes": 567,
+      "retweets": 189,
+      "domain": "pets",
+      "tags": [
+        "pets",
+        "health",
+        "iot",
+        "cats",
+        "predictive"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902008",
+    "title": "Someone build a pet-sitting marketplace with real-time GPS tracking and live video check-ins",
+    "content": "Leaving pets with strangers is stressful. I want: verified sitters with reviews, GPS collar integration, scheduled video check-ins, and instant messaging. Peace of mind when traveling.",
+    "source": "hackernews",
+    "author": "frequent_traveler_pet",
+    "published_at": "2025-12-16T17:52:35.274858Z",
+    "metadata": {
+      "upvotes": 345,
+      "comments": 98,
+      "domain": "pets",
+      "tags": [
+        "pets",
+        "marketplace",
+        "gps",
+        "video",
+        "trust"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/reptiles/comments/reptile001",
+    "title": "I wish there was an environmental monitoring system for reptile enclosures with automated adjustments",
+    "content": "Reptiles need precise temperature and humidity. Smart sensors that monitor conditions 24/7, automatically adjust heat lamps/misters, alert me to issues, and log data for vet visits. Set-and-forget herpetoculture.",
+    "source": "reddit",
+    "author": "reptile_keeper",
+    "published_at": "2025-12-13T17:52:35.274859Z",
+    "metadata": {
+      "upvotes": 234,
+      "comments": 67,
+      "domain": "pets",
+      "subreddit": "reptiles",
+      "tags": [
+        "pets",
+        "reptiles",
+        "iot",
+        "automation",
+        "monitoring"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/fish_keeper/status/1234570008",
+    "title": "Need an aquarium management app that tracks water parameters and predicts maintenance needs",
+    "content": "Tracking water tests manually is tedious. App that logs pH, ammonia, nitrates. Predicts when water changes are needed. Reminds me of filter cleanings. Learns my tank's bioload patterns. Fishkeeping made easy.",
+    "source": "twitter",
+    "author": "aquarium_hobbyist",
+    "published_at": "2025-12-10T17:52:35.274860Z",
+    "metadata": {
+      "likes": 278,
+      "retweets": 89,
+      "domain": "pets",
+      "tags": [
+        "pets",
+        "aquarium",
+        "water-chemistry",
+        "tracking",
+        "predictive"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/HomeImprovement/comments/home001",
+    "title": "Need an app that uses AR to visualize furniture placement and room layouts before buying",
+    "content": "Buying furniture online is risky. Use AR to place 3D models in my actual room, check dimensions, see how it looks from different angles. Integration with furniture store catalogs. No more returns!",
+    "source": "reddit",
+    "author": "interior_designer_diy",
+    "published_at": "2025-12-22T17:52:35.274861Z",
+    "metadata": {
+      "upvotes": 534,
+      "comments": 145,
+      "domain": "home",
+      "subreddit": "HomeImprovement",
+      "tags": [
+        "home",
+        "ar",
+        "furniture",
+        "interior-design",
+        "shopping"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/plant_parent/status/1234570009",
+    "title": "Why isn't there a plant care app that uses image recognition to identify issues and suggest treatments?",
+    "content": "My plants keep dying and I don't know why. Take a photo, AI identifies the plant, diagnoses problems (overwatering, pests, nutrient deficiency), suggests specific fixes. Preventive care calendar included.",
+    "source": "twitter",
+    "author": "houseplant_enthusiast",
+    "published_at": "2025-12-17T17:52:35.274862Z",
+    "metadata": {
+      "likes": 612,
+      "retweets": 201,
+      "domain": "home",
+      "tags": [
+        "home",
+        "plants",
+        "image-recognition",
+        "gardening",
+        "ai"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902009",
+    "title": "Someone build a smart home automation platform that learns from my routines without programming",
+    "content": "Home Assistant requires coding. I want a system that observes my patterns (lights on at 7am, thermostat down at 10pm) and automates them. Suggest optimizations. Plain English rules. Works with any device.",
+    "source": "hackernews",
+    "author": "smart_home_user",
+    "published_at": "2025-12-14T17:52:35.274863Z",
+    "metadata": {
+      "upvotes": 489,
+      "comments": 178,
+      "domain": "home",
+      "tags": [
+        "home",
+        "automation",
+        "iot",
+        "machine-learning",
+        "smart-home"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/DIY/comments/diy001",
+    "title": "I wish there was a tool that calculates exact material quantities for DIY projects from photos",
+    "content": "Home Depot visits always result in too much or too little material. Upload project photos, get precise measurements, material lists, cost estimates, and where to buy. Computer vision for contractors.",
+    "source": "reddit",
+    "author": "weekend_warrior_diy",
+    "published_at": "2025-12-11T17:52:35.274864Z",
+    "metadata": {
+      "upvotes": 445,
+      "comments": 123,
+      "domain": "home",
+      "subreddit": "DIY",
+      "tags": [
+        "home",
+        "diy",
+        "computer-vision",
+        "estimation",
+        "construction"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/energy_saver/status/1234570010",
+    "title": "Need an energy monitoring app that identifies vampire power drains and suggests specific fixes",
+    "content": "My electricity bill is high but I don't know why. Smart plug integration, ML analysis finds energy hogs, calculates ROI on upgrades (LED bulbs, efficient appliances), tracks savings over time. Optimize home energy.",
+    "source": "twitter",
+    "author": "eco_homeowner",
+    "published_at": "2025-12-08T17:52:35.274865Z",
+    "metadata": {
+      "likes": 389,
+      "retweets": 134,
+      "domain": "home",
+      "tags": [
+        "home",
+        "energy",
+        "iot",
+        "sustainability",
+        "cost-savings"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902010",
+    "title": "I wish there was a salary negotiation coach app that uses real market data and scripts",
+    "content": "Salary negotiation is intimidating. Give me: market data for my role/location, negotiation scripts, practice scenarios with AI, confidence-building exercises, and post-offer analysis. Maximize earnings.",
+    "source": "hackernews",
+    "author": "career_optimizer",
+    "published_at": "2025-12-23T17:52:35.274866Z",
+    "metadata": {
+      "upvotes": 567,
+      "comments": 234,
+      "domain": "career",
+      "tags": [
+        "career",
+        "salary",
+        "negotiation",
+        "ai",
+        "market-data"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/cscareerquestions/comments/career001",
+    "title": "Need a platform that connects junior developers with code review mentors for real projects",
+    "content": "Learning to code requires feedback on real projects. Match juniors with experienced devs for paid code reviews, pair programming sessions, architecture discussions. Structured mentorship with clear outcomes.",
+    "source": "reddit",
+    "author": "junior_dev_seeking_growth",
+    "published_at": "2025-12-18T17:52:35.274868Z",
+    "metadata": {
+      "upvotes": 789,
+      "comments": 256,
+      "domain": "career",
+      "subreddit": "cscareerquestions",
+      "tags": [
+        "career",
+        "mentorship",
+        "code-review",
+        "learning",
+        "programming"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/freelancer_life/status/1234570011",
+    "title": "Why isn't there an invoice tracking system that predicts cash flow and alerts to late payments automatically?",
+    "content": "Freelancing cash flow is unpredictable. Track invoices, predict when payments arrive based on client history, auto-send payment reminders, integrate with accounting. Financial stability for solopreneurs.",
+    "source": "twitter",
+    "author": "freelance_consultant",
+    "published_at": "2025-12-15T17:52:35.274869Z",
+    "metadata": {
+      "likes": 445,
+      "retweets": 167,
+      "domain": "career",
+      "tags": [
+        "career",
+        "freelancing",
+        "invoicing",
+        "cash-flow",
+        "automation"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902011",
+    "title": "Someone build a meeting notes app that generates action items and assigns them during the call",
+    "content": "Meeting notes are wasted if nothing happens. Real-time transcription, AI extracts action items, asks participants to confirm ownership, creates calendar events, follows up if incomplete. Meetings that actually produce results.",
+    "source": "hackernews",
+    "author": "productivity_manager",
+    "published_at": "2025-12-12T17:52:35.274870Z",
+    "metadata": {
+      "upvotes": 678,
+      "comments": 201,
+      "domain": "career",
+      "tags": [
+        "career",
+        "productivity",
+        "meetings",
+        "ai",
+        "transcription"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/Entrepreneur/comments/biz001",
+    "title": "I wish there was a platform that validates startup ideas using real search data and trends",
+    "content": "Most startups fail because there's no demand. Analyze Google Trends, keyword search volume, competitor analysis, and market growth. Give me a 'viability score' before I spend 6 months building. Data-driven validation.",
+    "source": "reddit",
+    "author": "aspiring_founder",
+    "published_at": "2025-12-09T17:52:35.274871Z",
+    "metadata": {
+      "upvotes": 912,
+      "comments": 345,
+      "domain": "career",
+      "subreddit": "Entrepreneur",
+      "tags": [
+        "career",
+        "startups",
+        "validation",
+        "market-research",
+        "data"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/remote_worker/status/1234570012",
+    "title": "Need a time zone coordination tool that finds optimal meeting times for global teams and respects work-life balance",
+    "content": "Scheduling across 8 time zones is hell. Find overlap windows, respect work hours (no 11pm meetings), suggest asynchronous alternatives when no good time exists. Calendar integration, respect cultural holidays.",
+    "source": "twitter",
+    "author": "distributed_team_lead",
+    "published_at": "2025-12-06T17:52:35.274872Z",
+    "metadata": {
+      "likes": 534,
+      "retweets": 189,
+      "domain": "career",
+      "tags": [
+        "career",
+        "remote-work",
+        "scheduling",
+        "time-zones",
+        "collaboration"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/Anxiety/comments/anxiety001",
+    "title": "Need an app that detects panic attacks early using heart rate variability and guides breathing exercises",
+    "content": "Panic attacks come suddenly. Use smartwatch HRV data to detect early signs, immediately start guided breathing, grounding exercises, and alert emergency contacts if it escalates. Preventive intervention.",
+    "source": "reddit",
+    "author": "anxiety_warrior",
+    "published_at": "2025-12-21T17:52:35.274873Z",
+    "metadata": {
+      "upvotes": 678,
+      "comments": 234,
+      "domain": "mental-health",
+      "subreddit": "Anxiety",
+      "tags": [
+        "mental-health",
+        "anxiety",
+        "wearables",
+        "breathing",
+        "intervention"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/therapist_tech/status/1234570013",
+    "title": "Why isn't there a journaling app that uses sentiment analysis to track mental health trends over time?",
+    "content": "Traditional journals don't show patterns. AI analyzes my entries, tracks mood trends, identifies triggers, suggests coping strategies, alerts me when patterns indicate I should see my therapist. Data-driven mental health.",
+    "source": "twitter",
+    "author": "mental_health_advocate",
+    "published_at": "2025-12-16T17:52:35.274874Z",
+    "metadata": {
+      "likes": 789,
+      "retweets": 267,
+      "domain": "mental-health",
+      "tags": [
+        "mental-health",
+        "journaling",
+        "sentiment-analysis",
+        "ai",
+        "self-care"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902012",
+    "title": "Someone build a meditation app that adapts to my brain state using EEG data in real-time",
+    "content": "Generic meditation tracks don't work for everyone. Use consumer EEG headset, detect when my mind wanders, adjust guidance in real-time. Personalized sessions that actually achieve flow state. Biofeedback meditation.",
+    "source": "hackernews",
+    "author": "neurofeedback_enthusiast",
+    "published_at": "2025-12-11T17:52:35.274875Z",
+    "metadata": {
+      "upvotes": 456,
+      "comments": 178,
+      "domain": "mental-health",
+      "tags": [
+        "mental-health",
+        "meditation",
+        "eeg",
+        "biofeedback",
+        "neuroscience"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/depression/comments/depression001",
+    "title": "I wish there was a mood tracking app that correlates with activity data to identify what actually helps",
+    "content": "I don't know what improves my mood. Track mood multiple times daily, correlate with exercise, sleep, social contact, weather, diet. Show me evidence-based insights: 'You're 60% happier on days you exercise before 10am'.",
+    "source": "reddit",
+    "author": "data_driven_recovery",
+    "published_at": "2025-12-07T17:52:35.274877Z",
+    "metadata": {
+      "upvotes": 845,
+      "comments": 289,
+      "domain": "mental-health",
+      "subreddit": "depression",
+      "tags": [
+        "mental-health",
+        "mood-tracking",
+        "data-analysis",
+        "correlation",
+        "self-improvement"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/burnout_prevent/status/1234570014",
+    "title": "Need a burnout prevention tool that monitors work patterns and enforces breaks before it's too late",
+    "content": "Burnout creeps up slowly. Monitor: work hours, email volume, meeting density, time between breaks. Predict burnout risk, enforce mandatory breaks, suggest vacation time, alert manager if patterns are unsustainable.",
+    "source": "twitter",
+    "author": "worklife_balance_coach",
+    "published_at": "2025-12-05T17:52:35.274878Z",
+    "metadata": {
+      "likes": 912,
+      "retweets": 334,
+      "domain": "mental-health",
+      "tags": [
+        "mental-health",
+        "burnout",
+        "work-life-balance",
+        "predictive",
+        "prevention"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902013",
+    "title": "I wish there was a language learning app that creates personalized content from my actual interests",
+    "content": "Generic lessons bore me. Scrape articles/videos about topics I care about (tech, cycling, cooking), adapt to my level, generate exercises, track vocabulary. Learn Spanish through content I'd read anyway.",
+    "source": "hackernews",
+    "author": "polyglot_learner",
+    "published_at": "2025-12-20T17:52:35.274879Z",
+    "metadata": {
+      "upvotes": 734,
+      "comments": 198,
+      "domain": "education",
+      "tags": [
+        "education",
+        "language-learning",
+        "personalization",
+        "content",
+        "ai"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/GetStudying/comments/study001",
+    "title": "Need a spaced repetition system that automatically extracts flashcards from my lecture notes and PDFs",
+    "content": "Creating flashcards manually takes forever. Upload notes/PDFs, AI extracts key concepts, generates front/back, optimizes review schedule. Integration with Anki. Study smarter, not harder.",
+    "source": "reddit",
+    "author": "med_student_efficient",
+    "published_at": "2025-12-15T17:52:35.274880Z",
+    "metadata": {
+      "upvotes": 623,
+      "comments": 167,
+      "domain": "education",
+      "subreddit": "GetStudying",
+      "tags": [
+        "education",
+        "studying",
+        "spaced-repetition",
+        "ai",
+        "automation"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/online_teacher/status/1234570015",
+    "title": "Why isn't there a virtual classroom that uses eye-tracking to detect when students are confused and adapts pace?",
+    "content": "Online teaching loses real-time feedback. Use webcam eye-tracking: detect confusion (prolonged staring), disengagement (looking away), understanding (nodding). Slow down, repeat, or skip ahead automatically.",
+    "source": "twitter",
+    "author": "edtech_innovator",
+    "published_at": "2025-12-10T17:52:35.274881Z",
+    "metadata": {
+      "likes": 445,
+      "retweets": 156,
+      "domain": "education",
+      "tags": [
+        "education",
+        "online-learning",
+        "eye-tracking",
+        "adaptive",
+        "engagement"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902014",
+    "title": "Someone build a code learning platform that generates personalized practice problems from GitHub repos",
+    "content": "Coding tutorials are generic. Analyze my GitHub, identify weak areas, generate targeted practice problems in my tech stack. Real-world scenarios. Difficulty adapts. Level up specific skills, not generic tutorials.",
+    "source": "hackernews",
+    "author": "self_taught_developer",
+    "published_at": "2025-12-08T17:52:35.274882Z",
+    "metadata": {
+      "upvotes": 867,
+      "comments": 245,
+      "domain": "education",
+      "tags": [
+        "education",
+        "programming",
+        "personalization",
+        "practice",
+        "github"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/Teachers/comments/teach001",
+    "title": "I wish there was a grading assistant that uses AI to provide detailed feedback on essay assignments at scale",
+    "content": "Grading 150 essays takes forever. AI reads submissions, checks grammar/style, provides substantive feedback on argument quality, suggests improvements. Teachers review and adjust. Save hours, help students more.",
+    "source": "reddit",
+    "author": "high_school_teacher",
+    "published_at": "2025-12-04T17:52:35.274883Z",
+    "metadata": {
+      "upvotes": 712,
+      "comments": 289,
+      "domain": "education",
+      "subreddit": "Teachers",
+      "tags": [
+        "education",
+        "grading",
+        "ai",
+        "feedback",
+        "automation"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/personalfinance/comments/finance001",
+    "title": "Need an app that analyzes my spending and automatically finds me better deals on recurring subscriptions",
+    "content": "I'm wasting money on subscriptions I barely use. Scan transactions, identify recurring charges, find cheaper alternatives or cancelation options. Negotiate bills automatically. Subscription spending optimizer.",
+    "source": "reddit",
+    "author": "frugal_optimizer",
+    "published_at": "2025-12-19T17:52:35.274885Z",
+    "metadata": {
+      "upvotes": 891,
+      "comments": 267,
+      "domain": "finance",
+      "subreddit": "personalfinance",
+      "tags": [
+        "finance",
+        "subscriptions",
+        "savings",
+        "automation",
+        "optimization"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/invest_smart/status/1234570016",
+    "title": "Why isn't there a tax-loss harvesting tool that works for crypto and alerts to wash sale risks?",
+    "content": "Crypto taxes are complex. Automatic tax-loss harvesting, wash sale detection, optimal timing suggestions, cross-exchange tracking. Generate IRS-compliant reports. Save thousands on taxes legally.",
+    "source": "twitter",
+    "author": "crypto_tax_pro",
+    "published_at": "2025-12-14T17:52:35.274886Z",
+    "metadata": {
+      "likes": 534,
+      "retweets": 178,
+      "domain": "finance",
+      "tags": [
+        "finance",
+        "crypto",
+        "taxes",
+        "automation",
+        "optimization"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902015",
+    "title": "Someone build a retirement calculator that uses Monte Carlo simulation and adjusts for real-time market conditions",
+    "content": "Static retirement calculators are useless. Run thousands of simulations with different market scenarios, adjust assumptions as I update my portfolio, show probability of success. Dynamic retirement planning.",
+    "source": "hackernews",
+    "author": "retirement_planner",
+    "published_at": "2025-12-09T17:52:35.274887Z",
+    "metadata": {
+      "upvotes": 623,
+      "comments": 201,
+      "domain": "finance",
+      "tags": [
+        "finance",
+        "retirement",
+        "monte-carlo",
+        "planning",
+        "simulation"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/investing/comments/invest001",
+    "title": "I wish there was a portfolio rebalancing tool that minimizes taxes while maintaining target allocation",
+    "content": "Rebalancing triggers capital gains. Optimize: sell high-loss positions first, use new contributions, respect tax brackets, account for dividend timing. Tax-efficient rebalancing with clear trade recommendations.",
+    "source": "reddit",
+    "author": "tax_efficient_investor",
+    "published_at": "2025-12-06T17:52:35.274888Z",
+    "metadata": {
+      "upvotes": 734,
+      "comments": 189,
+      "domain": "finance",
+      "subreddit": "investing",
+      "tags": [
+        "finance",
+        "investing",
+        "taxes",
+        "rebalancing",
+        "optimization"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/budget_guru/status/1234570017",
+    "title": "Need a bill negotiation service that uses AI to call and negotiate lower rates on my behalf",
+    "content": "Negotiating bills is time-consuming. AI agent calls my providers (internet, insurance, phone), negotiates using market data and competitor offers, secures discounts. Pay only if I save money. Automated savings.",
+    "source": "twitter",
+    "author": "savings_hacker",
+    "published_at": "2025-12-03T17:52:35.274889Z",
+    "metadata": {
+      "likes": 845,
+      "retweets": 289,
+      "domain": "finance",
+      "tags": [
+        "finance",
+        "negotiation",
+        "ai",
+        "automation",
+        "savings"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/travel/comments/travel001",
+    "title": "Need a flight deal finder that learns my preferences and alerts me proactively to good deals",
+    "content": "I miss great flight deals because I'm not constantly checking. ML learns my travel patterns (destinations, dates, budget), monitors prices, alerts only when it's a genuinely good deal for MY criteria. Smart travel alerts.",
+    "source": "reddit",
+    "author": "frequent_flyer_deals",
+    "published_at": "2025-12-17T17:52:35.274890Z",
+    "metadata": {
+      "upvotes": 712,
+      "comments": 198,
+      "domain": "travel",
+      "subreddit": "travel",
+      "tags": [
+        "travel",
+        "flights",
+        "deals",
+        "machine-learning",
+        "alerts"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/digital_nomad/status/1234570018",
+    "title": "Why isn't there a co-living matchmaking platform that finds compatible roommates for digital nomads?",
+    "content": "Finding short-term housing with compatible people is hard. Match by work schedule, cleanliness, social preferences, hobbies. Verified profiles, reviews, contract templates. Airbnb meets compatibility matching for nomads.",
+    "source": "twitter",
+    "author": "nomad_community_builder",
+    "published_at": "2025-12-12T17:52:35.274891Z",
+    "metadata": {
+      "likes": 567,
+      "retweets": 201,
+      "domain": "travel",
+      "tags": [
+        "travel",
+        "nomad",
+        "co-living",
+        "matchmaking",
+        "community"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902016",
+    "title": "Someone build a trip planning app that optimizes multi-city itineraries for cost and experience",
+    "content": "Planning complex trips is overwhelming. Input destinations and dates, AI optimizes: flight routing, hotel locations, activity timing. Considers jet lag, opening hours, crowd levels. One-click book entire optimized itinerary.",
+    "source": "hackernews",
+    "author": "trip_optimizer",
+    "published_at": "2025-12-08T17:52:35.274893Z",
+    "metadata": {
+      "upvotes": 623,
+      "comments": 178,
+      "domain": "travel",
+      "tags": [
+        "travel",
+        "planning",
+        "optimization",
+        "ai",
+        "itinerary"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/solotravel/comments/solo001",
+    "title": "I wish there was a safety app for solo travelers that shares location and checks in automatically",
+    "content": "Solo travel can feel unsafe. Automatic check-ins at key points, emergency contacts get alerts if I don't check in, live location sharing during risky activities. Peace of mind for me and family back home.",
+    "source": "reddit",
+    "author": "solo_female_traveler",
+    "published_at": "2025-12-05T17:52:35.274894Z",
+    "metadata": {
+      "upvotes": 834,
+      "comments": 245,
+      "domain": "travel",
+      "subreddit": "solotravel",
+      "tags": [
+        "travel",
+        "safety",
+        "location-sharing",
+        "check-in",
+        "solo"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/travel_hacker/status/1234570019",
+    "title": "Need a luggage packing assistant that generates optimal packing lists based on destination weather and activities",
+    "content": "I always forget something or overpack. Input destination/dates/activities, get weather-optimized packing list, outfit combinations, toiletry reminders. Learn from past trips. Never forget essentials again.",
+    "source": "twitter",
+    "author": "organized_traveler",
+    "published_at": "2025-12-02T17:52:35.274895Z",
+    "metadata": {
+      "likes": 489,
+      "retweets": 167,
+      "domain": "travel",
+      "tags": [
+        "travel",
+        "packing",
+        "weather",
+        "organization",
+        "planning"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/Music/comments/music001",
+    "title": "Need a music discovery app that creates genre-transition playlists based on my mood progression",
+    "content": "I want to start with upbeat pop, gradually transition to indie rock, then end with chill lo-fi. Current apps just shuffle or play similar songs. I need intelligent transitions that match my energy levels throughout the day. Like a DJ for my emotions.",
+    "source": "reddit",
+    "author": "playlist_curator",
+    "published_at": "2025-12-27T18:11:47.361943Z",
+    "metadata": {
+      "upvotes": 678,
+      "comments": 234,
+      "domain": "entertainment",
+      "subreddit": "Music",
+      "tags": [
+        "music",
+        "discovery",
+        "mood",
+        "playlists",
+        "ai"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/movie_buff/status/1234570020",
+    "title": "Why isn't there a movie recommendation engine that learns from watch history across all streaming services?",
+    "content": "I have Netflix, Hulu, Disney+, Prime, and HBO. Each has its own algorithm. I want ONE app that knows what I've watched everywhere, understands my taste patterns, and suggests movies from ALL platforms. Cross-platform taste graph.",
+    "source": "twitter",
+    "author": "streaming_optimizer",
+    "published_at": "2025-12-23T18:11:47.361967Z",
+    "metadata": {
+      "likes": 892,
+      "retweets": 334,
+      "domain": "entertainment",
+      "tags": [
+        "movies",
+        "streaming",
+        "recommendation",
+        "cross-platform",
+        "ai"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902017",
+    "title": "Someone build a live concert discovery app that uses location + music taste + schedule sync",
+    "content": "I miss great concerts because I don't know they're happening. Track my Spotify taste, check my calendar for free slots, alert me when favorite artists are in town. Auto-suggest similar artists I'd love. Never miss a show again.",
+    "source": "hackernews",
+    "author": "concert_lover",
+    "published_at": "2025-12-20T18:11:47.361969Z",
+    "metadata": {
+      "upvotes": 456,
+      "comments": 167,
+      "domain": "entertainment",
+      "tags": [
+        "concerts",
+        "music",
+        "location",
+        "calendar",
+        "discovery"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/television/comments/tv001",
+    "title": "I wish there was a binge-watching optimizer that schedules TV episodes around my calendar gaps",
+    "content": "I start shows but never finish. I want an app that knows how long each episode is, finds gaps in my calendar, and schedules viewing sessions. 'You have 47 minutes before your meeting - perfect for episode 3'. Optimize entertainment consumption.",
+    "source": "reddit",
+    "author": "efficient_viewer",
+    "published_at": "2025-12-16T18:11:47.361971Z",
+    "metadata": {
+      "upvotes": 723,
+      "comments": 198,
+      "domain": "entertainment",
+      "subreddit": "television",
+      "tags": [
+        "tv",
+        "binge-watching",
+        "scheduling",
+        "time-management",
+        "calendar"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/Fitness/comments/fit001",
+    "title": "Need a form checker app that uses phone camera to analyze my lifting technique in real-time",
+    "content": "Bad form causes injuries. Use computer vision to track my squat depth, bar path, knee alignment. Give real-time audio cues: 'chest up', 'deeper'. Record sets, show progress over time. AI personal trainer for home workouts.",
+    "source": "reddit",
+    "author": "home_gym_enthusiast",
+    "published_at": "2025-12-25T18:11:47.361972Z",
+    "metadata": {
+      "upvotes": 834,
+      "comments": 267,
+      "domain": "fitness",
+      "subreddit": "Fitness",
+      "tags": [
+        "fitness",
+        "form-check",
+        "computer-vision",
+        "weightlifting",
+        "ai"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/runner_tech/status/1234570021",
+    "title": "Why isn't there a running app that predicts injury risk using gait analysis from phone sensors?",
+    "content": "Overuse injuries sideline runners for months. Use phone accelerometer to analyze gait asymmetry, impact forces, cadence. Predict injury risk before pain starts. Suggest recovery days or form adjustments. Preventive running analytics.",
+    "source": "twitter",
+    "author": "running_scientist",
+    "published_at": "2025-12-21T18:11:47.361973Z",
+    "metadata": {
+      "likes": 567,
+      "retweets": 189,
+      "domain": "fitness",
+      "tags": [
+        "running",
+        "injury-prevention",
+        "gait-analysis",
+        "sensors",
+        "predictive"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902018",
+    "title": "Someone build a meal prep service that optimizes for macros + taste preferences + budget",
+    "content": "Hitting macros with food I actually enjoy is hard. AI-generated meal plans: input protein/carbs/fats targets, dietary restrictions, favorite ingredients, budget. Get 7-day plan with grocery list and prep instructions. Bodybuilding nutrition made easy.",
+    "source": "hackernews",
+    "author": "macro_tracker",
+    "published_at": "2025-12-18T18:11:47.361974Z",
+    "metadata": {
+      "upvotes": 712,
+      "comments": 245,
+      "domain": "fitness",
+      "tags": [
+        "nutrition",
+        "meal-prep",
+        "macros",
+        "optimization",
+        "bodybuilding"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/yoga/comments/yoga001",
+    "title": "I wish there was a yoga practice app that adapts sequences based on energy levels and tight spots",
+    "content": "Generic yoga videos don't address my needs. Start each session: rate energy (1-10), mark tight areas (hamstrings, shoulders). AI generates custom sequence targeting those areas at appropriate intensity. Dynamic, personalized yoga.",
+    "source": "reddit",
+    "author": "adaptive_yogi",
+    "published_at": "2025-12-14T18:11:47.361975Z",
+    "metadata": {
+      "upvotes": 645,
+      "comments": 178,
+      "domain": "fitness",
+      "subreddit": "yoga",
+      "tags": [
+        "yoga",
+        "personalization",
+        "flexibility",
+        "adaptive",
+        "wellness"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902019",
+    "title": "Need a knowledge graph builder that connects everything I learn from books, courses, and articles",
+    "content": "I forget connections between concepts. Automatically extract key ideas from my Kindle highlights, course notes, articles I read. Build a personal knowledge graph. See relationships, surface forgotten insights. Second brain with AI.",
+    "source": "hackernews",
+    "author": "knowledge_worker",
+    "published_at": "2025-12-26T18:11:47.361977Z",
+    "metadata": {
+      "upvotes": 923,
+      "comments": 312,
+      "domain": "education",
+      "tags": [
+        "learning",
+        "knowledge-graph",
+        "note-taking",
+        "ai",
+        "connections"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/languagelearning/comments/lang001",
+    "title": "Why isn't there a language exchange app that uses AI to match conversation partners by learning goals and schedule?",
+    "content": "Finding compatible language partners is hit-or-miss. Match by: target language, proficiency level, learning style (casual vs structured), available times, interests. Auto-suggest conversation topics. Schedule recurring sessions. Duolingo meets Tinder.",
+    "source": "reddit",
+    "author": "polyglot_connector",
+    "published_at": "2025-12-22T18:11:47.361978Z",
+    "metadata": {
+      "upvotes": 756,
+      "comments": 234,
+      "domain": "education",
+      "subreddit": "languagelearning",
+      "tags": [
+        "language-learning",
+        "exchange",
+        "matchmaking",
+        "conversation",
+        "schedule"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/online_learner/status/1234570022",
+    "title": "Someone build a course completion accountability system with social pressure and money at stake",
+    "content": "I buy courses and never finish. Join a cohort, put $100 on the line. Complete weekly milestones or money goes to charity. Peer accountability through group chat. Get refund + bonus if you finish. Financial motivation for online learning.",
+    "source": "twitter",
+    "author": "course_completer",
+    "published_at": "2025-12-17T18:11:47.361979Z",
+    "metadata": {
+      "likes": 834,
+      "retweets": 289,
+      "domain": "education",
+      "tags": [
+        "online-learning",
+        "accountability",
+        "gamification",
+        "motivation",
+        "cohort"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902020",
+    "title": "I wish there was a skill tree visualizer for career paths showing prerequisites and time estimates",
+    "content": "Career development feels overwhelming. Show skills as a tree: 'To become Senior Engineer, you need: System Design (6 months) + Team Leadership (3 months) + Domain Expertise (1 year)'. Track progress, suggest learning resources. RPG-style career planning.",
+    "source": "hackernews",
+    "author": "career_gamer",
+    "published_at": "2025-12-13T18:11:47.361980Z",
+    "metadata": {
+      "upvotes": 1023,
+      "comments": 378,
+      "domain": "education",
+      "tags": [
+        "career",
+        "skills",
+        "visualization",
+        "learning-path",
+        "gamification"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/devops/comments/dev001",
+    "title": "Need a CI/CD pipeline visualizer that shows exactly why builds are slow and suggests optimizations",
+    "content": "10-minute builds kill productivity. Visualize pipeline as a dependency graph, highlight bottlenecks, suggest parallelization opportunities. Show impact: 'Caching node_modules saves 2 min'. Automatically apply optimizations. Fast CI/CD as a service.",
+    "source": "reddit",
+    "author": "devops_optimizer",
+    "published_at": "2025-12-24T18:11:47.361981Z",
+    "metadata": {
+      "upvotes": 567,
+      "comments": 167,
+      "domain": "developer-tools",
+      "subreddit": "devops",
+      "tags": [
+        "ci-cd",
+        "optimization",
+        "visualization",
+        "performance",
+        "devops"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/api_dev/status/1234570023",
+    "title": "Why isn't there a tool that generates comprehensive API tests from production traffic automatically?",
+    "content": "Writing tests is tedious. Record production API calls, cluster by endpoint/params, generate test cases covering edge cases. Mock responses for fast tests. Update tests when API changes. Production-driven test generation.",
+    "source": "twitter",
+    "author": "test_automation_pro",
+    "published_at": "2025-12-19T18:11:47.361982Z",
+    "metadata": {
+      "likes": 445,
+      "retweets": 134,
+      "domain": "developer-tools",
+      "tags": [
+        "testing",
+        "api",
+        "automation",
+        "production",
+        "test-generation"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902021",
+    "title": "Someone build a dependency updater that runs tests on PRs before merging package updates",
+    "content": "Updating dependencies is risky. Renovate creates PRs but doesn't verify they work. I want: auto-update, run full test suite, if green auto-merge, if red notify with error details. Safe, hands-off dependency management.",
+    "source": "hackernews",
+    "author": "safe_updater",
+    "published_at": "2025-12-15T18:11:47.361983Z",
+    "metadata": {
+      "upvotes": 678,
+      "comments": 201,
+      "domain": "developer-tools",
+      "tags": [
+        "dependencies",
+        "automation",
+        "testing",
+        "ci",
+        "safety"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/coding/comments/code001",
+    "title": "I wish there was a code navigation tool that understands business logic flow across microservices",
+    "content": "Tracing requests through microservices is painful. Click on a function, see the entire call chain: API → Service A → Queue → Service B → DB. Show data transformations at each step. Distributed tracing meets IDE navigation.",
+    "source": "reddit",
+    "author": "microservices_navigator",
+    "published_at": "2025-12-11T18:11:47.361984Z",
+    "metadata": {
+      "upvotes": 734,
+      "comments": 189,
+      "domain": "developer-tools",
+      "subreddit": "coding",
+      "tags": [
+        "microservices",
+        "tracing",
+        "navigation",
+        "distributed",
+        "debugging"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/job_hunter/status/1234570024",
+    "title": "Need a job search CRM that tracks applications, follow-ups, and interview feedback automatically",
+    "content": "Job hunting is chaotic. Track every application, auto-remind for follow-ups, log interview questions/feedback, analyze rejection patterns. 'You're rejected most at phone screens - improve your pitch'. Data-driven job search.",
+    "source": "twitter",
+    "author": "organized_job_seeker",
+    "published_at": "2025-12-28T18:11:47.361985Z",
+    "metadata": {
+      "likes": 912,
+      "retweets": 334,
+      "domain": "career",
+      "tags": [
+        "job-search",
+        "crm",
+        "tracking",
+        "organization",
+        "data"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902022",
+    "title": "Why isn't there a LinkedIn but for showing real work samples instead of job titles?",
+    "content": "Resumes lie. I want a portfolio platform where developers share actual code, designers show real projects, writers display published work. Verify contributions via GitHub/Behance/Medium. Hire based on output, not credentials. Proof of work network.",
+    "source": "hackernews",
+    "author": "work_portfolio_believer",
+    "published_at": "2025-12-23T18:11:47.361987Z",
+    "metadata": {
+      "upvotes": 1234,
+      "comments": 456,
+      "domain": "career",
+      "tags": [
+        "portfolio",
+        "hiring",
+        "networking",
+        "proof-of-work",
+        "professional"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/careeradvice/comments/advice001",
+    "title": "Someone build a performance review prep tool that analyzes Slack/email to quantify impact",
+    "content": "Self-reviews are hard. Scan my Slack messages, emails, commits. Extract accomplishments, quantify impact ('helped 23 teammates', 'shipped 5 features'). Generate review draft with evidence. Data-backed self-promotion.",
+    "source": "reddit",
+    "author": "performance_optimizer",
+    "published_at": "2025-12-18T18:11:47.361988Z",
+    "metadata": {
+      "upvotes": 789,
+      "comments": 234,
+      "domain": "career",
+      "subreddit": "careeradvice",
+      "tags": [
+        "performance-review",
+        "data-analysis",
+        "impact",
+        "self-promotion",
+        "automation"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/remote_career/status/1234570025",
+    "title": "I wish there was a skills arbitrage platform matching remote workers with high-value markets",
+    "content": "I'm in a low-cost country with valuable skills. Match me with US/EU companies willing to pay global rates. Handle contracts, payments, taxes. Geographic arbitrage marketplace. Work remotely, earn more, live better.",
+    "source": "twitter",
+    "author": "global_talent",
+    "published_at": "2025-12-12T18:11:47.361989Z",
+    "metadata": {
+      "likes": 867,
+      "retweets": 289,
+      "domain": "career",
+      "tags": [
+        "remote-work",
+        "arbitrage",
+        "global",
+        "marketplace",
+        "compensation"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/digitalnomad/comments/nomad001",
+    "title": "Need a visa calculator that shows where I can work remotely based on my passport and stay duration",
+    "content": "Visa rules are confusing. Input: passport country, desired stays (3 months Thailand, 2 months Portugal). Output: visa requirements, cost, processing time, restrictions. Include remote work legality. Digital nomad compliance made easy.",
+    "source": "reddit",
+    "author": "visa_optimizer",
+    "published_at": "2025-12-29T18:11:47.361990Z",
+    "metadata": {
+      "upvotes": 923,
+      "comments": 312,
+      "domain": "travel",
+      "subreddit": "digitalnomad",
+      "tags": [
+        "travel",
+        "visa",
+        "remote-work",
+        "legal",
+        "nomad"
+      ]
+    }
+  },
+  {
+    "url": "https://twitter.com/travel_hacker2/status/1234570026",
+    "title": "Why isn't there a points optimizer that maximizes credit card rewards for planned trips?",
+    "content": "I have 5 credit cards with different reward structures. Input upcoming trip details, get strategy: 'Book flights with card A (3x points), hotels with card B (5x), dining with card C'. Maximize every purchase. Points arbitrage calculator.",
+    "source": "twitter",
+    "author": "points_maximizer",
+    "published_at": "2025-12-24T18:11:47.361991Z",
+    "metadata": {
+      "likes": 712,
+      "retweets": 245,
+      "domain": "travel",
+      "tags": [
+        "travel",
+        "credit-cards",
+        "rewards",
+        "optimization",
+        "points"
+      ]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39902023",
+    "title": "Someone build a local food finder that uses Instagram tags to discover authentic restaurants",
+    "content": "TripAdvisor is full of tourist traps. Analyze Instagram: where do locals tag photos, what do they eat, when are restaurants busy. Recommend hidden gems with high local-to-tourist ratio. Find authentic food anywhere.",
+    "source": "hackernews",
+    "author": "foodie_explorer",
+    "published_at": "2025-12-19T18:11:47.361993Z",
+    "metadata": {
+      "upvotes": 845,
+      "comments": 267,
+      "domain": "travel",
+      "tags": [
+        "travel",
+        "food",
+        "instagram",
+        "local",
+        "recommendations"
+      ]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/backpacking/comments/pack001",
+    "title": "I wish there was a travel gear optimizer that suggests what to pack based on destination weather and activities",
+    "content": "Overpacking is my nemesis. Input: destination, dates, planned activities. Output: optimal packing list with alternatives ('rain likely - pack umbrella or waterproof jacket?'). Learn from past trips. Pack smarter, travel lighter.",
+    "source": "reddit",
+    "author": "minimalist_traveler",
+    "published_at": "2025-12-13T18:11:47.361994Z",
+    "metadata": {
+      "upvotes": 634,
+      "comments": 178,
+      "domain": "travel",
+      "subreddit": "backpacking",
+      "tags": [
+        "travel",
+        "packing",
+        "optimization",
+        "weather",
+        "gear"
+      ]
+    }
+  }
+]

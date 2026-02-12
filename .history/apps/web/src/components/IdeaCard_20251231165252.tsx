@@ -1,0 +1,93 @@
+import React from 'react';
+import { Idea } from '@/types';
+import { LinkIcon, CalendarIcon } from '@heroicons/react/24/outline';
+
+interface IdeaCardProps {
+  idea: Idea;
+  showCluster?: boolean;
+}
+
+export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, showCluster = false }) => {
+  const getSentimentColor = (sentiment: string) => {
+    switch (sentiment.toLowerCase()) {
+      case 'positive':
+        return 'success';
+      case 'negative':
+        return 'danger';
+      default:
+        return 'slate';
+    }
+  };
+
+  const sentimentColor = getSentimentColor(idea.sentiment);
+
+  return (
+    <div className="card">
+      {/* Problem Statement */}
+      <h3 className="text-lg font-semibold text-white mb-3">
+        {idea.problem_statement}
+      </h3>
+
+      {/* Context (if available) */}
+      {idea.context && (
+        <p className="text-slate-400 text-sm mb-4 line-clamp-3">
+          {idea.context}
+        </p>
+      )}
+
+      {/* Metadata Row */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        {/* Quality Score */}
+        <span className="badge">
+          Quality: {(idea.quality_score * 100).toFixed(0)}%
+        </span>
+
+        {/* Sentiment */}
+        <span className={`badge-${sentimentColor}`}>
+          {idea.sentiment}
+        </span>
+
+        {/* Domain (if available) */}
+        {idea.domain && (
+          <span className="badge bg-primary-500/10 text-primary-400 ring-1 ring-inset ring-primary-500/20">
+            {idea.domain}
+          </span>
+        )}
+      </div>
+
+      {/* Source Info */}
+      <div className="flex items-center gap-4 text-sm text-slate-500 border-t border-slate-700 pt-3">
+        {/* Source Link */}
+        {idea.source_url && (
+          <a
+            href={idea.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 hover:text-primary-400 transition-colors"
+          >
+            <LinkIcon className="w-4 h-4" />
+            <span>View Source</span>
+          </a>
+        )}
+
+        {/* Date */}
+        {idea.extracted_at && (
+          <div className="flex items-center gap-1">
+            <CalendarIcon className="w-4 h-4" />
+            <span>{new Date(idea.extracted_at).toLocaleDateString()}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Cluster Badge (if applicable) */}
+      {showCluster && idea.cluster && (
+        <div className="mt-3 pt-3 border-t border-slate-700">
+          <span className="text-xs text-slate-500">Part of cluster:</span>
+          <span className="ml-2 text-sm text-primary-400 font-medium">
+            {idea.cluster.label}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};

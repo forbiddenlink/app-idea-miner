@@ -1,0 +1,288 @@
+[
+  {
+    "url": "https://news.ycombinator.com/item?id=39901234",
+    "title": "I wish there was an app for tracking my book reading habits with analytics",
+    "content": "I read a lot but forget what I've read. I need something that can track my progress, show me stats about my reading speed, genres I prefer, and remind me to review books I've finished. Goodreads is too social-focused.",
+    "source": "hackernews",
+    "author": "bookworm_dev",
+    "published_at": "2025-12-20T14:30:00Z",
+    "metadata": {
+      "upvotes": 42,
+      "comments": 15,
+      "domain": "productivity",
+      "tags": ["reading", "books", "tracking", "analytics"]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/AppIdeas/comments/abc123",
+    "title": "Need an app to split shared expenses automatically from photos",
+    "content": "When traveling with friends, we always struggle with splitting bills. I wish there was an app where I could just take a photo of the receipt and it automatically calculates who owes what. OCR + smart splitting logic.",
+    "source": "reddit",
+    "author": "travel_enthusiast",
+    "published_at": "2025-12-19T10:15:00Z",
+    "metadata": {
+      "upvotes": 89,
+      "comments": 23,
+      "domain": "finance",
+      "subreddit": "AppIdeas",
+      "tags": ["finance", "expense-tracking", "ocr", "travel"]
+    }
+  },
+  {
+    "url": "https://twitter.com/user123/status/1234567890",
+    "title": "Why isn't there an AI-powered meal planner that considers my dietary restrictions AND what's in my fridge?",
+    "content": "Every meal planning app either ignores my allergies or suggests ingredients I don't have. I want something smart that looks at my pantry inventory and creates recipes accordingly. This should exist!",
+    "source": "twitter",
+    "author": "healthyeater",
+    "published_at": "2025-12-18T08:45:00Z",
+    "metadata": {
+      "likes": 156,
+      "retweets": 34,
+      "domain": "health",
+      "tags": ["health", "nutrition", "ai", "meal-planning"]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901235",
+    "title": "I need a minimalist habit tracker that focuses on streaks, not features",
+    "content": "All habit trackers are bloated with social features, gamification, and ads. I just want something clean that shows my streaks, sends a reminder, and nothing else. Think Hemingway Editor but for habits.",
+    "source": "hackernews",
+    "author": "minimalist_coder",
+    "published_at": "2025-12-17T16:20:00Z",
+    "metadata": {
+      "upvotes": 234,
+      "comments": 67,
+      "domain": "productivity",
+      "tags": ["habits", "minimalist", "tracking", "streaks"]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/SomebodyMakeThis/comments/def456",
+    "title": "App idea: Local job board that only shows positions within 5 miles",
+    "content": "I'm tired of seeing remote jobs or positions 2 hours away. I want a hyper-local job board that uses geolocation and only shows openings I could bike to. Filter by commute time, not just location.",
+    "source": "reddit",
+    "author": "local_worker",
+    "published_at": "2025-12-16T11:00:00Z",
+    "metadata": {
+      "upvotes": 112,
+      "comments": 41,
+      "domain": "employment",
+      "subreddit": "SomebodyMakeThis",
+      "tags": ["jobs", "local", "geolocation", "commute"]
+    }
+  },
+  {
+    "url": "https://producthunt.com/posts/fitness-tracker-pro",
+    "title": "I wish fitness trackers could detect bad form during workouts automatically",
+    "content": "My Fitbit tracks steps and heart rate, but it doesn't tell me if I'm doing squats wrong. Computer vision should be able to analyze my form and give real-time feedback through my phone camera. Would prevent injuries.",
+    "source": "producthunt",
+    "author": "gym_rat_tech",
+    "published_at": "2025-12-15T09:30:00Z",
+    "metadata": {
+      "upvotes": 78,
+      "comments": 19,
+      "domain": "fitness",
+      "tags": ["fitness", "computer-vision", "form-check", "injury-prevention"]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901236",
+    "title": "There should be a Duolingo for learning programming languages syntax",
+    "content": "Not algorithms or data structures—just pure syntax practice. Quick daily drills on Python list comprehensions, JavaScript promises, Rust ownership rules. Gamified, 5 minutes a day. Would be perfect for polyglot developers.",
+    "source": "hackernews",
+    "author": "syntax_learner",
+    "published_at": "2025-12-14T13:45:00Z",
+    "metadata": {
+      "upvotes": 423,
+      "comments": 156,
+      "domain": "education",
+      "tags": ["programming", "education", "syntax", "gamification"]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/AppIdeas/comments/ghi789",
+    "title": "Need an app that tells me when to leave based on real-time traffic",
+    "content": "Google Maps tells me how long it'll take right now, but I need something that monitors traffic and notifies me 'Leave in 15 minutes to arrive on time.' Dynamic departure time calculator.",
+    "source": "reddit",
+    "author": "punctual_person",
+    "published_at": "2025-12-13T07:15:00Z",
+    "metadata": {
+      "upvotes": 67,
+      "comments": 12,
+      "domain": "productivity",
+      "subreddit": "AppIdeas",
+      "tags": ["navigation", "traffic", "notifications", "calendar-integration"]
+    }
+  },
+  {
+    "url": "https://twitter.com/user456/status/1234567891",
+    "title": "I want an app that blocks me from buying things online when I'm drunk",
+    "content": "Seriously. Late night Amazon binges are killing my budget. Some kind of sobriety test before checkout? Or just disable shopping apps after 10 PM with a hard lockout. Someone build this please.",
+    "source": "twitter",
+    "author": "impulse_buyer",
+    "published_at": "2025-12-12T22:30:00Z",
+    "metadata": {
+      "likes": 892,
+      "retweets": 234,
+      "domain": "finance",
+      "tags": ["self-control", "finance", "impulse-buying", "parental-controls"]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901237",
+    "title": "Why doesn't anyone make a 'read it later' app that actually summarizes articles with AI?",
+    "content": "I have 200+ saved articles in Pocket. I'll never read them all. What if the app could give me AI-generated summaries with key takeaways? Like Blinkist but for web articles. Would save hours.",
+    "source": "hackernews",
+    "author": "info_consumer",
+    "published_at": "2025-12-11T15:00:00Z",
+    "metadata": {
+      "upvotes": 234,
+      "comments": 89,
+      "domain": "productivity",
+      "tags": ["reading", "ai", "summarization", "knowledge-management"]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/SomebodyMakeThis/comments/jkl012",
+    "title": "App for finding public restrooms with ratings and cleanliness scores",
+    "content": "As someone with IBS, this would be life-changing. A map showing nearby restrooms, user ratings, whether they require keys, accessibility features. Like Yelp but for bathrooms. Essential for cities.",
+    "source": "reddit",
+    "author": "ibs_warrior",
+    "published_at": "2025-12-10T12:20:00Z",
+    "metadata": {
+      "upvotes": 456,
+      "comments": 123,
+      "domain": "health",
+      "subreddit": "SomebodyMakeThis",
+      "tags": ["health", "accessibility", "maps", "ratings"]
+    }
+  },
+  {
+    "url": "https://producthunt.com/posts/language-exchange",
+    "title": "I wish there was a language exchange app that matches you by interests, not just languages",
+    "content": "Learning Spanish but I'm into rock climbing. Would be cool to match with Spanish speakers who also climb. More engaging conversations, natural topics. Current apps just pair people randomly.",
+    "source": "producthunt",
+    "author": "polyglot_climber",
+    "published_at": "2025-12-09T10:45:00Z",
+    "metadata": {
+      "upvotes": 92,
+      "comments": 27,
+      "domain": "education",
+      "tags": ["language-learning", "social", "matching", "interests"]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901238",
+    "title": "Someone needs to build a plant care app with image recognition for diagnosis",
+    "content": "My succulents keep dying and I don't know why. I want an app where I upload a photo and it tells me 'overwatered' or 'needs more sun.' Like WebMD for plants. Include care schedules too.",
+    "source": "hackernews",
+    "author": "plant_parent",
+    "published_at": "2025-12-08T14:10:00Z",
+    "metadata": {
+      "upvotes": 178,
+      "comments": 45,
+      "domain": "lifestyle",
+      "tags": ["plants", "image-recognition", "care", "diagnosis"]
+    }
+  },
+  {
+    "url": "https://twitter.com/user789/status/1234567892",
+    "title": "Need an app for tracking how much time I waste on my phone PER APP with accountability",
+    "content": "Screen Time shows me I use my phone 5 hours a day but doesn't shame me enough. I want something that sends my stats to a friend or charges me $1 per hour over my limit. Real accountability.",
+    "source": "twitter",
+    "author": "phone_addict",
+    "published_at": "2025-12-07T19:25:00Z",
+    "metadata": {
+      "likes": 234,
+      "retweets": 67,
+      "domain": "productivity",
+      "tags": ["screen-time", "accountability", "digital-wellbeing", "social-contract"]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/AppIdeas/comments/mno345",
+    "title": "App that finds the cheapest time to fly flexible dates using historical data",
+    "content": "I'm flexible on when I travel. Show me the cheapest week to fly to Tokyo in the next 6 months based on historical pricing data. Not just 'prices usually drop on Tuesdays' but actual ML predictions.",
+    "source": "reddit",
+    "author": "budget_traveler",
+    "published_at": "2025-12-06T08:50:00Z",
+    "metadata": {
+      "upvotes": 345,
+      "comments": 78,
+      "domain": "travel",
+      "subreddit": "AppIdeas",
+      "tags": ["travel", "flights", "price-tracking", "ml", "flexibility"]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901239",
+    "title": "I want a podcast app that skips ads automatically using audio fingerprinting",
+    "content": "SponsorBlock works for YouTube. Why not podcasts? Crowdsourced timestamp data or audio analysis to detect and skip ads/sponsors. I'd pay for this. The current crop of podcast apps don't have it.",
+    "source": "hackernews",
+    "author": "podcast_listener",
+    "published_at": "2025-12-05T16:35:00Z",
+    "metadata": {
+      "upvotes": 567,
+      "comments": 189,
+      "domain": "media",
+      "tags": ["podcasts", "ad-blocking", "audio-analysis", "crowdsourcing"]
+    }
+  },
+  {
+    "url": "https://producthunt.com/posts/meditation-timer",
+    "title": "Meditation app with progressive difficulty and unlockable techniques",
+    "content": "All meditation apps assume you can sit still for 20 minutes immediately. I need progression: start with 2 minutes, unlock breathing techniques as I level up. Gamify mindfulness without making it stressful.",
+    "source": "producthunt",
+    "author": "meditation_newbie",
+    "published_at": "2025-12-04T11:15:00Z",
+    "metadata": {
+      "upvotes": 123,
+      "comments": 34,
+      "domain": "health",
+      "tags": ["meditation", "mindfulness", "gamification", "progressive"]
+    }
+  },
+  {
+    "url": "https://reddit.com/r/SomebodyMakeThis/comments/pqr678",
+    "title": "App for practicing difficult conversations with AI before the real thing",
+    "content": "Need to ask for a raise? Fire someone? Break up? Practice with an AI that simulates realistic responses. Record it, get feedback on tone, pacing, word choice. Like a flight simulator for awkward talks.",
+    "source": "reddit",
+    "author": "communication_coach",
+    "published_at": "2025-12-03T13:40:00Z",
+    "metadata": {
+      "upvotes": 289,
+      "comments": 91,
+      "domain": "communication",
+      "subreddit": "SomebodyMakeThis",
+      "tags": ["ai", "communication", "practice", "simulations", "coaching"]
+    }
+  },
+  {
+    "url": "https://twitter.com/user012/status/1234567893",
+    "title": "Why isn't there a 'Netflix Party' equivalent for reading books together?",
+    "content": "Book clubs are hard to coordinate. I want an app where you can read the same book at the same pace, see where friends are at, leave annotations they can see. Synchronized reading experience.",
+    "source": "twitter",
+    "author": "social_reader",
+    "published_at": "2025-12-02T20:05:00Z",
+    "metadata": {
+      "likes": 145,
+      "retweets": 43,
+      "domain": "social",
+      "tags": ["reading", "social", "book-clubs", "annotations", "synchronization"]
+    }
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=39901240",
+    "title": "Someone build a password manager that uses biometric data as the master password",
+    "content": "Instead of memorizing one more password, use fingerprint + face ID + voice recognition combined. Multi-factor biometric authentication. Can't be phished, can't forget it. More secure than alphanumeric passwords.",
+    "source": "hackernews",
+    "author": "security_researcher",
+    "published_at": "2025-12-01T17:20:00Z",
+    "metadata": {
+      "upvotes": 234,
+      "comments": 189,
+      "domain": "security",
+      "tags": ["security", "passwords", "biometrics", "authentication", "privacy"]
+    }
+  }
+]

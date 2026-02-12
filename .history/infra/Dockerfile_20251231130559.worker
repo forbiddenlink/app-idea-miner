@@ -1,0 +1,31 @@
+# Dockerfile for Celery Worker Service
+FROM python:3.12-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    gcc \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install UV
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
+
+# Set working directory
+WORKDIR /app
+
+# Copy workspace configuration
+COPY pyproject.toml uv.lock ./
+COPY apps/worker/pyproject.toml ./apps/worker/
+COPY packages/core/pyproject.toml ./packages/core/
+
+# Install dependencies
+RUN uv sync --frozen --all-packages
+
+# Copy application code
+COPY apps/worker ./apps/worker
+COPY packages ./packages
+
+# Default command (can be overridden in docker-compose)
+CMD ["uv", "run", "celery", "-A", "apps.worker.celery_app", "worker", "--loglevel=info"]
