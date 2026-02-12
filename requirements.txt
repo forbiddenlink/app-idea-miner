@@ -175,3 +175,4 @@ virtualenv==20.35.4
     # via pre-commit
 wcwidth==0.2.14
     # via prompt-toolkit
+uvicorn==0.27.0
