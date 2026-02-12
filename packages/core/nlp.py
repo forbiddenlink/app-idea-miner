@@ -584,6 +584,69 @@ class TextProcessor:
 
         return features[:10]  # Limit to top 10
 
+    def extract_keywords(self, text: str, top_n: int = 5) -> list[str]:
+        """
+        Extract top keywords/keyphrases from text using NLTK.
+
+        Args:
+            text: Text to analyze
+            top_n: Number of keywords to return
+
+        Returns:
+            List of keywords
+        """
+        import os
+
+        import nltk
+        from nltk.corpus import stopwords
+        from nltk.tokenize import sent_tokenize, word_tokenize
+
+        # Configure NLTK to use a writable directory in serverless environments
+        nltk_data_path = os.path.join("/tmp", "nltk_data")
+        if not os.path.exists(nltk_data_path):
+            os.makedirs(nltk_data_path, exist_ok=True)
+
+        # Add to search paths
+        if nltk_data_path not in nltk.data.path:
+            nltk.data.path.append(nltk_data_path)
+
+        # Ensure resources are available
+        try:
+            nltk.data.find("tokenizers/punkt")
+            nltk.data.find("taggers/averaged_perceptron_tagger")
+            nltk.data.find("corpora/stopwords")
+        except LookupError:
+            nltk.download("punkt", download_dir=nltk_data_path, quiet=True)
+            nltk.download(
+                "averaged_perceptron_tagger", download_dir=nltk_data_path, quiet=True
+            )
+            nltk.download("stopwords", download_dir=nltk_data_path, quiet=True)
+
+        # 1. Tokenize and POS Tag
+        tokens = word_tokenize(text.lower())
+        stop_words = set(stopwords.words("english"))
+
+        # Filter out stopwords and non-alphanumeric
+        filtered_tokens = [
+            word
+            for word in tokens
+            if word.isalnum() and word not in stop_words and len(word) > 2
+        ]
+
+        # 2. Extract Noun Phrases (using simple chunking or just nouns)
+        # For simplicity and speed, we'll focus on high-frequency Nouns and Adjective-Noun pairs
+        pos_tags = nltk.pos_tag(filtered_tokens)
+
+        candidates = []
+        for word, tag in pos_tags:
+            if tag.startswith("NN") or tag.startswith("JJ"):
+                candidates.append(word)
+
+        # 3. Frequency Distribution
+        freq_dist = nltk.FreqDist(candidates)
+
+        return [word for word, _ in freq_dist.most_common(top_n)]
+
 
 # Singleton instance
 text_processor = TextProcessor()
@@ -613,3 +676,8 @@ def extract_domain(text: str) -> str:
 def extract_features(text: str) -> list[str]:
     """Extract features using singleton processor."""
     return text_processor.extract_features(text)
+
+
+def extract_keywords(text: str, top_n: int = 5) -> list[str]:
+    """Extract keywords using singleton processor."""
+    return text_processor.extract_keywords(text, top_n)
