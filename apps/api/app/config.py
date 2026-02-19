@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     # Proxy trust settings (for rate limiting behind load balancers)
     TRUST_PROXY_HEADERS: bool = True
 
+    # Rate limiter behavior when Redis is unavailable
+    # False = fail open (allow requests), True = fail closed (deny requests)
+    RATE_LIMITER_FAIL_CLOSED: bool = False
+
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@postgres:5432/appideas"
     POSTGRES_USER: str = "postgres"

@@ -57,12 +57,22 @@ class RateLimiter:
         self.seconds = seconds
 
     async def __call__(self, request: Request):
+        settings = get_settings()
         redis = get_redis_client()
         if not redis:
-            # If Redis is down, we fail open (log error but allow request)
-            # or fail closed depending on requirements. Choosing fail open for now.
-            logger.warning("Redis not available for rate limiting. Allowing request.")
-            return
+            if settings.RATE_LIMITER_FAIL_CLOSED:
+                # Fail closed: deny requests when Redis is unavailable
+                logger.error("Redis not available for rate limiting. Denying request.")
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Rate limiting service unavailable",
+                )
+            else:
+                # Fail open: allow requests when Redis is unavailable
+                logger.warning(
+                    "Redis not available for rate limiting. Allowing request."
+                )
+                return
 
         client_ip = get_client_ip(request)
         # Use a prefix to avoid collisions with other keys
@@ -91,5 +101,10 @@ class RateLimiter:
             raise
         except Exception as e:
             logger.error(f"Rate limiting error: {e}")
-            # Fail open on error
+            if settings.RATE_LIMITER_FAIL_CLOSED:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Rate limiting service unavailable",
+                )
+            # Fail open on error (default)
             return

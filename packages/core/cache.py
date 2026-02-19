@@ -6,6 +6,7 @@ import hashlib
 import json
 import logging
 from collections.abc import Callable
+from dataclasses import dataclass, field
 from functools import wraps
 from typing import Any
 
@@ -15,6 +16,56 @@ logger = logging.getLogger(__name__)
 
 # Global Redis client (set in main.py lifespan)
 redis_client: aioredis.Redis | None = None
+
+
+@dataclass
+class CacheMetrics:
+    """Simple in-memory cache metrics tracker."""
+
+    hits: int = 0
+    misses: int = 0
+    errors: int = 0
+    _by_prefix: dict[str, dict[str, int]] = field(default_factory=dict)
+
+    def record_hit(self, key: str):
+        """Record a cache hit."""
+        self.hits += 1
+        prefix = key.split(":")[0] if ":" in key else key
+        if prefix not in self._by_prefix:
+            self._by_prefix[prefix] = {"hits": 0, "misses": 0}
+        self._by_prefix[prefix]["hits"] += 1
+
+    def record_miss(self, key: str):
+        """Record a cache miss."""
+        self.misses += 1
+        prefix = key.split(":")[0] if ":" in key else key
+        if prefix not in self._by_prefix:
+            self._by_prefix[prefix] = {"hits": 0, "misses": 0}
+        self._by_prefix[prefix]["misses"] += 1
+
+    def record_error(self):
+        """Record a cache error."""
+        self.errors += 1
+
+    @property
+    def hit_rate(self) -> float:
+        """Calculate overall hit rate."""
+        total = self.hits + self.misses
+        return self.hits / total if total > 0 else 0.0
+
+    def get_stats(self) -> dict[str, Any]:
+        """Get metrics summary."""
+        return {
+            "hits": self.hits,
+            "misses": self.misses,
+            "errors": self.errors,
+            "hit_rate": round(self.hit_rate, 3),
+            "by_prefix": dict(self._by_prefix),
+        }
+
+
+# Global metrics instance
+cache_metrics = CacheMetrics()
 
 
 def set_redis_client(client: aioredis.Redis):
@@ -84,12 +135,15 @@ async def get_cached(key: str) -> Any | None:
     try:
         cached = await redis_client.get(key)
         if cached:
+            cache_metrics.record_hit(key)
             logger.debug(f"Cache hit: {key}")
             return json.loads(cached)
         else:
+            cache_metrics.record_miss(key)
             logger.debug(f"Cache miss: {key}")
             return None
     except Exception as e:
+        cache_metrics.record_error()
         logger.error(f"Redis get error: {e}")
         return None
 
@@ -254,3 +308,13 @@ async def invalidate_clusters_cache():
 async def invalidate_ideas_cache():
     """Invalidate ideas list cache."""
     await invalidate_cache("ideas:list:*")
+
+
+def get_cache_stats() -> dict[str, Any]:
+    """
+    Get current cache metrics.
+
+    Returns:
+        Dict with hits, misses, hit_rate, and per-prefix breakdowns
+    """
+    return cache_metrics.get_stats()

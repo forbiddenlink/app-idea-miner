@@ -11,6 +11,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from apps.api.app.core.utils import escape_like_pattern
 from packages.core.models import IdeaCandidate
 
 
@@ -64,7 +65,8 @@ class IdeaService:
         if min_quality is not None:
             stmt = stmt.where(IdeaCandidate.quality_score >= min_quality)
         if q and q.strip():
-            pattern = f"%{q.strip()}%"
+            escaped_q = escape_like_pattern(q.strip())
+            pattern = f"%{escaped_q}%"
             search_filter = or_(
                 IdeaCandidate.problem_statement.ilike(pattern),
                 IdeaCandidate.context.ilike(pattern),
@@ -99,7 +101,8 @@ class IdeaService:
         if min_quality is not None:
             count_stmt = count_stmt.where(IdeaCandidate.quality_score >= min_quality)
         if q and q.strip():
-            pattern = f"%{q.strip()}%"
+            escaped_q = escape_like_pattern(q.strip())
+            pattern = f"%{escaped_q}%"
             count_stmt = count_stmt.where(
                 or_(
                     IdeaCandidate.problem_statement.ilike(pattern),
@@ -195,9 +198,11 @@ class IdeaService:
 
         else:
             # Strategy 2: Keyword Search (Legacy)
+            escaped_q = escape_like_pattern(q)
+            pattern = f"%{escaped_q}%"
             stmt = (
                 select(IdeaCandidate)
-                .where(IdeaCandidate.problem_statement.ilike(f"%{q}%"))
+                .where(IdeaCandidate.problem_statement.ilike(pattern))
                 .options(selectinload(IdeaCandidate.raw_post))
                 .order_by(IdeaCandidate.quality_score.desc())
             )
@@ -206,7 +211,7 @@ class IdeaService:
             count_stmt = (
                 select(func.count())
                 .select_from(IdeaCandidate)
-                .where(IdeaCandidate.problem_statement.ilike(f"%{q}%"))
+                .where(IdeaCandidate.problem_statement.ilike(pattern))
             )
             count_result = await self.db.execute(count_stmt)
             total = count_result.scalar_one()

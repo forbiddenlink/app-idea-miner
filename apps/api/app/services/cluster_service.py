@@ -10,6 +10,7 @@ from uuid import UUID
 from sqlalchemy import desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from apps.api.app.core.utils import escape_like_pattern
 from packages.core.models import Cluster, ClusterMembership, IdeaCandidate
 
 
@@ -57,7 +58,8 @@ class ClusterService:
         if min_size is not None:
             query = query.where(Cluster.idea_count >= min_size)
         if q:
-            search_term = f"%{q.strip()}%"
+            escaped_q = escape_like_pattern(q.strip())
+            search_term = f"%{escaped_q}%"
             keyword_text = func.coalesce(
                 func.array_to_string(Cluster.keywords, " "), ""
             )
@@ -91,7 +93,8 @@ class ClusterService:
         if min_size is not None:
             count_query = count_query.where(Cluster.idea_count >= min_size)
         if q:
-            search_term = f"%{q.strip()}%"
+            escaped_q = escape_like_pattern(q.strip())
+            search_term = f"%{escaped_q}%"
             keyword_text = func.coalesce(
                 func.array_to_string(Cluster.keywords, " "), ""
             )
