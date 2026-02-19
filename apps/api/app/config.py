@@ -3,9 +3,10 @@ Configuration management using Pydantic Settings.
 Loads environment variables and provides type-safe configuration.
 """
 
+import os
 from functools import lru_cache
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,6 +14,12 @@ class Settings(BaseSettings):
     """
     Application settings loaded from environment variables.
     """
+
+    # Environment
+    ENV: str = "development"
+
+    # Proxy trust settings (for rate limiting behind load balancers)
+    TRUST_PROXY_HEADERS: bool = True
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@postgres:5432/appideas"
@@ -37,6 +44,14 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     API_KEY: str = "dev-api-key"
 
+    @field_validator("API_KEY")
+    @classmethod
+    def validate_api_key_strength(cls, v: str) -> str:
+        """Ensure API key meets minimum security requirements."""
+        if len(v) < 16 and os.getenv("ENV") == "production":
+            raise ValueError("API_KEY must be at least 16 characters in production")
+        return v
+
     @model_validator(mode="after")
     def parse_cors_origins(self):
         """Parse CORS_ORIGINS from comma-separated string to list."""
@@ -44,6 +59,22 @@ class Settings(BaseSettings):
             self.CORS_ORIGINS = [
                 origin.strip() for origin in self.CORS_ORIGINS.split(",")
             ]
+        return self
+
+    @model_validator(mode="after")
+    def validate_production_secrets(self):
+        """Ensure default secrets are not used in production."""
+        if self.ENV == "production":
+            if self.API_KEY == "dev-api-key":
+                raise ValueError(
+                    "API_KEY must be changed from default in production. "
+                    "Set a secure API_KEY environment variable."
+                )
+            if self.SECRET_KEY == "development-secret-key-change-in-production":
+                raise ValueError(
+                    "SECRET_KEY must be changed from default in production. "
+                    "Set a secure SECRET_KEY environment variable."
+                )
         return self
 
     # Worker Configuration

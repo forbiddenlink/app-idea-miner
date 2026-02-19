@@ -11,6 +11,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import PlainTextResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from apps.api.app.config import get_settings
 from apps.api.app.database import engine
@@ -115,6 +116,51 @@ app.add_middleware(
     minimum_size=1000,  # Only compress responses > 1KB
     compresslevel=6,  # Balanced speed/compression (1-9)
 )
+
+
+# Security headers middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Add security headers to all responses."""
+
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+
+        # Prevent MIME type sniffing
+        response.headers["X-Content-Type-Options"] = "nosniff"
+
+        # Prevent clickjacking
+        response.headers["X-Frame-Options"] = "DENY"
+
+        # XSS protection (legacy, but still useful for older browsers)
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+
+        # Referrer policy
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
+        # Permissions policy (formerly Feature-Policy)
+        response.headers["Permissions-Policy"] = (
+            "accelerometer=(), camera=(), geolocation=(), gyroscope=(), "
+            "magnetometer=(), microphone=(), payment=(), usb=()"
+        )
+
+        # Content Security Policy (allow API responses, restrict everything else)
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'none'; "
+            "style-src 'none'; "
+            "img-src 'none'; "
+            "frame-ancestors 'none'"
+        )
+
+        # HSTS - enforce HTTPS (1 year, include subdomains)
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains; preload"
+        )
+
+        return response
+
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 # Health check endpoint

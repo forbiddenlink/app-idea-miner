@@ -9,7 +9,7 @@ authors = [
 ]
 license = { text = "MIT" }
 dependencies = [
-    "alembic>=1.17.2",
+    "alembic>=1.18.0",
     "httpx>=0.28.1",
     "pgvector>=0.4.2",
 ]
@@ -21,27 +21,28 @@ members = [
     "packages/core"
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pytest>=8.0.0",
-    "pytest-cov>=6.0.0",
+    "pytest-cov>=7.0.0",
     "pytest-asyncio>=0.24.0",
-    "ruff>=0.8.0",
+    "ruff>=0.15.0",
     "pre-commit>=4.0.0",
-    "httpx>=0.27.0",
-    "fastapi>=0.115.0",
-    "pydantic-settings>=2.7.0",
-    "redis>=5.2.0",
-    "sqlalchemy>=2.0.0",
+    "httpx>=0.28.0",
+    "fastapi>=0.129.0",
+    "pydantic-settings>=2.13.0",
+    "redis>=7.2.0",
+    "sqlalchemy>=2.0.46",
     "asyncpg>=0.30.0",
-    "celery>=5.0.0",
+    "celery>=5.6.0",
     "scikit-learn>=1.5.0",
-    "numpy>=2.2.0",
-    "pandas>=2.2.0",
+    "numpy>=2.4.0",
+    "pandas>=2.3.0",
     "hdbscan>=0.8.0",
     "nltk>=3.9.0",
     "vaderSentiment>=3.3.2",
-    "greenlet>=3.0.0",
+    "greenlet>=3.3.0",
+    "alembic>=1.18.0",
 ]
 
 [tool.ruff]

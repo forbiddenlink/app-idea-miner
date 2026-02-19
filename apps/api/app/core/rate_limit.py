@@ -7,9 +7,43 @@ import logging
 
 from fastapi import HTTPException, Request, status
 
+from apps.api.app.config import get_settings
 from packages.core.cache import get_redis_client
 
 logger = logging.getLogger(__name__)
+
+
+def get_client_ip(request: Request) -> str:
+    """
+    Get the real client IP address, handling proxy headers safely.
+
+    When behind a reverse proxy (Railway, Vercel, nginx), the direct connection
+    IP is the proxy's IP. We need to check X-Forwarded-For header to get the
+    real client IP.
+
+    Security: Only trust proxy headers when TRUST_PROXY_HEADERS is enabled
+    and we're in a known deployment environment.
+    """
+    settings = get_settings()
+
+    if settings.TRUST_PROXY_HEADERS:
+        # X-Forwarded-For format: "client, proxy1, proxy2"
+        # The leftmost IP is the original client
+        forwarded_for = request.headers.get("X-Forwarded-For")
+        if forwarded_for:
+            # Take the first (leftmost) IP - this is the original client
+            client_ip = forwarded_for.split(",")[0].strip()
+            # Basic validation - ensure it looks like an IP
+            if client_ip and "." in client_ip or ":" in client_ip:
+                return client_ip
+
+        # Fallback to X-Real-IP (used by some proxies)
+        real_ip = request.headers.get("X-Real-IP")
+        if real_ip:
+            return real_ip.strip()
+
+    # Direct connection IP (or fallback)
+    return request.client.host if request.client else "unknown"
 
 
 class RateLimiter:
@@ -30,7 +64,7 @@ class RateLimiter:
             logger.warning("Redis not available for rate limiting. Allowing request.")
             return
 
-        client_ip = request.client.host
+        client_ip = get_client_ip(request)
         # Use a prefix to avoid collisions with other keys
         key = f"rate_limit:{client_ip}:{request.url.path}"
 

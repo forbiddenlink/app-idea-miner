@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from datetime import datetime
@@ -9,6 +10,9 @@ from packages.core.dedupe import generate_url_hash
 from packages.core.models import RawPost
 
 logger = logging.getLogger(__name__)
+
+# Timeout for RSS feed fetching (seconds)
+RSS_FETCH_TIMEOUT = 30
 
 
 class RSSSource(BaseSource):
@@ -36,7 +40,15 @@ class RSSSource(BaseSource):
         for feed_url in rss_feeds:
             try:
                 logger.info(f"Parsing feed: {feed_url}")
-                feed = feedparser.parse(feed_url)
+                # feedparser.parse is synchronous, so we run it in a thread with timeout
+                try:
+                    async with asyncio.timeout(RSS_FETCH_TIMEOUT):
+                        feed = await asyncio.to_thread(feedparser.parse, feed_url)
+                except TimeoutError:
+                    logger.error(
+                        f"Timeout fetching feed {feed_url} after {RSS_FETCH_TIMEOUT}s"
+                    )
+                    continue
 
                 if feed.bozo:
                     logger.warning(

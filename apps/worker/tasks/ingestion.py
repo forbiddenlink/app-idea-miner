@@ -30,7 +30,15 @@ SOURCE_REGISTRY: list[type[BaseSource]] = [
 ]
 
 
-@celery_app.task(bind=True, name="apps.worker.tasks.ingestion.run_ingestion_cycle")
+@celery_app.task(
+    bind=True,
+    name="apps.worker.tasks.ingestion.run_ingestion_cycle",
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,  # Max 10 minutes between retries
+    retry_jitter=True,
+    max_retries=3,
+)
 def run_ingestion_cycle(self):
     """
     Run the main ingestion cycle for all configured sources.
@@ -58,10 +66,16 @@ def run_ingestion_cycle(self):
 async def _run_ingestion_async(stats: dict):
     """
     Async implementation of the ingestion runner.
+
+    Uses savepoints per source to ensure partial failures don't corrupt the database.
+    Each source's posts are committed independently.
     """
     async with AsyncSessionLocal() as session:
         for SourceClass in SOURCE_REGISTRY:
             source_name = SourceClass.__name__
+            source_new = 0
+            source_duplicates = 0
+
             try:
                 logger.info(f"Running source: {source_name}")
                 source_instance = SourceClass()
@@ -70,18 +84,27 @@ async def _run_ingestion_async(stats: dict):
                 raw_posts = await source_instance.fetch()
                 stats["fetched"] += len(raw_posts)
 
-                # 2. Process & Save
-                for post in raw_posts:
-                    if await _save_if_new(session, post):
-                        stats["new"] += 1
-                    else:
-                        stats["duplicates"] += 1
+                # 2. Process & Save with savepoint for atomic per-source commits
+                async with session.begin_nested():
+                    for post in raw_posts:
+                        if await _save_if_new(session, post):
+                            source_new += 1
+                        else:
+                            source_duplicates += 1
+
+                # Commit this source's posts
+                await session.commit()
+                stats["new"] += source_new
+                stats["duplicates"] += source_duplicates
+                logger.info(
+                    f"Source {source_name}: {source_new} new, {source_duplicates} duplicates"
+                )
 
             except Exception as e:
                 logger.error(f"Error running source {source_name}: {e}", exc_info=True)
                 stats["errors"] += 1
-
-        await session.commit()
+                # Rollback this source's changes, continue with next source
+                await session.rollback()
 
 
 async def _save_if_new(session, post: RawPost) -> bool:

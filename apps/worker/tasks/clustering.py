@@ -22,7 +22,15 @@ from packages.core.models import Cluster, ClusterMembership, IdeaCandidate
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task(bind=True, name="apps.worker.tasks.clustering.run_clustering")
+@celery_app.task(
+    bind=True,
+    name="apps.worker.tasks.clustering.run_clustering",
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    retry_jitter=True,
+    max_retries=3,
+)
 def run_clustering(
     self,
     min_quality: float = 0.3,
@@ -211,13 +219,27 @@ async def _run_clustering_async(
             # Commit all changes
             await session.commit()
 
-            # Invalidate caches after successful clustering
-            try:
-                await invalidate_clusters_cache()
-                await invalidate_analytics_cache()
-                logger.info("Caches invalidated after clustering")
-            except Exception as cache_error:
-                logger.warning(f"Failed to invalidate caches: {cache_error}")
+            # Invalidate caches after successful clustering with retry
+            cache_invalidated = False
+            for attempt in range(3):
+                try:
+                    await invalidate_clusters_cache()
+                    await invalidate_analytics_cache()
+                    logger.info("Caches invalidated after clustering")
+                    cache_invalidated = True
+                    break
+                except Exception as cache_error:
+                    logger.warning(
+                        f"Cache invalidation attempt {attempt + 1}/3 failed: {cache_error}"
+                    )
+                    if attempt < 2:
+                        await asyncio.sleep(1 * (attempt + 1))  # Backoff: 1s, 2s
+
+            if not cache_invalidated:
+                logger.error(
+                    "Failed to invalidate caches after 3 attempts. "
+                    "Users may see stale data until cache TTL expires."
+                )
 
             return {
                 "ideas_fetched": len(ideas),

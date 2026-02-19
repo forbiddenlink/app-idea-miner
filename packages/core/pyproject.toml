@@ -5,15 +5,15 @@ description = "Shared core library for App-Idea Miner"
 requires-python = ">=3.12"
 
 dependencies = [
-    "sqlalchemy>=2.0.0",
+    "sqlalchemy>=2.0.46",
     "asyncpg>=0.30.0",
     "scikit-learn>=1.5.0",
-    "numpy>=2.2.0",
-    "pandas>=2.2.0",
+    "numpy>=2.4.0",
+    "pandas>=2.3.0",
     "hdbscan>=0.8.0",
     "nltk>=3.9.0",
     "vaderSentiment>=3.3.2",
-    "redis>=5.2.0",
+    "redis>=7.2.0",
     "python-dotenv>=1.0.0",
-    "pgvector>=0.2.0",
+    "pgvector>=0.4.0",
 ]

@@ -3,6 +3,8 @@ Security dependencies for the API.
 Handles API Key validation.
 """
 
+import secrets
+
 from fastapi import HTTPException, Security, status
 from fastapi.security.api_key import APIKeyHeader
 
@@ -33,7 +35,8 @@ async def get_api_key(api_key_header: str = Security(api_key_header)):
             detail="Could not validate credentials: Missing API Key",
         )
 
-    if api_key_header != settings.API_KEY:
+    # Use timing-safe comparison to prevent timing attacks
+    if not secrets.compare_digest(api_key_header, settings.API_KEY):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials: Invalid API Key",

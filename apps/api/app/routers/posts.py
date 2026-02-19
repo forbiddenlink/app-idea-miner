@@ -37,13 +37,16 @@ async def seed_sample_data(service: PostService = Depends(get_post_service)) -> 
     """
     try:
         return await service.seed_from_file()
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        logger.error(f"Seeding failed: {e}")
-        # Return 500 but detail might be safe enough for now
+    except FileNotFoundError:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sample data file not found",
+        )
+    except Exception as e:
+        logger.error(f"Seeding failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to seed data. Check server logs for details.",
         )
 
 

@@ -71,14 +71,49 @@ class ProductHuntSource(BaseSource):
 
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    self.api_url,
-                    json={"query": query},
-                    headers=headers,
-                    timeout=10.0,
-                )
-                response.raise_for_status()
-                data = response.json()
+                # Retry logic for transient failures
+                last_error = None
+                for attempt in range(3):
+                    try:
+                        response = await client.post(
+                            self.api_url,
+                            json={"query": query},
+                            headers=headers,
+                            timeout=30.0,  # Increased timeout
+                        )
+                        response.raise_for_status()
+                        data = response.json()
+                        break  # Success, exit retry loop
+                    except httpx.HTTPStatusError as e:
+                        last_error = e
+                        # Retry on 5xx server errors
+                        if 500 <= e.response.status_code < 600:
+                            logger.warning(
+                                f"Product Hunt API server error (attempt {attempt + 1}/3): "
+                                f"{e.response.status_code}"
+                            )
+                            if attempt < 2:
+                                import asyncio
+
+                                await asyncio.sleep(2**attempt)  # Exponential backoff
+                                continue
+                        # Don't retry client errors (4xx)
+                        raise
+                    except httpx.TimeoutException as e:
+                        last_error = e
+                        logger.warning(
+                            f"Product Hunt API timeout (attempt {attempt + 1}/3)"
+                        )
+                        if attempt < 2:
+                            import asyncio
+
+                            await asyncio.sleep(2**attempt)
+                            continue
+                        raise
+                else:
+                    # All retries exhausted
+                    if last_error:
+                        raise last_error
 
                 if "errors" in data:
                     logger.error(f"Product Hunt API errors: {data['errors']}")

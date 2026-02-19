@@ -25,7 +25,15 @@ from packages.core.nlp import (
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task(bind=True, name="apps.worker.tasks.processing.process_raw_posts")
+@celery_app.task(
+    bind=True,
+    name="apps.worker.tasks.processing.process_raw_posts",
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    retry_jitter=True,
+    max_retries=3,
+)
 def process_raw_posts(
     self, batch_size: int = 100, min_quality: float = 0.3
 ) -> dict[str, Any]:
@@ -92,18 +100,20 @@ async def _process_posts_async(batch_size: int, min_quality: float) -> dict[str,
 
         logger.info(f"Found {len(posts)} unprocessed posts")
 
-        # Process each post
+        # Process each post with savepoint for atomic per-post commits
         for post in posts:
             try:
-                ideas_count = await _process_single_post(session, post, min_quality)
-                stats["processed"] += 1
-                stats["ideas_created"] += ideas_count
+                # Use savepoint to ensure partial failures don't corrupt data
+                async with session.begin_nested():
+                    ideas_count = await _process_single_post(session, post, min_quality)
 
-                if ideas_count == 0:
-                    stats["low_quality_skipped"] += 1
+                    if ideas_count == 0:
+                        stats["low_quality_skipped"] += 1
 
-                # Mark as processed
-                post.is_processed = True
+                    # Only mark as processed after successful idea extraction
+                    post.is_processed = True
+                    stats["processed"] += 1
+                    stats["ideas_created"] += ideas_count
 
             except Exception as e:
                 logger.error(f"Error processing post {post.id}: {e}", exc_info=True)
@@ -114,9 +124,9 @@ async def _process_posts_async(batch_size: int, min_quality: float) -> dict[str,
                         "error": str(e),
                     }
                 )
-                # Don't mark as processed on error
+                # Savepoint rollback happens automatically, post stays unprocessed
 
-        # Commit all changes
+        # Commit all successful changes
         try:
             await session.commit()
             logger.info(f"Committed {stats['processed']} processed posts")

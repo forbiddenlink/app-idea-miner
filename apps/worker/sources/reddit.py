@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import random
@@ -10,6 +11,9 @@ from packages.core.dedupe import generate_url_hash
 from packages.core.models import RawPost
 
 logger = logging.getLogger(__name__)
+
+# Timeout for Reddit API requests (seconds)
+REDDIT_FETCH_TIMEOUT = 60
 
 
 class RedditSource(BaseSource):
@@ -34,56 +38,70 @@ class RedditSource(BaseSource):
 
         logger.info("Fetching from Reddit API...")
         fetched_posts = []
+        reddit = None
 
         try:
-            reddit = asyncpraw.Reddit(
-                client_id=self.client_id,
-                client_secret=self.client_secret,
-                user_agent=self.user_agent,
-            )
-
-            # Subreddits to monitor
-            subreddits = ["AppIdeas", "StartupIdeas", "SomebodyMakeThis", "SideProject"]
-            subreddit_str = "+".join(subreddits)
-
-            subreddit = await reddit.subreddit(subreddit_str)
-
-            # Fetch new posts (limit to 50 combined)
-            async for submission in subreddit.new(limit=50):
-                # Skip stickied posts
-                if submission.stickied:
-                    continue
-
-                # Convert timestamp
-                published_at = datetime.fromtimestamp(submission.created_utc, tz=UTC)
-
-                # Create wrapper for raw post
-                url = f"https://www.reddit.com{submission.permalink}"
-
-                post = RawPost(
-                    url=url,
-                    url_hash=generate_url_hash(url),
-                    title=submission.title,
-                    content=submission.selftext or "",
-                    source="reddit",
-                    author=str(submission.author),
-                    published_at=published_at,
-                    fetched_at=datetime.now(UTC),
-                    source_metadata={
-                        "subreddit": submission.subreddit.display_name,
-                        "upvotes": submission.score,
-                        "comments": submission.num_comments,
-                        "id": submission.id,
-                    },
-                    is_processed=False,
+            async with asyncio.timeout(REDDIT_FETCH_TIMEOUT):
+                reddit = asyncpraw.Reddit(
+                    client_id=self.client_id,
+                    client_secret=self.client_secret,
+                    user_agent=self.user_agent,
+                    requestor_kwargs={"timeout": 30},  # HTTP request timeout
                 )
-                fetched_posts.append(post)
 
-            await reddit.close()
-            logger.info(f"Fetched {len(fetched_posts)} posts from Reddit.")
+                # Subreddits to monitor
+                subreddits = [
+                    "AppIdeas",
+                    "StartupIdeas",
+                    "SomebodyMakeThis",
+                    "SideProject",
+                ]
+                subreddit_str = "+".join(subreddits)
 
+                subreddit = await reddit.subreddit(subreddit_str)
+
+                # Fetch new posts (limit to 50 combined)
+                async for submission in subreddit.new(limit=50):
+                    # Skip stickied posts
+                    if submission.stickied:
+                        continue
+
+                    # Convert timestamp
+                    published_at = datetime.fromtimestamp(
+                        submission.created_utc, tz=UTC
+                    )
+
+                    # Create wrapper for raw post
+                    url = f"https://www.reddit.com{submission.permalink}"
+
+                    post = RawPost(
+                        url=url,
+                        url_hash=generate_url_hash(url),
+                        title=submission.title,
+                        content=submission.selftext or "",
+                        source="reddit",
+                        author=str(submission.author),
+                        published_at=published_at,
+                        fetched_at=datetime.now(UTC),
+                        source_metadata={
+                            "subreddit": submission.subreddit.display_name,
+                            "upvotes": submission.score,
+                            "comments": submission.num_comments,
+                            "id": submission.id,
+                        },
+                        is_processed=False,
+                    )
+                    fetched_posts.append(post)
+
+                logger.info(f"Fetched {len(fetched_posts)} posts from Reddit.")
+
+        except TimeoutError:
+            logger.error(f"Reddit API timeout after {REDDIT_FETCH_TIMEOUT}s")
         except Exception as e:
             logger.error(f"Error fetching from Reddit: {e}", exc_info=True)
+        finally:
+            if reddit:
+                await reddit.close()
 
         return fetched_posts
 
