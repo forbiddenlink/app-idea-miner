@@ -4,9 +4,10 @@ Posts API endpoints for raw post management.
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from apps.api.app.core.constants import DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT
 from apps.api.app.core.rate_limit import RateLimiter
 from apps.api.app.core.security import get_api_key
 from apps.api.app.database import get_db
@@ -52,8 +53,8 @@ async def seed_sample_data(service: PostService = Depends(get_post_service)) -> 
 
 @router.get("")
 async def list_posts(
-    limit: int = 20,
-    offset: int = 0,
+    limit: int = Query(DEFAULT_PAGE_LIMIT, ge=1, le=MAX_PAGE_LIMIT),
+    offset: int = Query(0, ge=0),
     source: str | None = None,
     is_processed: bool | None = None,
     service: PostService = Depends(get_post_service),

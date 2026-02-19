@@ -7,8 +7,10 @@ Provides ability to trigger background tasks and check their status.
 import logging
 
 from celery import Celery
+from celery.exceptions import CeleryError
 from celery.result import AsyncResult
 from fastapi import APIRouter, Body, Depends, HTTPException
+from kombu.exceptions import OperationalError as KombuOperationalError
 from pydantic import BaseModel
 
 from apps.api.app.config import get_settings
@@ -216,11 +218,12 @@ async def get_job_status(job_id: str):
 
         return response
 
-    except Exception as e:
-        logger.error(f"Error checking job {job_id}: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to check job status: {str(e)}"
-        )
+    except KombuOperationalError as e:
+        logger.error(f"Broker connection error checking job {job_id}: {e}")
+        raise HTTPException(status_code=503, detail="Message broker unavailable")
+    except CeleryError as e:
+        logger.error(f"Celery error checking job {job_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to check job status")
 
 
 @router.delete("/{job_id}")
@@ -244,6 +247,9 @@ async def cancel_job(job_id: str):
             "message": "Job cancellation requested",
         }
 
-    except Exception as e:
-        logger.error(f"Error cancelling job {job_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to cancel job: {str(e)}")
+    except KombuOperationalError as e:
+        logger.error(f"Broker connection error cancelling job {job_id}: {e}")
+        raise HTTPException(status_code=503, detail="Message broker unavailable")
+    except CeleryError as e:
+        logger.error(f"Celery error cancelling job {job_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to cancel job")

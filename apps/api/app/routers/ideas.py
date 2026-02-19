@@ -6,8 +6,10 @@ import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from apps.api.app.core.constants import DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT
 from apps.api.app.core.rate_limit import RateLimiter
 from apps.api.app.core.security import get_api_key
 from apps.api.app.database import get_db
@@ -22,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @router.get("")
 async def list_ideas(
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(DEFAULT_PAGE_LIMIT, ge=1, le=MAX_PAGE_LIMIT),
     offset: int = Query(0, ge=0),
     domain: str | None = None,
     sentiment: str | None = None,
@@ -99,8 +101,11 @@ async def list_ideas(
             "pagination": result["pagination"],
         }
 
-    except Exception as e:
-        logger.error(f"Error listing ideas: {e}", exc_info=True)
+    except OperationalError as e:
+        logger.error(f"Database connection error listing ideas: {e}", exc_info=True)
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    except IntegrityError as e:
+        logger.error(f"Database integrity error listing ideas: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -162,15 +167,22 @@ async def get_idea(
 
     except HTTPException:
         raise
-    except Exception as e:
-        logger.error(f"Error fetching idea {idea_id}: {e}", exc_info=True)
+    except OperationalError as e:
+        logger.error(
+            f"Database connection error fetching idea {idea_id}: {e}", exc_info=True
+        )
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    except IntegrityError as e:
+        logger.error(
+            f"Database integrity error fetching idea {idea_id}: {e}", exc_info=True
+        )
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/search/query")
 async def search_ideas(
     q: str = Query(..., min_length=2),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(DEFAULT_PAGE_LIMIT, ge=1, le=MAX_PAGE_LIMIT),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
 ):
@@ -220,8 +232,11 @@ async def search_ideas(
             "pagination": result["pagination"],
         }
 
-    except Exception as e:
-        logger.error(f"Error searching ideas: {e}", exc_info=True)
+    except OperationalError as e:
+        logger.error(f"Database connection error searching ideas: {e}", exc_info=True)
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    except IntegrityError as e:
+        logger.error(f"Database integrity error searching ideas: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -242,6 +257,13 @@ async def get_ideas_stats(
         service = IdeaService(db)
         return await service.get_ideas_stats()
 
-    except Exception as e:
-        logger.error(f"Error fetching ideas stats: {e}", exc_info=True)
+    except OperationalError as e:
+        logger.error(
+            f"Database connection error fetching ideas stats: {e}", exc_info=True
+        )
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    except IntegrityError as e:
+        logger.error(
+            f"Database integrity error fetching ideas stats: {e}", exc_info=True
+        )
         raise HTTPException(status_code=500, detail="Internal server error")
