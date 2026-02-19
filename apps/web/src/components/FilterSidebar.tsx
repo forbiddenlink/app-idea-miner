@@ -1,5 +1,6 @@
 import React from 'react';
 import { FunnelIcon } from '@heroicons/react/24/outline';
+import { cn } from '@/utils/cn';
 
 interface FilterSidebarProps {
   sortBy: string;
@@ -19,22 +20,22 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onMinSizeChange,
 }) => {
   return (
-    <div className="card w-64 h-fit sticky top-4" role="complementary" aria-label="Filter controls">
-      <div className="flex items-center gap-2 mb-4">
-        <FunnelIcon className="w-5 h-5 text-primary-400" aria-hidden="true" />
-        <h3 className="text-lg font-semibold text-white">Filters</h3>
+    <div className="w-64 shrink-0 rounded-lg border border-border bg-card p-5" role="complementary" aria-label="Filter controls">
+      <div className="mb-5 flex items-center gap-2">
+        <FunnelIcon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        <h3 className="text-sm font-semibold text-foreground">Filters</h3>
       </div>
 
       {/* Sort By */}
       <div className="mb-4">
-        <label htmlFor="sort-by-select" className="block text-sm font-medium text-slate-300 mb-2">
+        <label htmlFor="sort-by-select" className="mb-2 block text-sm font-medium text-muted-foreground">
           Sort By
         </label>
         <select
           id="sort-by-select"
           value={sortBy}
           onChange={(e) => onSortChange(e.target.value)}
-          className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           aria-label="Select sorting criteria"
         >
           <option value="size">Size (Idea Count)</option>
@@ -48,47 +49,43 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {/* Order */}
       <div className="mb-4">
         <fieldset>
-          <legend className="block text-sm font-medium text-slate-300 mb-2">
+          <legend className="mb-2 block text-sm font-medium text-muted-foreground">
             Order
           </legend>
           <div className="flex gap-2" role="group" aria-label="Sort order">
             <button
               onClick={() => onOrderChange('desc')}
-              className={`relative flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 overflow-hidden group ${
+              className={cn(
+                "flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 order === 'desc'
-                  ? 'bg-gradient-to-r from-primary-500 to-purple-500 text-white shadow-lg shadow-primary-500/30'
-                  : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
-              }`}
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+              )}
               aria-pressed={order === 'desc'}
               aria-label="Sort high to low"
             >
-              {order !== 'desc' && (
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              )}
-              <span className="relative z-10">High to Low</span>
+              High to Low
             </button>
             <button
               onClick={() => onOrderChange('asc')}
-              className={`relative flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 overflow-hidden group ${
+              className={cn(
+                "flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 order === 'asc'
-                  ? 'bg-gradient-to-r from-primary-500 to-purple-500 text-white shadow-lg shadow-primary-500/30'
-                  : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
-              }`}
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+              )}
               aria-pressed={order === 'asc'}
               aria-label="Sort low to high"
             >
-              {order !== 'asc' && (
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              )}
-              <span className="relative z-10">Low to High</span>
+              Low to High
             </button>
           </div>
         </fieldset>
       </div>
 
       {/* Minimum Size */}
-      <div className="mb-4">
-        <label htmlFor="min-size-input" className="block text-sm font-medium text-slate-300 mb-2">
+      <div className="mb-5">
+        <label htmlFor="min-size-input" className="mb-2 block text-sm font-medium text-muted-foreground">
           Minimum Ideas
         </label>
         <input
@@ -100,7 +97,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           }
           placeholder="Any size"
           min="1"
-          className="w-full bg-slate-700 text-white rounded-lg px-3 py-2 border border-slate-600 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           aria-label="Minimum number of ideas in cluster"
         />
       </div>
@@ -112,7 +109,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           onOrderChange('desc');
           onMinSizeChange(undefined);
         }}
-        className="w-full px-4 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors text-sm font-medium"
+        className="w-full rounded-md bg-muted px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
         aria-label="Reset all filters to default values"
       >
         Reset Filters

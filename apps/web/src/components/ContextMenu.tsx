@@ -7,6 +7,7 @@ import {
   DocumentDuplicateIcon,
 } from '@heroicons/react/24/outline'
 import { motion } from 'framer-motion'
+import { cn } from '@/utils/cn'
 
 export interface ContextMenuItem {
   label: string
@@ -34,13 +35,11 @@ export function ContextMenu({ items, children, disabled = false }: ContextMenuPr
     e.preventDefault()
     e.stopPropagation()
 
-    // Calculate position
     const x = e.clientX
     const y = e.clientY
 
-    // Adjust position to keep menu in viewport
-    const menuWidth = 240 // Approximate menu width
-    const menuHeight = items.length * 40 + 16 // Approximate menu height
+    const menuWidth = 240
+    const menuHeight = items.length * 40 + 16
 
     let adjustedX = x
     let adjustedY = y
@@ -67,7 +66,6 @@ export function ContextMenu({ items, children, disabled = false }: ContextMenuPr
     handleClose()
   }
 
-  // Close on click outside
   useEffect(() => {
     if (!isOpen) return
 
@@ -81,7 +79,6 @@ export function ContextMenu({ items, children, disabled = false }: ContextMenuPr
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen])
 
-  // Close on Escape key
   useEffect(() => {
     if (!isOpen) return
 
@@ -113,7 +110,7 @@ export function ContextMenu({ items, children, disabled = false }: ContextMenuPr
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.1 }}
-            className="bg-slate-800/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden min-w-[240px]"
+            className="min-w-[240px] overflow-hidden rounded-lg border border-border bg-popover shadow-lg"
           >
             <div className="py-2">
               {items.map((item, index) => {
@@ -124,22 +121,18 @@ export function ContextMenu({ items, children, disabled = false }: ContextMenuPr
                     key={index}
                     onClick={() => handleItemClick(item.onClick)}
                     disabled={item.disabled}
-                    className={`
-                      w-full px-4 py-2.5 flex items-center gap-3 text-left text-sm
-                      transition-all duration-150
-                      ${item.disabled
-                        ? 'opacity-50 cursor-not-allowed'
-                        : item.danger
-                          ? 'text-red-400 hover:bg-red-500/10'
-                          : 'text-slate-300 hover:bg-slate-700/50'
-                      }
-                      ${!item.disabled && 'hover:pl-5'}
-                    `}
+                    className={cn(
+                      "flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-all duration-150",
+                      item.disabled && "cursor-not-allowed opacity-50",
+                      !item.disabled && item.danger && "text-destructive hover:bg-destructive/10",
+                      !item.disabled && !item.danger && "text-foreground hover:bg-muted",
+                      !item.disabled && "hover:pl-5"
+                    )}
                   >
-                    {Icon && <Icon className="w-4 h-4 flex-shrink-0" />}
+                    {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
                     <span className="flex-1">{item.label}</span>
                     {item.shortcut && (
-                      <span className="text-xs text-slate-500">{item.shortcut}</span>
+                      <span className="text-xs text-muted-foreground">{item.shortcut}</span>
                     )}
                   </button>
                 )
@@ -157,7 +150,6 @@ export function useContextMenuActions() {
   const copyToClipboard = async (text: string, label: string = 'Text') => {
     try {
       await navigator.clipboard.writeText(text)
-      // You can integrate with toast notifications here
       console.log(`${label} copied to clipboard`)
     } catch (error) {
       console.error('Failed to copy:', error)
@@ -174,7 +166,6 @@ export function useContextMenuActions() {
         }
       }
     } else {
-      // Fallback: copy to clipboard
       await copyToClipboard(url, 'URL')
     }
   }

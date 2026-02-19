@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { Cluster, Idea } from '@/types';
 import { apiClient } from '@/services/api';
+import { cn } from '@/utils/cn';
 
 interface SearchResult {
   type: 'cluster' | 'idea';
@@ -43,7 +44,6 @@ export const SearchAutocomplete = () => {
           apiClient.searchIdeas(query, 5),
         ]);
 
-        // Search clusters client-side over the fetched page
         const clusters: SearchResult[] = clusterRes.clusters
           .filter((c: Cluster) =>
             c.label.toLowerCase().includes(query.toLowerCase()) ||
@@ -58,7 +58,6 @@ export const SearchAutocomplete = () => {
             idea_count: c.idea_count,
           }));
 
-        // Search ideas via API search endpoint
         const ideas: SearchResult[] = ideaRes.results.map((i: Idea) => ({
           type: 'idea' as const,
           id: i.id,
@@ -84,7 +83,6 @@ export const SearchAutocomplete = () => {
     setSelectedIndex(-1);
   }, [query]);
 
-  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
@@ -96,7 +94,6 @@ export const SearchAutocomplete = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -117,7 +114,6 @@ export const SearchAutocomplete = () => {
     if (result.type === 'cluster') {
       navigate(`/clusters/${result.id}`);
     } else {
-      // Navigate to cluster that contains this idea
       navigate(`/clusters?idea=${result.id}`);
     }
     setQuery('');
@@ -126,23 +122,23 @@ export const SearchAutocomplete = () => {
   };
 
   const getSentimentColor = (sentiment?: string) => {
-    if (!sentiment) return 'text-slate-400';
-    return sentiment === 'positive' ? 'text-green-400' : sentiment === 'negative' ? 'text-red-400' : 'text-slate-400';
+    if (!sentiment) return 'text-muted-foreground';
+    return sentiment === 'positive' ? 'text-success' : sentiment === 'negative' ? 'text-destructive' : 'text-muted-foreground';
   };
 
   return (
     <div ref={searchRef} className="relative w-full max-w-md" role="search">
       <div className="relative">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <input
           ref={inputRef}
           type="search"
-          placeholder="Search clusters, ideas… (Ctrl + /)"
+          placeholder="Search clusters, ideas…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
-          className="w-full pl-10 pr-10 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           aria-label="Search clusters and ideas"
           aria-autocomplete="list"
           aria-controls={listboxId}
@@ -159,10 +155,10 @@ export const SearchAutocomplete = () => {
               setIsOpen(false);
               setSelectedIndex(-1);
             }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Clear search query"
           >
-            <XMarkIcon className="w-5 h-5" aria-hidden="true" />
+            <XMarkIcon className="h-4 w-4" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -178,14 +174,14 @@ export const SearchAutocomplete = () => {
             role="listbox"
             aria-label="Search results"
             aria-live="polite"
-            className="absolute top-full mt-2 w-full bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50"
+            className="absolute top-full z-50 mt-2 max-h-96 w-full overflow-y-auto rounded-lg border border-border bg-popover shadow-lg"
           >
             {isLoading ? (
-              <div className="px-4 py-3 text-slate-400 text-sm" role="status" aria-live="polite">
+              <div className="px-4 py-3 text-sm text-muted-foreground" role="status" aria-live="polite">
                 Searching...
               </div>
             ) : results.length === 0 ? (
-              <div className="px-4 py-3 text-slate-400 text-sm" role="status" aria-live="polite">
+              <div className="px-4 py-3 text-sm text-muted-foreground" role="status" aria-live="polite">
                 No results found
               </div>
             ) : (
@@ -197,33 +193,37 @@ export const SearchAutocomplete = () => {
                     id={`search-result-${index}`}
                     onClick={() => handleSelect(result)}
                     onMouseEnter={() => setSelectedIndex(index)}
-                    className={`w-full text-left px-4 py-3 hover:bg-slate-700/50 transition-colors border-b border-slate-700/50 last:border-b-0 ${selectedIndex === index ? 'bg-slate-700/50' : ''
-                      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500`}
+                    className={cn(
+                      "w-full border-b border-border/50 px-4 py-3 text-left transition-colors last:border-b-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      selectedIndex === index ? 'bg-muted' : 'hover:bg-muted/50'
+                    )}
                     role="option"
                     aria-selected={selectedIndex === index}
                     aria-label={`${result.type}: ${result.title}`}
                   >
                     <div className="flex items-start gap-3">
                       <span
-                        className={`px-2 py-0.5 rounded text-xs font-medium ${result.type === 'cluster'
-                          ? 'bg-primary-500/20 text-primary-400'
-                          : 'bg-purple-500/20 text-purple-400'
-                          }`}
+                        className={cn(
+                          "rounded px-2 py-0.5 text-xs font-medium",
+                          result.type === 'cluster'
+                            ? 'bg-primary/10 text-primary'
+                            : 'bg-secondary text-secondary-foreground'
+                        )}
                         aria-hidden="true"
                       >
                         {result.type === 'cluster' ? 'Cluster' : 'Idea'}
                       </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-slate-200 font-medium truncate">{result.title}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-slate-400 text-sm truncate">{result.description}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium text-foreground">{result.title}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <p className="truncate text-sm text-muted-foreground">{result.description}</p>
                           {result.idea_count && (
-                            <span className="text-slate-500 text-xs whitespace-nowrap">
+                            <span className="whitespace-nowrap text-xs text-muted-foreground">
                               {result.idea_count} ideas
                             </span>
                           )}
                           {result.sentiment && (
-                            <span className={`text-xs font-medium ${getSentimentColor(result.sentiment)}`}>
+                            <span className={cn("text-xs font-medium", getSentimentColor(result.sentiment))}>
                               {result.sentiment}
                             </span>
                           )}

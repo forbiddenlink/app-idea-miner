@@ -1,17 +1,12 @@
 import { useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import {
-  Activity,
-  Box,
-  FileText,
-  Lightbulb,
-  RefreshCw
-} from "lucide-react"
+import { RefreshCw } from "lucide-react"
 
 import { apiClient } from "@/services/api"
 import { Cluster } from "@/types"
 import StatCard from "@/components/StatCard"
 import ClusterCard from "@/components/ClusterCard"
+import { EmptyClusterList } from "@/components/EmptyStates"
 import { Button } from "@/components/ui/button"
 
 export default function Dashboard() {
@@ -44,29 +39,26 @@ export default function Dashboard() {
     {
       name: "Total Clusters",
       value: summary.overview.total_clusters.toString(),
-      icon: Box,
-      color: "primary" as const,
-      change: `${summary.trending.new_clusters_this_week} this week`,
+      trend: summary.trending.new_clusters_this_week > 0 ? "up" as const : "neutral" as const,
+      trendValue: summary.trending.new_clusters_this_week > 0 ? `+${summary.trending.new_clusters_this_week}` : undefined,
+      change: "this week",
     },
     {
       name: "Ideas Analyzed",
       value: summary.overview.total_ideas.toString(),
-      icon: Lightbulb,
-      color: "success" as const,
-      change: `${summary.trending.new_ideas_today} today`,
+      trend: summary.trending.new_ideas_today > 0 ? "up" as const : "neutral" as const,
+      trendValue: summary.trending.new_ideas_today > 0 ? `+${summary.trending.new_ideas_today}` : undefined,
+      change: "today",
     },
     {
       name: "Posts Ingested",
       value: summary.overview.total_posts.toString(),
-      icon: FileText,
-      color: "warning" as const,
-      change: "From multiple sources",
+      change: "from multiple sources",
     },
     {
       name: "Avg Sentiment",
       value: summary.overview.avg_sentiment.toFixed(2),
-      icon: Activity,
-      color: summary.overview.avg_sentiment > 0 ? ("success" as const) : ("danger" as const),
+      trend: summary.overview.avg_sentiment > 0 ? "up" as const : summary.overview.avg_sentiment < 0 ? "down" as const : "neutral" as const,
       change: `${summary.sentiment_distribution.positive} positive`,
     },
   ] : []
@@ -129,8 +121,8 @@ export default function Dashboard() {
               <ClusterCard key={cluster.id} cluster={cluster} />
             ))
           ) : (
-            <div className="col-span-full flex h-[450px] shrink-0 items-center justify-center rounded-md border border-dashed text-muted-foreground">
-              No clusters found. Try triggering ingestion.
+            <div className="col-span-full">
+              <EmptyClusterList />
             </div>
           )}
         </div>

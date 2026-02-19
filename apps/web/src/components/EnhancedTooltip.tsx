@@ -47,18 +47,16 @@ export const EnhancedTooltip = ({
     timeoutRef.current = setTimeout(() => {
       const rect = triggerRef.current?.getBoundingClientRect();
       if (rect) {
-        // Position tooltip above the element, centered
         const tooltipWidth = 320;
         let x = rect.left + rect.width / 2 - tooltipWidth / 2;
-        let y = rect.top - 10; // 10px above trigger
+        let y = rect.top - 10;
 
-        // Keep tooltip within viewport
         if (x < 10) x = 10;
         if (x + tooltipWidth > window.innerWidth - 10) {
           x = window.innerWidth - tooltipWidth - 10;
         }
         if (y < 10) {
-          y = rect.bottom + 10; // Show below if not enough space above
+          y = rect.bottom + 10;
         }
 
         setPosition({ x, y });
@@ -92,42 +90,38 @@ export const EnhancedTooltip = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 5 }}
             transition={{ duration: 0.15 }}
-            className="fixed z-50 pointer-events-none"
+            className="pointer-events-none fixed z-50"
             style={{
               left: `${position.x}px`,
               top: `${position.y}px`,
             }}
           >
-            <div className="card p-4 min-w-[320px] max-w-[400px] shadow-2xl">
-              {/* Title */}
-              <h4 className="font-semibold text-white mb-2">{title}</h4>
+            <div className="min-w-[320px] max-w-[400px] rounded-lg border border-border bg-popover p-4 shadow-lg">
+              <h4 className="mb-2 font-semibold text-foreground">{title}</h4>
 
-              {/* Description */}
               {description && (
-                <p className="text-sm text-slate-400 mb-3 leading-relaxed">{description}</p>
+                <p className="mb-3 text-sm leading-relaxed text-muted-foreground">{description}</p>
               )}
 
-              {/* Metrics */}
               {metrics.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-700/50">
+                <div className="grid grid-cols-2 gap-3 border-t border-border pt-3">
                   {metrics.map((metric, idx) => (
                     <div key={idx} className="space-y-1">
                       <div className="flex items-center gap-1.5">
                         {metric.icon && (
-                          <span className={metric.color || 'text-slate-400'}>
+                          <span className={metric.color || 'text-muted-foreground'}>
                             {metric.icon}
                           </span>
                         )}
-                        <span className="text-xs text-slate-500">{metric.label}</span>
+                        <span className="text-xs text-muted-foreground">{metric.label}</span>
                       </div>
-                      <p className="font-semibold text-white">{metric.value}</p>
+                      <p className="font-semibold text-foreground">{metric.value}</p>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* Arrow pointing down */}
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 border-b border-r border-slate-700/50 rotate-45" />
+              <div className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-b border-r border-border bg-popover" />
             </div>
           </motion.div>
         )}
@@ -181,10 +175,10 @@ export const SimpleTooltip = ({ children, content, delay = 200 }: SimpleTooltipP
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 5 }}
             transition={{ duration: 0.15 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-sm text-white bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-lg shadow-xl whitespace-nowrap pointer-events-none z-50"
+            className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-popover px-3 py-2 text-sm text-foreground shadow-lg"
           >
             {content}
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900/95 border-b border-r border-slate-700/50 rotate-45" />
+            <div className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-b border-r border-border bg-popover" />
           </motion.div>
         )}
       </AnimatePresence>

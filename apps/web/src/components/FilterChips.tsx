@@ -24,9 +24,9 @@ export const FilterChips = ({ chips, onClearAll }: FilterChipsProps) => {
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-wrap items-center gap-2 mb-4 p-4 rounded-lg backdrop-blur-xl bg-slate-800/40 border border-slate-700/50"
+      className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-4"
     >
-      <span className="text-sm text-slate-400 font-medium">Active Filters:</span>
+      <span className="text-sm font-medium text-muted-foreground">Active Filters:</span>
 
       <AnimatePresence mode="popLayout">
         {chips.map((chip) => (
@@ -36,19 +36,19 @@ export const FilterChips = ({ chips, onClearAll }: FilterChipsProps) => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.2 }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-sm text-indigo-300 hover:bg-indigo-500/30 transition-colors group"
+            className="group flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted/80"
           >
-            <span className="font-medium">{chip.label}:</span>
+            <span className="font-medium text-muted-foreground">{chip.label}:</span>
             <span>{chip.value}</span>
             {chip.count && (
-              <span className="text-xs opacity-70">({chip.count})</span>
+              <span className="text-xs text-muted-foreground">({chip.count})</span>
             )}
             <button
               onClick={chip.onRemove}
-              className="ml-1 hover:text-red-400 transition-colors"
+              className="ml-1 text-muted-foreground transition-colors hover:text-destructive"
               aria-label={`Remove ${chip.label} filter`}
             >
-              <XMarkIcon className="w-4 h-4" />
+              <XMarkIcon className="h-4 w-4" />
             </button>
           </motion.div>
         ))}
@@ -59,7 +59,7 @@ export const FilterChips = ({ chips, onClearAll }: FilterChipsProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={onClearAll}
-          className="ml-auto text-sm text-slate-400 hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-slate-700/50"
+          className="ml-auto rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
         >
           Clear All
         </motion.button>

@@ -8,6 +8,7 @@ import { MagnifyingGlassIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/api';
 import { Cluster, Idea } from '@/types';
+import { cn } from '@/utils/cn';
 
 interface CommandItem {
   id: string;
@@ -33,7 +34,6 @@ export const CommandPalette = () => {
     setSelectedIndex(0);
   }, []);
 
-  // Fetch data for search
   const { data: clusters } = useQuery({
     queryKey: ['clusters', { limit: 50 }],
     queryFn: async () => {
@@ -52,7 +52,6 @@ export const CommandPalette = () => {
     enabled: isOpen,
   });
 
-  // Load recent searches
   useEffect(() => {
     const stored = localStorage.getItem('app-idea-miner-recent-searches');
     if (stored) {
@@ -71,11 +70,9 @@ export const CommandPalette = () => {
     localStorage.setItem('app-idea-miner-recent-searches', JSON.stringify(updated));
   };
 
-  // Build command items
   const buildCommands = useCallback((): CommandItem[] => {
     const commands: CommandItem[] = [];
 
-    // Pages
     commands.push(
       {
         id: 'page-dashboard',
@@ -111,7 +108,6 @@ export const CommandPalette = () => {
       }
     );
 
-    // Clusters
     if (clusters) {
       clusters.forEach((cluster: Cluster) => {
         commands.push({
@@ -128,7 +124,6 @@ export const CommandPalette = () => {
       });
     }
 
-    // Ideas
     if (ideas && ideas.length > 0) {
       ideas.slice(0, 20).forEach((idea: Idea) => {
         commands.push({
@@ -137,7 +132,6 @@ export const CommandPalette = () => {
           subtitle: `${idea.sentiment} · Quality: ${(idea.quality_score * 100).toFixed(0)}%`,
           type: 'idea',
           action: () => {
-            // Could navigate to idea detail page if we add one
             navigate(`/ideas?search=${encodeURIComponent(idea.problem_statement)}`);
             setIsOpen(false);
           },
@@ -168,7 +162,6 @@ export const CommandPalette = () => {
     setSelectedIndex(0);
   };
 
-  // Keyboard shortcut and palette navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -229,10 +222,22 @@ export const CommandPalette = () => {
     setSelectedIndex(Math.max(filteredCommands.length - 1, 0));
   }, [filteredCommands.length, selectedIndex]);
 
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'cluster':
+        return 'bg-primary';
+      case 'idea':
+        return 'bg-success';
+      case 'page':
+        return 'bg-muted-foreground';
+      default:
+        return 'bg-muted-foreground';
+    }
+  };
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={() => setIsOpen(false)}>
-        {/* Backdrop */}
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -242,7 +247,7 @@ export const CommandPalette = () => {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -256,17 +261,18 @@ export const CommandPalette = () => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-xl backdrop-blur-xl bg-slate-800/90 border border-slate-700/50 shadow-2xl transition-all">
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg border border-border bg-popover shadow-lg transition-all">
                 <Dialog.Title className="sr-only">Command palette</Dialog.Title>
+
                 {/* Search Input */}
-                <div className="relative">
-                  <MagnifyingGlassIcon className="absolute left-4 top-4 w-5 h-5 text-slate-400" />
+                <div className="relative border-b border-border">
+                  <MagnifyingGlassIcon className="absolute left-4 top-4 h-5 w-5 text-muted-foreground" />
                   <input
                     ref={inputRef}
                     id="command-palette-input"
                     type="text"
                     placeholder="Search clusters, ideas, or pages…"
-                    className="w-full pl-12 pr-4 py-4 bg-transparent border-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 text-white placeholder-slate-400 text-lg"
+                    className="w-full bg-transparent py-4 pl-12 pr-4 text-foreground placeholder:text-muted-foreground focus:outline-none"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     aria-label="Search commands, pages, and ideas"
@@ -276,17 +282,17 @@ export const CommandPalette = () => {
                     aria-expanded={isOpen}
                     aria-activedescendant={filteredCommands[selectedIndex] ? `command-result-${filteredCommands[selectedIndex].id}` : undefined}
                   />
-                  <div className="absolute right-4 top-4 text-xs text-slate-500 px-2 py-1 bg-slate-700/50 rounded">
+                  <div className="absolute right-4 top-4 rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
                     ⌘K
                   </div>
                 </div>
 
                 {/* Results */}
-                <div id={listboxId} role="listbox" aria-label="Command results" className="border-t border-slate-700/50 max-h-[60vh] overflow-y-auto">
+                <div id={listboxId} role="listbox" aria-label="Command results" className="max-h-[60vh] overflow-y-auto">
                   {!query && recentSearches.length > 0 && (
                     <div className="p-2">
-                      <div id="command-palette-recent-searches" className="px-3 py-2 text-xs text-slate-400 font-medium flex items-center gap-2">
-                        <ClockIcon className="w-4 h-4" />
+                      <div id="command-palette-recent-searches" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground">
+                        <ClockIcon className="h-4 w-4" />
                         Recent Searches
                       </div>
                       {recentSearches.map((search, idx) => (
@@ -294,7 +300,7 @@ export const CommandPalette = () => {
                           type="button"
                           key={idx}
                           onClick={() => setQuery(search)}
-                          className="w-full text-left px-3 py-2 hover:bg-slate-700/50 rounded text-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                          className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           aria-describedby="command-palette-recent-searches"
                         >
                           {search}
@@ -304,9 +310,9 @@ export const CommandPalette = () => {
                   )}
 
                   {filteredCommands.length === 0 ? (
-                    <div className="p-8 text-center text-slate-400">
+                    <div className="p-8 text-center text-muted-foreground">
                       <p>No results found</p>
-                      <p className="text-sm mt-1">Try a different search term</p>
+                      <p className="mt-1 text-sm">Try a different search term</p>
                     </div>
                   ) : (
                     <div className="p-2">
@@ -317,33 +323,26 @@ export const CommandPalette = () => {
                           id={`command-result-${cmd.id}`}
                           onClick={() => handleSelect(cmd)}
                           onMouseEnter={() => setSelectedIndex(index)}
-                          className={`w-full text-left px-3 py-3 rounded transition-colors group ${
-                            index === selectedIndex ? "bg-slate-700/60" : "hover:bg-slate-700/50"
-                          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500`}
+                          className={cn(
+                            "group w-full rounded-md px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                            index === selectedIndex ? "bg-muted" : "hover:bg-muted/50"
+                          )}
                           role="option"
                           aria-selected={index === selectedIndex}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600/20 to-purple-600/20 flex items-center justify-center">
-                              {cmd.type === 'cluster' && (
-                                <div className="w-2 h-2 rounded-full bg-indigo-400" />
-                              )}
-                              {cmd.type === 'idea' && (
-                                <div className="w-2 h-2 rounded-full bg-green-400" />
-                              )}
-                              {cmd.type === 'page' && (
-                                <div className="w-2 h-2 rounded-full bg-purple-400" />
-                              )}
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
+                              <div className={cn("h-2 w-2 rounded-full", getTypeColor(cmd.type))} />
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-white font-medium truncate group-hover:text-indigo-300 transition-colors">
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate font-medium text-foreground">
                                 {cmd.title}
                               </div>
                               {cmd.subtitle && (
-                                <div className="text-sm text-slate-400 truncate">{cmd.subtitle}</div>
+                                <div className="truncate text-sm text-muted-foreground">{cmd.subtitle}</div>
                               )}
                             </div>
-                            <div className="flex-shrink-0 text-xs text-slate-500 uppercase px-2 py-1 bg-slate-700/30 rounded">
+                            <div className="shrink-0 rounded bg-muted px-2 py-1 text-xs uppercase text-muted-foreground">
                               {cmd.type}
                             </div>
                           </div>
@@ -354,16 +353,16 @@ export const CommandPalette = () => {
                 </div>
 
                 {/* Footer */}
-                <div className="border-t border-slate-700/50 px-4 py-2 flex items-center justify-between text-xs text-slate-400">
+                <div className="flex items-center justify-between border-t border-border px-4 py-2 text-xs text-muted-foreground">
                   <div className="flex items-center gap-4">
                     <span className="flex items-center gap-1">
-                      <kbd className="px-2 py-1 bg-slate-700/50 rounded">↑↓</kbd> Navigate
+                      <kbd className="rounded bg-muted px-2 py-1">↑↓</kbd> Navigate
                     </span>
                     <span className="flex items-center gap-1">
-                      <kbd className="px-2 py-1 bg-slate-700/50 rounded">↵</kbd> Select
+                      <kbd className="rounded bg-muted px-2 py-1">↵</kbd> Select
                     </span>
                     <span className="flex items-center gap-1">
-                      <kbd className="px-2 py-1 bg-slate-700/50 rounded">esc</kbd> Close
+                      <kbd className="rounded bg-muted px-2 py-1">esc</kbd> Close
                     </span>
                   </div>
                   <span>{filteredCommands.length} results</span>

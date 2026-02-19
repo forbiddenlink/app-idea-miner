@@ -1,80 +1,79 @@
-import { cva, type VariantProps } from "class-variance-authority"
 import { motion, HTMLMotionProps } from "framer-motion"
-import { LucideIcon } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus } from "lucide-react"
 import { cn } from "@/utils/cn"
 
-const statCardVariants = cva(
-  "card relative overflow-hidden p-6 transition-all hover:shadow-md",
-  {
-    variants: {
-      themeColor: {
-        primary: "border-l-4 border-l-primary",
-        success: "border-l-4 border-l-green-500",
-        warning: "border-l-4 border-l-yellow-500",
-        danger: "border-l-4 border-l-destructive",
-      },
-    },
-    defaultVariants: {
-      themeColor: "primary",
-    },
-  }
-)
-
-const iconVariants = cva("rounded-xl p-3", {
-  variants: {
-    themeColor: {
-      primary: "bg-primary/10 text-primary",
-      success: "bg-green-500/10 text-green-500",
-      warning: "bg-yellow-500/10 text-yellow-500",
-      danger: "bg-destructive/10 text-destructive",
-    },
-  },
-  defaultVariants: {
-    themeColor: "primary",
-  },
-})
-
-// Omit 'color' from HTML props to avoid conflict if we used color (though we changed to themeColor)
-// Also use HTMLMotionProps for direct motion compatibility
-interface StatCardProps
-  extends Omit<HTMLMotionProps<"div">, "color">,
-  VariantProps<typeof statCardVariants> {
+interface StatCardProps extends Omit<HTMLMotionProps<"div">, "children"> {
   name: string
   value: string
-  icon: LucideIcon
   change?: string
-  // Map legacy logical color prop to our internal themeColor variant
-  color?: "primary" | "success" | "warning" | "danger"
+  trend?: "up" | "down" | "neutral"
+  trendValue?: string
 }
 
 export default function StatCard({
   name,
   value,
-  icon: Icon,
-  color = "primary",
-  className,
   change,
+  trend,
+  trendValue,
+  className,
   ...props
 }: StatCardProps) {
+  const getTrendIcon = () => {
+    if (!trend) return null
+
+    const iconClass = "h-3.5 w-3.5"
+    switch (trend) {
+      case "up":
+        return <TrendingUp className={cn(iconClass, "text-success")} />
+      case "down":
+        return <TrendingDown className={cn(iconClass, "text-destructive")} />
+      default:
+        return <Minus className={cn(iconClass, "text-muted-foreground")} />
+    }
+  }
+
+  const getTrendColor = () => {
+    switch (trend) {
+      case "up":
+        return "text-success"
+      case "down":
+        return "text-destructive"
+      default:
+        return "text-muted-foreground"
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
-      className={cn(statCardVariants({ themeColor: color }), className)}
+      transition={{ duration: 0.3 }}
+      className={cn(
+        "rounded-lg border border-border bg-card p-6 transition-colors",
+        className
+      )}
       {...props}
     >
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <p className="text-sm font-medium text-muted-foreground">{name}</p>
-          <p className="text-2xl font-bold tracking-tight">{value}</p>
-          {change && (
-            <p className="text-xs text-muted-foreground">{change}</p>
-          )}
-        </div>
-        <div className={cn(iconVariants({ themeColor: color }))}>
-          <Icon className="h-5 w-5" />
-        </div>
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-muted-foreground">{name}</p>
+        <p className="text-3xl font-semibold tracking-tight">{value}</p>
+
+        {(change || trendValue) && (
+          <div className="flex items-center gap-1.5 text-xs">
+            {trend && trendValue && (
+              <span className={cn("flex items-center gap-1", getTrendColor())}>
+                {getTrendIcon()}
+                {trendValue}
+              </span>
+            )}
+            {change && (
+              <span className="text-muted-foreground">
+                {trendValue && "·"} {change}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   )
