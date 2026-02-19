@@ -475,7 +475,7 @@ RECLUSTER_THRESHOLD=100
 ### Example 1: View Top Clusters
 
 ```bash
-curl http://localhost:8000/api/v1/clusters?sort_by=size&limit=5
+curl -H "X-API-Key: dev-api-key" "http://localhost:8000/api/v1/clusters?sort_by=size&limit=5"
 ```
 
 **Response:**
@@ -500,13 +500,13 @@ curl http://localhost:8000/api/v1/clusters?sort_by=size&limit=5
 ### Example 2: Search for Ideas
 
 ```bash
-curl "http://localhost:8000/api/v1/ideas/search?q=budget+tracking"
+curl -H "X-API-Key: dev-api-key" "http://localhost:8000/api/v1/ideas/search?q=budget+tracking"
 ```
 
 ### Example 3: Trigger Ingestion
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/jobs/ingest
+curl -X POST -H "X-API-Key: dev-api-key" http://localhost:8000/api/v1/jobs/ingest
 ```
 
 ### Example 4: Real-Time Updates (JavaScript)
@@ -758,7 +758,7 @@ docker-compose restart postgres
 docker-compose exec api python -c "from app.models import RawPost; from app.database import SessionLocal; db = SessionLocal(); print(db.query(RawPost).count())"
 
 # Manually trigger clustering
-curl -X POST http://localhost:8000/api/v1/jobs/recluster
+curl -X POST -H "X-API-Key: dev-api-key" http://localhost:8000/api/v1/jobs/recluster
 
 # Check worker logs
 docker-compose logs worker -f

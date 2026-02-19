@@ -110,3 +110,9 @@ alembic.ini
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
 .vercel
+
+# Specter knowledge graph cache
+.specter/
+
+# Claude Code TypeScript cache
+.claude/tsc-cache/

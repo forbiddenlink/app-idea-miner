@@ -278,17 +278,17 @@ class ClusterEngine:
             min_samples=2,
             cluster_selection_method='eom'
         )
-    
+
     def cluster_ideas(self, texts: List[str]) -> ClusterResult:
         # Vectorize
         tfidf_matrix = self.vectorizer.fit_transform(texts)
-        
+
         # Cluster
         labels = self.clusterer.fit_predict(tfidf_matrix)
-        
+
         # Extract keywords per cluster
         keywords = self._extract_keywords(tfidf_matrix, labels)
-        
+
         return ClusterResult(labels, keywords, self.clusterer.probabilities_)
 ```
 
@@ -306,7 +306,7 @@ class TextProcessor:
             r"Why (?:isn't|doesn't|don't) there (?:an? )?(.+?)\?",
         ]
         # ... extraction logic
-    
+
     def analyze_sentiment(self, text: str) -> SentimentResult:
         analyzer = SentimentIntensityAnalyzer()
         scores = analyzer.polarity_scores(text)
@@ -327,7 +327,7 @@ class Deduplicator:
         # Normalize URL (remove tracking params, etc.)
         canonical = self._canonicalize(url)
         return hashlib.sha256(canonical.encode()).hexdigest()
-    
+
     def is_duplicate_title(self, title1: str, title2: str, threshold=0.9) -> bool:
         ratio = SequenceMatcher(None, title1.lower(), title2.lower()).ratio()
         return ratio >= threshold
@@ -422,10 +422,10 @@ export const useAppStore = create<AppState>((set, get) => ({
 // useWebSocket.ts
 export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
-  
+
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8000/ws/updates');
-    
+
     ws.onopen = () => setIsConnected(true);
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
@@ -434,10 +434,10 @@ export function useWebSocket() {
         useAppStore.getState().addCluster(message.data);
       }
     };
-    
+
     return () => ws.close();
   }, []);
-  
+
   return { isConnected };
 }
 ```
@@ -778,7 +778,7 @@ services:
         limits:
           cpus: '2'
           memory: 2G
-  
+
   api:
     depends_on:
       postgres:
@@ -793,13 +793,19 @@ services:
     restart: unless-stopped
 ```
 
+### Implemented Security (Feb 2026 Audit)
+- **API Key Authentication** - Required for all endpoints
+- **Timing-safe comparison** - Prevents timing attacks on API keys
+- **Security headers** - CSP, HSTS, X-Frame-Options, X-Content-Type-Options
+- **Rate limiting** - Redis-backed, IP-based throttling with fail-closed option
+- **IP spoofing prevention** - Configurable proxy header trust
+- **Production secrets validation** - Fail-fast on weak credentials
+
 ### Future Enhancements
-- Authentication (OAuth2/JWT)
-- API key management
+- OAuth2/JWT for user authentication
 - Encrypted data at rest
 - Audit logging
-- HTTPS/SSL certificates
-- Dependency vulnerability scanning
+- Dependency vulnerability scanning (automated)
 
 ---
 

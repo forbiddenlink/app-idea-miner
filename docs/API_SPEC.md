@@ -13,12 +13,23 @@ All endpoints are prefixed with `/api/v1` unless otherwise noted.
 
 ## Authentication
 
-**MVP:** No authentication required (local development)
+**Current:** API Key authentication required for all endpoints.
 
-**Future:** JWT Bearer tokens
 ```http
-Authorization: Bearer <token>
+X-API-Key: your-api-key
 ```
+
+**Development:** Use `dev-api-key` (default in `.env`)
+
+**Production:** Set a secure key (16+ characters) via `API_KEY` environment variable.
+
+**Example:**
+```bash
+curl -H "X-API-Key: dev-api-key" http://localhost:8000/api/v1/clusters
+```
+
+**Error Responses:**
+- `403 Forbidden` - Missing or invalid API key
 
 ---
 
@@ -747,9 +758,10 @@ ws.onmessage = (event) => {
 
 ## Rate Limiting
 
-**MVP Limits:**
-- 100 requests per minute per IP
-- 10 concurrent WebSocket connections per IP
+**Current Limits:**
+- 100 requests per minute per IP (configurable via `RATE_LIMIT` env var)
+- Rate limiting backed by Redis
+- Production mode supports fail-closed behavior (`RATE_LIMITER_FAIL_CLOSED=true`)
 
 **Headers:**
 ```http
@@ -839,12 +851,12 @@ client.interceptors.response.use(
 export const clusterService = {
   getAll: (params?: ClusterQueryParams) =>
     client.get<ClusterListResponse>('/clusters', { params }),
-  
+
   getById: (id: string, includeEvidence = true) =>
     client.get<ClusterDetailResponse>(`/clusters/${id}`, {
       params: { include_evidence: includeEvidence },
     }),
-  
+
   getTrending: (limit = 10) =>
     client.get<TrendingResponse>('/clusters/trending', {
       params: { limit },
@@ -854,12 +866,12 @@ export const clusterService = {
 // WebSocket helper
 export function connectToUpdates(onMessage: (data: any) => void) {
   const ws = new WebSocket('ws://localhost:8000/ws/updates');
-  
+
   ws.onmessage = (event) => {
     const message = JSON.parse(event.data);
     onMessage(message);
   };
-  
+
   return ws;
 }
 ```
