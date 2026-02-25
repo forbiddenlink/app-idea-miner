@@ -25,6 +25,109 @@ const domainOptions = [
 type SortBy = 'quality' | 'date' | 'sentiment';
 type SortOrder = 'asc' | 'desc';
 
+interface ResultsViewProps {
+  showInitialLoading: boolean;
+  error: Error | null;
+  ideas: Idea[];
+  totalIdeas: number;
+  offset: number;
+  limit: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  isPlaceholderData: boolean;
+  isFetching: boolean;
+  clearAllFilters: () => void;
+  updateParam: (key: string, value: string | undefined, options?: { resetOffset?: boolean }) => void;
+}
+
+function IdeasResultsView(props: Readonly<ResultsViewProps>) {
+  const {
+    showInitialLoading,
+    error,
+    ideas,
+    offset,
+    limit,
+    hasPrevPage,
+    hasNextPage,
+    isPlaceholderData,
+    isFetching,
+    clearAllFilters,
+    updateParam,
+  } = props;
+
+  if (showInitialLoading) {
+    return (
+      <div className="grid grid-cols-1 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <LoadingSkeleton key={`skeleton-idea-${i}`} />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-8 text-center text-destructive">
+        <p className="font-medium mb-1">Failed to load ideas</p>
+        <p className="text-sm opacity-90">{error instanceof Error ? error.message : 'Unknown error'}</p>
+      </div>
+    );
+  }
+
+  if (ideas.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="rounded-xl border bg-card text-card-foreground shadow-sm p-12 text-center"
+      >
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+          <Search className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <h3 className="mt-4 text-lg font-semibold">No ideas found</h3>
+        <p className="mt-2 text-muted-foreground">
+          Try adjusting your filters or search query to find what you are looking for.
+        </p>
+        <Button variant="outline" className="mt-4" onClick={clearAllFilters}>
+          Clear Filters
+        </Button>
+      </motion.div>
+    );
+  }
+
+  return (
+    <>
+      <div className="grid grid-cols-1 gap-4">
+        {ideas.map((idea: Idea) => (
+          <IdeaCard key={idea.id} idea={idea} />
+        ))}
+      </div>
+
+      <div className="flex items-center justify-between border-t pt-4">
+        <Button
+          variant="outline"
+          onClick={() => updateParam('offset', Math.max(0, offset - limit).toString(), { resetOffset: false })}
+          disabled={!hasPrevPage || isFetching}
+        >
+          Previous
+        </Button>
+
+        <span className="text-sm text-muted-foreground">
+          Page {Math.floor(offset / limit) + 1}
+        </span>
+
+        <Button
+          variant="outline"
+          onClick={() => updateParam('offset', (offset + limit).toString(), { resetOffset: false })}
+          disabled={!hasNextPage || isPlaceholderData || isFetching}
+        >
+          Next
+        </Button>
+      </div>
+    </>
+  );
+}
+
 export default function Ideas() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(true);
@@ -36,7 +139,7 @@ export default function Ideas() {
   const selectedSentiment = searchParams.get('sentiment') || '';
   const selectedDomain = searchParams.get('domain') || '';
   const minQuality = searchParams.get('min_quality')
-    ? parseFloat(searchParams.get('min_quality')!)
+    ? Number.parseFloat(searchParams.get('min_quality')!)
     : 0;
   const sortByRaw = searchParams.get('sort_by');
   const sortOrderRaw = searchParams.get('order');
@@ -45,7 +148,7 @@ export default function Ideas() {
       ? sortByRaw
       : 'quality';
   const sortOrder: SortOrder = sortOrderRaw === 'asc' || sortOrderRaw === 'desc' ? sortOrderRaw : 'desc';
-  const offset = parseInt(searchParams.get('offset') || '0', 10);
+  const offset = Number.parseInt(searchParams.get('offset') || '0', 10);
 
   const [searchQuery, setSearchQuery] = useState(activeSearch);
   const debouncedSearch = useDebounce(searchQuery, 350);
@@ -57,7 +160,7 @@ export default function Ideas() {
   ) => {
     const { resetOffset = true } = options;
     const next = new URLSearchParams(searchParams);
-    if (value && value.trim()) {
+    if (value?.trim()) {
       next.set(key, value.trim());
     } else {
       next.delete(key);
@@ -197,7 +300,7 @@ export default function Ideas() {
   };
 
   return (
-    <div className="container py-8 space-y-8 min-h-screen">
+    <div className="mx-auto max-w-7xl px-6 py-8 space-y-8 min-h-screen">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Ideas Browser</h1>
@@ -350,7 +453,7 @@ export default function Ideas() {
                   step="0.1"
                   value={minQuality}
                   onChange={(e) => {
-                    const value = parseFloat(e.target.value);
+                    const value = Number.parseFloat(e.target.value);
                     updateParam('min_quality', value > 0 ? value.toString() : undefined);
                   }}
                   className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
@@ -413,75 +516,29 @@ export default function Ideas() {
           </div>
 
           {showUpdating && (
-            <div
+            <output
               data-testid="ideas-updating-indicator"
               className="inline-flex items-center rounded-md border bg-muted/40 px-3 py-1 text-xs text-muted-foreground"
-              role="status"
               aria-live="polite"
             >
               Updating results...
-            </div>
+            </output>
           )}
 
-          {showInitialLoading ? (
-            <div className="grid grid-cols-1 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <LoadingSkeleton key={i} />
-              ))}
-            </div>
-          ) : error ? (
-            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-8 text-center text-destructive">
-              <p className="font-medium mb-1">Failed to load ideas</p>
-              <p className="text-sm opacity-90">{error instanceof Error ? error.message : 'Unknown error'}</p>
-            </div>
-          ) : ideas.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="rounded-xl border bg-card text-card-foreground shadow-sm p-12 text-center"
-            >
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                <Search className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold">No ideas found</h3>
-              <p className="mt-2 text-muted-foreground">
-                Try adjusting your filters or search query to find what you are looking for.
-              </p>
-              <Button variant="outline" className="mt-4" onClick={clearAllFilters}>
-                Clear Filters
-              </Button>
-            </motion.div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 gap-4">
-                {ideas.map((idea: Idea) => (
-                  <IdeaCard key={idea.id} idea={idea} />
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between border-t pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => updateParam('offset', Math.max(0, offset - limit).toString(), { resetOffset: false })}
-                  disabled={!hasPrevPage || isFetching}
-                >
-                  Previous
-                </Button>
-
-                <span className="text-sm text-muted-foreground">
-                  Page {Math.floor(offset / limit) + 1}
-                </span>
-
-                <Button
-                  variant="outline"
-                  onClick={() => updateParam('offset', (offset + limit).toString(), { resetOffset: false })}
-                  disabled={!hasNextPage || isPlaceholderData || isFetching}
-                >
-                  Next
-                </Button>
-              </div>
-            </>
-          )}
+          <IdeasResultsView
+            showInitialLoading={showInitialLoading}
+            error={error}
+            ideas={ideas}
+            totalIdeas={totalIdeas}
+            offset={offset}
+            limit={limit}
+            hasPrevPage={hasPrevPage}
+            hasNextPage={hasNextPage}
+            isPlaceholderData={isPlaceholderData}
+            isFetching={isFetching}
+            clearAllFilters={clearAllFilters}
+            updateParam={updateParam}
+          />
         </div>
       </div>
     </div>

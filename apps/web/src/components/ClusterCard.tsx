@@ -12,6 +12,12 @@ interface ClusterCardProps {
   cluster: Cluster
 }
 
+const getSentimentLabel = (score: number): string => {
+  if (score > 0.3) return 'positive';
+  if (score < -0.3) return 'negative';
+  return 'neutral';
+};
+
 const ClusterCard: FC<ClusterCardProps> = ({ cluster }) => {
   const { isFavorite, toggleFavorite } = useFavorites()
   const favorited = isFavorite(cluster.id)
@@ -29,11 +35,7 @@ const ClusterCard: FC<ClusterCardProps> = ({ cluster }) => {
   )
 
   const sentimentDisplay = `${(cluster.avg_sentiment * 100).toFixed(0)}%`
-  const sentimentLabel = cluster.avg_sentiment > 0.3
-    ? 'positive'
-    : cluster.avg_sentiment < -0.3
-      ? 'negative'
-      : 'neutral'
+  const sentimentLabel = getSentimentLabel(cluster.avg_sentiment)
 
   const isHot = cluster.trend_score > 0.7
 
@@ -62,7 +64,7 @@ const ClusterCard: FC<ClusterCardProps> = ({ cluster }) => {
               <button
                 type="button"
                 onClick={handleFavoriteClick}
-                aria-pressed={favorited}
+                aria-pressed={!!favorited}
                 aria-label={favorited ? `Remove ${cluster.label} from favorites` : `Add ${cluster.label} to favorites`}
                 className={cn(
                   "shrink-0 rounded p-1 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",

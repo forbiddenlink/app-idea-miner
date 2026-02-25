@@ -2,7 +2,7 @@
 // Modern feedback for user actions (success, error, info, warning)
 
 import { useEffect, useState } from 'react';
-import { XMarkIcon, CheckCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { X, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -19,10 +19,10 @@ interface ToastProps {
 }
 
 const toastStyles = {
-  success: 'backdrop-blur-xl bg-green-500/10 text-green-300 border-green-500/30 shadow-lg shadow-green-500/20',
-  error: 'backdrop-blur-xl bg-red-500/10 text-red-300 border-red-500/30 shadow-lg shadow-red-500/20',
-  info: 'backdrop-blur-xl bg-blue-500/10 text-blue-300 border-blue-500/30 shadow-lg shadow-blue-500/20',
-  warning: 'backdrop-blur-xl bg-amber-500/10 text-amber-300 border-amber-500/30 shadow-lg shadow-amber-500/20',
+  success: 'backdrop-blur-xl bg-success/10 text-success border-success/30 shadow-lg shadow-success/20',
+  error: 'backdrop-blur-xl bg-destructive/10 text-destructive border-destructive/30 shadow-lg shadow-destructive/20',
+  info: 'backdrop-blur-xl bg-primary/10 text-primary border-primary/30 shadow-lg shadow-primary/20',
+  warning: 'backdrop-blur-xl bg-warning/10 text-warning border-warning/30 shadow-lg shadow-warning/20',
 };
 
 const ToastIcon = ({ type }: { type: ToastType }) => {
@@ -38,13 +38,13 @@ const ToastIcon = ({ type }: { type: ToastType }) => {
 
   switch (type) {
     case 'success':
-      return <CheckCircleIcon className={className} />;
+      return <CheckCircle className={className} />;
     case 'error':
-      return <ExclamationTriangleIcon className={className} />;
+      return <AlertTriangle className={className} />;
     case 'warning':
-      return <ExclamationTriangleIcon className={className} />;
+      return <AlertTriangle className={className} />;
     default:
-      return <InformationCircleIcon className={className} />;
+      return <Info className={className} />;
   }
 };
 
@@ -80,10 +80,10 @@ export const ToastItem = ({ toast, onClose }: ToastProps) => {
   };
 
   const progressColor = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    info: 'bg-blue-500',
-    warning: 'bg-amber-500',
+    success: 'bg-success',
+    error: 'bg-destructive',
+    info: 'bg-primary',
+    warning: 'bg-warning',
   }[toast.type];
 
   return (
@@ -114,7 +114,7 @@ export const ToastItem = ({ toast, onClose }: ToastProps) => {
         className="p-1 hover:bg-white/10 rounded transition-colors"
         aria-label="Close notification"
       >
-        <XMarkIcon className="h-4 w-4" />
+        <X className="h-4 w-4" />
       </button>
     </div>
   );
@@ -135,7 +135,7 @@ export const useToast = () => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const addToast = (type: ToastType, message: string, duration?: number) => {
-    const id = Math.random().toString(36).substr(2, 9);
+    const id = Math.random().toString(36).substring(2, 11);
     const newToast: Toast = { id, type, message, duration };
     setToasts((prev) => [...prev, newToast]);
   };

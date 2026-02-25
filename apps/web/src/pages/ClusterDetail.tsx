@@ -1,37 +1,62 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Share2, BarChart3, Sparkles } from 'lucide-react';
+import { ArrowLeft, Share2, Sparkles, Download, TrendingUp, MessageSquare, Star, Users } from 'lucide-react';
 
 import { apiClient } from '@/services/api';
 import { IdeaCard } from '@/components/IdeaCard';
 import { EmptyIdeasList } from '@/components/EmptyStates';
+import DataFreshness from '@/components/DataFreshness';
+import { useRefreshSettings } from './Settings';
+import { DetailHeaderSkeleton } from '@/components/LoadingSkeleton';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/utils/cn';
 import { Idea, RelatedCluster } from '@/types';
+import { useGlobalToast } from '@/contexts/ToastContext';
 
 export default function ClusterDetail() {
+  const { enabled: autoRefresh, interval: refreshInterval } = useRefreshSettings()
   const { id } = useParams<{ id: string }>();
+  const toast = useGlobalToast();
 
-  // Fetch cluster details
-  const { data: cluster, isLoading, error } = useQuery({
+  // Fetch cluster details with auto-refresh
+  const { data: cluster, isLoading, error, dataUpdatedAt, isRefetching, refetch } = useQuery({
     queryKey: ['cluster', id],
     queryFn: () => apiClient.getCluster(id!),
     enabled: !!id,
+    refetchInterval: autoRefresh ? refreshInterval * 2 : false,
   });
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(globalThis.location.href);
+    toast.success('Link copied to clipboard!');
+  };
+
+  const handleExport = () => {
+    if (!cluster) return;
+    const data = JSON.stringify(cluster, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cluster-${cluster.id}-${cluster.label.replaceAll(/\s+/g, '-').toLowerCase()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Cluster data exported!');
+  };
 
   if (isLoading) {
     return (
-      <div className="container max-w-5xl py-8 space-y-8 animate-pulse">
-        <div className="h-8 bg-muted rounded w-1/3"></div>
-        <div className="h-64 bg-muted rounded-xl"></div>
+      <div className="mx-auto max-w-5xl px-6 py-8 space-y-8">
+        <div className="h-8 bg-muted rounded w-24 animate-pulse" />
+        <DetailHeaderSkeleton />
       </div>
     );
   }
 
   if (error || !cluster) {
     return (
-      <div className="container max-w-5xl py-8">
+      <div className="mx-auto max-w-5xl px-6 py-8">
         <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-6 text-destructive">
           <p>Failed to load cluster details. Please try again.</p>
           <Button variant="link" asChild className="mt-4 px-0 text-destructive hover:text-destructive/80">
@@ -57,18 +82,47 @@ export default function ClusterDetail() {
     return 'Neutral';
   };
 
-  return (
-    <div className="container max-w-5xl py-8 space-y-8">
-      {/* Back Button */}
-      <Button variant="ghost" asChild className="-ml-4 text-muted-foreground hover:text-foreground">
-        <Link to="/clusters">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to All Clusters
-        </Link>
-      </Button>
+  const getQualityGrade = (score: number) => {
+    if (score >= 0.8) return { grade: 'A', color: 'text-grade-a', bg: 'bg-grade-a/10' };
+    if (score >= 0.6) return { grade: 'B', color: 'text-grade-b', bg: 'bg-grade-b/10' };
+    if (score >= 0.4) return { grade: 'C', color: 'text-grade-c', bg: 'bg-grade-c/10' };
+    if (score >= 0.2) return { grade: 'D', color: 'text-grade-d', bg: 'bg-grade-d/10' };
+    return { grade: 'F', color: 'text-grade-f', bg: 'bg-grade-f/10' };
+  };
 
-      {/* Header */}
-      <div className="card overflow-hidden border bg-card text-card-foreground shadow-sm rounded-xl">
+  const qualityInfo = getQualityGrade(cluster.quality_score);
+
+  return (
+    <div className="mx-auto max-w-5xl px-6 py-8 space-y-8">
+      {/* Navigation Bar */}
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" asChild className="-ml-4 text-muted-foreground hover:text-foreground">
+          <Link to="/clusters">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to All Clusters
+          </Link>
+        </Button>
+        <div className="flex items-center gap-3">
+          {dataUpdatedAt > 0 && (
+            <DataFreshness
+              dataUpdatedAt={dataUpdatedAt}
+              isRefetching={isRefetching}
+              onRefresh={() => refetch()}
+            />
+          )}
+          <Button variant="outline" size="sm" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleShare}>
+            <Share2 className="mr-2 h-4 w-4" />
+            Share
+          </Button>
+        </div>
+      </div>
+
+      {/* Header Card */}
+      <div className="card overflow-hidden border bg-card text-card-foreground shadow-raised rounded-xl">
         <div className="p-6">
           <div className="flex justify-between items-start gap-4 mb-6">
             <div className="space-y-2">
@@ -79,47 +133,54 @@ export default function ClusterDetail() {
                 <p className="text-lg text-muted-foreground">{cluster.description}</p>
               )}
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                // Could toast here
-              }}
-              title="Share this cluster"
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
+            <div className={cn("rounded-lg px-3 py-1.5 text-center", qualityInfo.bg)}>
+              <div className={cn("text-2xl font-bold", qualityInfo.color)}>
+                {qualityInfo.grade}
+              </div>
+              <div className="text-[10px] text-muted-foreground">Grade</div>
+            </div>
           </div>
 
-          {/* Metrics */}
+          {/* Metrics Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="rounded-lg bg-muted/50 p-4">
-              <div className="text-sm text-muted-foreground mb-1">Ideas</div>
+            <div className="rounded-lg bg-surface-sunken p-4">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-1">
+                <Users className="h-3.5 w-3.5" />
+                Ideas
+              </div>
               <div className="text-2xl font-bold">{cluster.idea_count}</div>
             </div>
 
-            <div className="rounded-lg bg-muted/50 p-4">
-              <div className="text-sm text-muted-foreground mb-1">Quality</div>
-              <div className="text-2xl font-bold">
+            <div className="rounded-lg bg-surface-sunken p-4">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-1">
+                <Star className="h-3.5 w-3.5" />
+                Quality
+              </div>
+              <div className={cn("text-2xl font-bold", qualityInfo.color)}>
                 {(cluster.quality_score * 100).toFixed(0)}%
               </div>
             </div>
 
-            <div className="rounded-lg bg-muted/50 p-4">
-              <div className="text-sm text-muted-foreground mb-1">Sentiment</div>
+            <div className="rounded-lg bg-surface-sunken p-4">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-1">
+                <MessageSquare className="h-3.5 w-3.5" />
+                Sentiment
+              </div>
               <div className={cn("text-xl font-bold", getSentimentColor(cluster.avg_sentiment))}>
                 {getSentimentLabel(cluster.avg_sentiment)}
               </div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Score: {cluster.avg_sentiment.toFixed(2)}
+              </div>
             </div>
 
-            <div className="rounded-lg bg-muted/50 p-4">
-              <div className="text-sm text-muted-foreground mb-1">Trend</div>
-              <div className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                <div className="text-2xl font-bold">
-                  {(cluster.trend_score * 100).toFixed(0)}%
-                </div>
+            <div className="rounded-lg bg-surface-sunken p-4">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-1">
+                <TrendingUp className="h-3.5 w-3.5" />
+                Trend
+              </div>
+              <div className="text-2xl font-bold text-primary">
+                {(cluster.trend_score * 100).toFixed(0)}%
               </div>
             </div>
           </div>
@@ -131,11 +192,14 @@ export default function ClusterDetail() {
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-semibold">Key Topics</h2>
+          <span className="text-xs text-muted-foreground ml-auto">
+            {cluster.keywords.length} keywords extracted
+          </span>
         </div>
         <div className="flex flex-wrap gap-2">
-          {cluster.keywords.map((keyword: string, index: number) => (
+          {cluster.keywords.map((keyword: string) => (
             <span
-              key={index}
+              key={keyword}
               className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium bg-secondary text-secondary-foreground"
             >
               {keyword}
@@ -148,7 +212,9 @@ export default function ClusterDetail() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold tracking-tight">Representative Ideas</h2>
-          <p className="text-sm text-muted-foreground">(Top examples from this cluster)</p>
+          <p className="text-sm text-muted-foreground">
+            {cluster.evidence?.length || 0} top examples from this cluster
+          </p>
         </div>
 
         {cluster.evidence && cluster.evidence.length > 0 ? (

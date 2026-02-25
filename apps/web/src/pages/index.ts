@@ -9,3 +9,5 @@ export const ClusterExplorer = lazy(() => import('./ClusterExplorer'));
 export const ClusterDetail = lazy(() => import('./ClusterDetail'));
 export const Analytics = lazy(() => import('./Analytics'));
 export const Ideas = lazy(() => import('./Ideas'));
+export const Opportunities = lazy(() => import('./Opportunities'));
+export const Settings = lazy(() => import('./Settings'));

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { Download } from 'lucide-react';
 import { Cluster, Idea } from '@/types';
 import { apiClient } from '@/services/api';
 
@@ -57,16 +57,17 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
           const value = row[header];
           // Handle arrays and objects
           if (Array.isArray(value)) {
-            return `"${value.join('; ')}"`;
+            return `"${value.map(String).join('; ')}"`;
           }
           if (typeof value === 'object' && value !== null) {
             return `"${JSON.stringify(value)}"`;
           }
           // Escape quotes in strings
-          if (typeof value === 'string' && value.includes(',')) {
-            return `"${value.replace(/"/g, '""')}"`;
+          const stringValue = value == null ? '' : String(value);
+          if (stringValue.includes(',')) {
+            return `"${stringValue.replaceAll('"', '""')}"`;
           }
-          return value || '';
+          return stringValue;
         }).join(',')
       ),
     ].join('\n');
@@ -89,7 +90,7 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
     link.download = filename;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    link.remove();
     URL.revokeObjectURL(url);
   };
 
@@ -181,7 +182,7 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
         aria-haspopup="menu"
         aria-expanded={showMenu}
       >
-        <ArrowDownTrayIcon className="w-5 h-5" aria-hidden="true" />
+        <Download className="w-5 h-5" aria-hidden="true" />
         <span>{isExporting ? 'Exporting...' : 'Export'}</span>
       </button>
 

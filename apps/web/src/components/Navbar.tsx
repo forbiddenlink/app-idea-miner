@@ -1,23 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
-  HomeIcon,
-  CubeIcon,
-  LightBulbIcon,
-  ChartBarIcon,
-  CommandLineIcon,
-  Bars3Icon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline'
+  Home,
+  Box,
+  Lightbulb,
+  BarChart3,
+  Sparkles,
+  Settings as SettingsIcon,
+  Command,
+  Menu,
+  X,
+} from 'lucide-react'
 import { SearchAutocomplete } from './SearchAutocomplete'
 import { SimpleTooltip } from './EnhancedTooltip'
 import { ModeToggle } from './mode-toggle'
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Clusters', href: '/clusters', icon: CubeIcon },
-  { name: 'Ideas', href: '/ideas', icon: LightBulbIcon },
-  { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
+  { name: 'Dashboard', href: '/', icon: Home },
+  { name: 'Clusters', href: '/clusters', icon: Box },
+  { name: 'Ideas', href: '/ideas', icon: Lightbulb },
+  { name: 'Opportunities', href: '/opportunities', icon: Sparkles },
+  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { name: 'Settings', href: '/settings', icon: SettingsIcon },
 ]
 
 export default function Navbar() {
@@ -39,10 +43,10 @@ export default function Navbar() {
     }
 
     document.body.style.overflow = 'hidden'
-    window.addEventListener('keydown', closeOnEscape)
+    globalThis.addEventListener('keydown', closeOnEscape)
     return () => {
       document.body.style.overflow = originalOverflow
-      window.removeEventListener('keydown', closeOnEscape)
+      globalThis.removeEventListener('keydown', closeOnEscape)
     }
   }, [mobileMenuOpen])
 
@@ -57,7 +61,7 @@ export default function Navbar() {
             aria-label="App-Idea Miner home"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary" aria-hidden="true">
-              <LightBulbIcon className="h-5 w-5 text-primary-foreground" />
+              <Lightbulb className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="text-lg font-semibold text-foreground">
               App-Idea Miner
@@ -70,31 +74,32 @@ export default function Navbar() {
           </div>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-1" role="list">
+          <ul className="hidden md:flex items-center space-x-1 list-none">
             {navigation.map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.href
 
               return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  aria-current={isActive ? 'page' : undefined}
-                  aria-label={`Navigate to ${item.name} page`}
-                  className={`
-                    flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors
-                    ${isActive
-                      ? 'bg-muted text-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                    }
-                  `}
-                >
-                  <Icon className="h-4 w-4" aria-hidden="true" />
-                  <span>{item.name}</span>
-                </Link>
+                <li key={item.name}>
+                  <Link
+                    to={item.href}
+                    aria-current={isActive ? 'page' : undefined}
+                    aria-label={`Navigate to ${item.name} page`}
+                    className={`
+                      flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors
+                      ${isActive
+                        ? 'bg-muted text-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                      }
+                    `}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                    <span>{item.name}</span>
+                  </Link>
+                </li>
               )
             })}
-          </div>
+          </ul>
 
           {/* Status & Command Palette Indicator */}
           <div className="flex items-center space-x-2 md:space-x-4">
@@ -105,13 +110,13 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => {
-                  window.dispatchEvent(new Event('app:command-palette-open'))
+                  globalThis.dispatchEvent(new Event('app:command-palette-open'))
                 }}
                 aria-label="Open command palette"
                 title="Open command palette (Cmd+K / Ctrl+K)"
                 className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground text-xs font-medium transition-colors hover:bg-muted/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <CommandLineIcon className="h-3.5 w-3.5" />
+                <Command className="h-3.5 w-3.5" />
                 <span>⌘K</span>
               </button>
             </SimpleTooltip>
@@ -125,9 +130,9 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen((open) => !open)}
             >
               {mobileMenuOpen ? (
-                <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                <X className="h-5 w-5" aria-hidden="true" />
               ) : (
-                <Bars3Icon className="h-5 w-5" aria-hidden="true" />
+                <Menu className="h-5 w-5" aria-hidden="true" />
               )}
             </button>
 
@@ -185,11 +190,11 @@ export default function Navbar() {
               type="button"
               className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md bg-muted px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               onClick={() => {
-                window.dispatchEvent(new Event('app:command-palette-open'))
+                globalThis.dispatchEvent(new Event('app:command-palette-open'))
                 setMobileMenuOpen(false)
               }}
             >
-              <CommandLineIcon className="h-4 w-4" aria-hidden="true" />
+              <Command className="h-4 w-4" aria-hidden="true" />
               Open Command Palette
             </button>
           </div>

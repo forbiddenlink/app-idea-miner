@@ -4,9 +4,11 @@ import { Link, Route, Routes } from "react-router-dom";
 
 import { CommandPalette } from "@/components/CommandPalette";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { SkipNavigation } from "@/components/SkipNavigation";
-import { Analytics, ClusterDetail, ClusterExplorer, Dashboard, Ideas } from "@/pages";
+import { ToastProvider } from "@/contexts/ToastContext";
+import { Analytics, ClusterDetail, ClusterExplorer, Dashboard, Ideas, Opportunities, Settings } from "@/pages";
 
 function RouteSkeleton() {
   return (
@@ -38,23 +40,28 @@ function NotFound() {
 function App() {
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
-        <SkipNavigation />
-        <Navbar />
-        <main id="main-content" tabIndex={-1}>
-          <Suspense fallback={<RouteSkeleton />}>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/clusters" element={<ClusterExplorer />} />
-              <Route path="/clusters/:id" element={<ClusterDetail />} />
-              <Route path="/ideas" element={<Ideas />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </main>
-        <CommandPalette />
-      </div>
+      <ToastProvider>
+        <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+          <SkipNavigation />
+          <Navbar />
+          <main id="main-content" tabIndex={-1}>
+            <Suspense fallback={<RouteSkeleton />}>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/clusters" element={<ClusterExplorer />} />
+                <Route path="/clusters/:id" element={<ClusterDetail />} />
+                <Route path="/ideas" element={<Ideas />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/opportunities" element={<Opportunities />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </main>
+          <Footer />
+          <CommandPalette />
+        </div>
+      </ToastProvider>
     </ErrorBoundary>
   );
 }

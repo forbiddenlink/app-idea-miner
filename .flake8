@@ -1,0 +1,4 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E501,E712,E402,F403,F401,F841,W293
+exclude = .history,.venv,node_modules,htmlcov,dist,migrations

@@ -39,13 +39,26 @@
     --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.5rem;
+
+    /* Surface elevation tokens */
+    --surface: 0 0% 100%;
+    --surface-raised: 0 0% 100%;
+    --surface-overlay: 0 0% 100%;
+    --surface-sunken: 220 14% 96%;
+
+    /* Grade semantic tokens */
+    --grade-a: 152 69% 31%;
+    --grade-b: 221 83% 53%;
+    --grade-c: 38 92% 50%;
+    --grade-d: 25 95% 53%;
+    --grade-f: 0 84% 60%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 222.2 47% 11%;
     --card-foreground: 210 40% 98%;
 
     --popover: 222.2 84% 4.9%;
@@ -75,6 +88,19 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
+    /* Surface elevation tokens - higher = lighter in dark mode (Linear/Atlassian pattern) */
+    --surface: 222.2 84% 4.9%;
+    --surface-raised: 222.2 47% 11%;
+    --surface-overlay: 222.2 47% 13%;
+    --surface-sunken: 222.2 84% 3.5%;
+
+    /* Grade semantic tokens */
+    --grade-a: 152 69% 41%;
+    --grade-b: 217 91% 60%;
+    --grade-c: 38 92% 50%;
+    --grade-d: 25 95% 53%;
+    --grade-f: 0 63% 51%;
   }
 }
 

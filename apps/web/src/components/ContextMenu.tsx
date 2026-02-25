@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import {
-  ClipboardDocumentIcon,
-  LinkIcon,
-  ShareIcon,
-  HeartIcon,
-  DocumentDuplicateIcon,
-} from '@heroicons/react/24/outline'
+  ClipboardCopy,
+  Link,
+  Share2,
+  Heart,
+  Copy,
+} from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/utils/cn'
 
@@ -24,20 +24,12 @@ interface ContextMenuProps {
   disabled?: boolean
 }
 
-export function ContextMenu({ items, children, disabled = false }: ContextMenuProps) {
+export function ContextMenu({ items, children, disabled = false }: Readonly<ContextMenuProps>) {
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  const handleContextMenu = (e: React.MouseEvent) => {
-    if (disabled) return
-
-    e.preventDefault()
-    e.stopPropagation()
-
-    const x = e.clientX
-    const y = e.clientY
-
+  const openAtPosition = (x: number, y: number) => {
     const menuWidth = 240
     const menuHeight = items.length * 40 + 16
 
@@ -54,6 +46,22 @@ export function ContextMenu({ items, children, disabled = false }: ContextMenuPr
 
     setPosition({ x: adjustedX, y: adjustedY })
     setIsOpen(true)
+  }
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    if (disabled) return
+    e.preventDefault()
+    e.stopPropagation()
+    openAtPosition(e.clientX, e.clientY)
+  }
+
+  const handleContextMenuKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return
+    if (e.shiftKey && e.key === 'F10') {
+      e.preventDefault()
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+      openAtPosition(rect.left + rect.width / 2, rect.top + rect.height / 2)
+    }
   }
 
   const handleClose = () => {
@@ -93,7 +101,7 @@ export function ContextMenu({ items, children, disabled = false }: ContextMenuPr
   }, [isOpen])
 
   return (
-    <div onContextMenu={handleContextMenu} className="relative">
+    <div onContextMenu={handleContextMenu} onKeyDown={handleContextMenuKeyDown} className="relative">
       {children}
 
       {isOpen && position && (
@@ -113,12 +121,12 @@ export function ContextMenu({ items, children, disabled = false }: ContextMenuPr
             className="min-w-[240px] overflow-hidden rounded-lg border border-border bg-popover shadow-lg"
           >
             <div className="py-2">
-              {items.map((item, index) => {
+              {items.map((item) => {
                 const Icon = item.icon
 
                 return (
                   <button
-                    key={index}
+                    key={item.label}
                     onClick={() => handleItemClick(item.onClick)}
                     disabled={item.disabled}
                     className={cn(
@@ -211,37 +219,37 @@ export function useClusterContextMenu(
   isFavorited?: boolean
 ): ContextMenuItem[] {
   const { copyToClipboard, shareUrl } = useContextMenuActions()
-  const url = `${window.location.origin}/clusters/${cluster.id}`
+  const url = `${globalThis.location.origin}/clusters/${cluster.id}`
 
   return [
     {
       label: 'Copy Cluster Name',
-      icon: ClipboardDocumentIcon,
-      onClick: () => copyToClipboard(cluster.label, 'Cluster name'),
+      icon: ClipboardCopy,
+      onClick: () => void copyToClipboard(cluster.label, 'Cluster name'),
     },
     {
       label: 'Copy URL',
-      icon: LinkIcon,
-      onClick: () => copyToClipboard(url, 'URL'),
+      icon: Link,
+      onClick: () => void copyToClipboard(url, 'URL'),
       shortcut: '⌘C',
     },
     {
       label: 'Share',
-      icon: ShareIcon,
-      onClick: () => shareUrl(url, cluster.label),
+      icon: Share2,
+      onClick: () => void shareUrl(url, cluster.label),
     },
     ...(onFavorite
       ? [
         {
           label: isFavorited ? 'Remove from Favorites' : 'Add to Favorites',
-          icon: HeartIcon,
+          icon: Heart,
           onClick: onFavorite,
         },
       ]
       : []),
     {
       label: 'Open in New Tab',
-      icon: DocumentDuplicateIcon,
+      icon: Copy,
       onClick: () => window.open(url, '_blank'),
       shortcut: '⌘⏎',
     },
@@ -252,33 +260,33 @@ export function useIdeaContextMenu(
   idea: { id: string; problem_statement: string; source?: { url?: string } }
 ): ContextMenuItem[] {
   const { copyToClipboard, shareUrl } = useContextMenuActions()
-  const url = `${window.location.origin}/ideas/${idea.id}`
+  const url = `${globalThis.location.origin}/ideas/${idea.id}`
   const sourceUrl = idea.source?.url
 
   return [
     {
       label: 'Copy Problem Statement',
-      icon: ClipboardDocumentIcon,
-      onClick: () => copyToClipboard(idea.problem_statement, 'Problem statement'),
+      icon: ClipboardCopy,
+      onClick: () => void copyToClipboard(idea.problem_statement, 'Problem statement'),
     },
     {
       label: 'Copy URL',
-      icon: LinkIcon,
-      onClick: () => copyToClipboard(url, 'URL'),
+      icon: Link,
+      onClick: () => void copyToClipboard(url, 'URL'),
     },
     ...(sourceUrl
       ? [
         {
           label: 'View Original Source',
-          icon: LinkIcon,
+          icon: Link,
           onClick: () => window.open(sourceUrl, '_blank'),
         },
       ]
       : []),
     {
       label: 'Share',
-      icon: ShareIcon,
-      onClick: () => shareUrl(url, idea.problem_statement),
+      icon: Share2,
+      onClick: () => void shareUrl(url, idea.problem_statement),
     },
   ]
 }

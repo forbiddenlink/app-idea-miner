@@ -9,6 +9,9 @@ import {
   Idea,
   IdeaQueryParams,
   JobStatus,
+  Opportunity,
+  OpportunityQueryParams,
+  OpportunityScore,
   Pagination,
   ReclusterParams,
 } from '@/types'
@@ -17,7 +20,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const API_KEY = import.meta.env.VITE_API_KEY || 'dev-api-key'
 
 class ApiClient {
-  private client: AxiosInstance
+  private readonly client: AxiosInstance
 
   constructor() {
     this.client = axios.create({
@@ -153,6 +156,23 @@ class ApiClient {
     const response = await this.client.get(`/api/v1/jobs/${jobId}`)
     return response.data
   }
+
+  // Opportunities
+  async getOpportunities(
+    params?: OpportunityQueryParams
+  ): Promise<{ opportunities: Opportunity[]; pagination: Pagination }> {
+    const response = await this.client.get('/api/v1/opportunities', { params })
+    return response.data
+  }
+
+  async getOpportunity(clusterId: string): Promise<{
+    cluster_id: string
+    cluster_label: string
+    opportunity_score: OpportunityScore
+  }> {
+    const response = await this.client.get(`/api/v1/opportunities/${clusterId}`)
+    return response.data
+  }
 }
 
 export const apiClient = new ApiClient()
@@ -173,3 +193,5 @@ export const searchIdeas = (query: string, limit?: number) => apiClient.searchId
 export const triggerIngestion = () => apiClient.triggerIngestion()
 export const triggerClustering = (params?: ReclusterParams) => apiClient.triggerClustering(params)
 export const getJobStatus = (jobId: string) => apiClient.getJobStatus(jobId)
+export const getOpportunities = (params?: OpportunityQueryParams) => apiClient.getOpportunities(params)
+export const getOpportunity = (clusterId: string) => apiClient.getOpportunity(clusterId)

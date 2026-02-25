@@ -6,6 +6,8 @@ import { Search, RotateCw } from 'lucide-react';
 import { apiClient } from '@/services/api';
 import { Cluster } from '@/types';
 import ClusterCard from '@/components/ClusterCard';
+import DataFreshness from '@/components/DataFreshness';
+import { useRefreshSettings } from './Settings';
 import { FilterSidebar } from '@/components/FilterSidebar';
 import { EmptyClusterList, EmptySearchResults } from '@/components/EmptyStates';
 import { ExportButton } from '@/components/ExportButton';
@@ -13,6 +15,7 @@ import { FilterChips, useFilterChips, type FilterChip } from '@/components/Filte
 import { Button } from '@/components/ui/button';
 
 export default function ClusterExplorer() {
+  const { enabled: autoRefresh, interval: refreshInterval } = useRefreshSettings()
   const queryClient = useQueryClient()
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,10 +24,10 @@ export default function ClusterExplorer() {
   // Get filter params from URL
   const sortBy = searchParams.get('sort_by') || 'size';
   const order = searchParams.get('order') || 'desc';
-  const minSize = searchParams.get('min_size') ? parseInt(searchParams.get('min_size')!) : undefined;
+  const minSize = searchParams.get('min_size') ? Number.parseInt(searchParams.get('min_size')!) : undefined;
   const activeSearch = searchParams.get('search')?.trim() || '';
   const limit = 20;
-  const offset = parseInt(searchParams.get('offset') || '0');
+  const offset = Number.parseInt(searchParams.get('offset') || '0');
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -56,6 +59,8 @@ export default function ClusterExplorer() {
     isFetching,
     isPlaceholderData,
     error,
+    dataUpdatedAt,
+    isRefetching,
   } = useQuery({
     queryKey: ['clusters', sortBy, order, minSize, activeSearch, offset],
     queryFn: async () => {
@@ -70,6 +75,7 @@ export default function ClusterExplorer() {
       return res.clusters;
     },
     placeholderData: keepPreviousData,
+    refetchInterval: autoRefresh ? refreshInterval * 2 : false,
   });
 
   const handleSearch = (e: React.FormEvent) => {
@@ -86,7 +92,7 @@ export default function ClusterExplorer() {
   };
 
   const hasPrevPage = offset > 0;
-  const hasNextPage = Boolean(clusters && clusters.length === limit);
+  const hasNextPage = Boolean(clusters?.length === limit);
   const showInitialLoading = isLoading && !clusters;
   const showUpdating = isFetching && !showInitialLoading;
 
@@ -97,8 +103,8 @@ export default function ClusterExplorer() {
   const { buildChips } = useFilterChips()
   const activeFilters: FilterChip[] = buildChips(
     {
-      sort_by: sortBy !== 'size' ? sortBy : undefined,
-      order: order !== 'desc' ? order : undefined,
+      sort_by: sortBy === 'size' ? undefined : sortBy,
+      order: order === 'desc' ? undefined : order,
       min_size: minSize,
       search: searchParams.get('search'),
     },
@@ -119,7 +125,7 @@ export default function ClusterExplorer() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className="mx-auto max-w-7xl px-6 py-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -128,7 +134,13 @@ export default function ClusterExplorer() {
             Browse all opportunity clusters with advanced filtering and search
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {dataUpdatedAt > 0 && (
+            <DataFreshness
+              dataUpdatedAt={dataUpdatedAt}
+              isRefetching={isRefetching}
+            />
+          )}
           <Button
             variant="outline"
             onClick={handleRefresh}
@@ -198,7 +210,7 @@ export default function ClusterExplorer() {
           {showInitialLoading && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-64 rounded-xl border bg-muted/50 animate-pulse" />
+                <div key={`skeleton-cluster-${i}`} className="h-64 rounded-xl border bg-muted/50 animate-pulse" />
               ))}
             </div>
           )}
@@ -243,7 +255,7 @@ export default function ClusterExplorer() {
           )}
 
           {/* Empty State */}
-          {clusters && clusters.length === 0 && (
+          {clusters?.length === 0 && (
             activeSearch || minSize ? (
               <EmptySearchResults
                 onClearSearch={() => {

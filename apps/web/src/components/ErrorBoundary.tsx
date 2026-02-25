@@ -1,5 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { AlertTriangle } from 'lucide-react'
 
 interface Props {
   children: ReactNode
@@ -41,7 +41,7 @@ class ErrorBoundary extends Component<Props, State> {
     })
 
     // Emit a structured browser event so monitoring can be attached without coupling this component.
-    window.dispatchEvent(
+    globalThis.dispatchEvent(
       new CustomEvent('app:error', {
         detail: {
           message: error.message,
@@ -59,7 +59,7 @@ class ErrorBoundary extends Component<Props, State> {
       errorInfo: null,
     })
     // Optionally reload the page
-    window.location.reload()
+    globalThis.location.reload()
   }
 
   render() {
@@ -74,7 +74,7 @@ class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4">
           <div className="max-w-md w-full bg-slate-800 rounded-lg shadow-xl p-8">
             <div className="flex items-center justify-center w-16 h-16 bg-red-500/20 rounded-full mx-auto mb-6">
-              <ExclamationTriangleIcon className="w-8 h-8 text-red-500" />
+              <AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
 
             <h1 className="text-2xl font-bold text-white text-center mb-2">
@@ -108,7 +108,7 @@ class ErrorBoundary extends Component<Props, State> {
               </button>
               <button
                 type="button"
-                onClick={() => window.history.back()}
+                onClick={() => globalThis.history.back()}
                 className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
               >
                 Go Back

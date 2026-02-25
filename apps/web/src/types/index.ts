@@ -183,3 +183,37 @@ export interface ReclusterParams {
   min_cluster_size?: number
   force?: boolean
 }
+
+export interface OpportunityScoreBreakdown {
+  score: number
+  max: number
+  description: string
+}
+
+export interface OpportunityScore {
+  total: number
+  grade: 'A' | 'B' | 'C' | 'D' | 'F'
+  verdict: string
+  breakdown: {
+    demand: OpportunityScoreBreakdown
+    sentiment: OpportunityScoreBreakdown
+    quality: OpportunityScoreBreakdown
+    trend: OpportunityScoreBreakdown
+    diversity: OpportunityScoreBreakdown
+  }
+}
+
+export interface Opportunity {
+  cluster_id: string
+  cluster_label: string
+  keywords: string[]
+  idea_count: number
+  opportunity_score: OpportunityScore
+}
+
+export interface OpportunityQueryParams {
+  limit?: number
+  offset?: number
+  min_score?: number
+  sort_by?: 'score' | 'demand' | 'trend'
+}

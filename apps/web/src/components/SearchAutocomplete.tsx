@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useId } from 'react';
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -14,6 +14,87 @@ interface SearchResult {
   description: string;
   sentiment?: string;
   idea_count?: number;
+}
+
+function SearchResultsContent({
+  isLoading,
+  results,
+  selectedIndex,
+  onSelect,
+  onHover,
+  getSentimentColor,
+}: Readonly<{
+  isLoading: boolean;
+  results: SearchResult[];
+  selectedIndex: number;
+  onSelect: (result: SearchResult) => void;
+  onHover: (index: number) => void;
+  getSentimentColor: (sentiment?: string) => string;
+}>) {
+  if (isLoading) {
+    return (
+      <output className="block px-4 py-3 text-sm text-muted-foreground" aria-live="polite">
+        Searching...
+      </output>
+    );
+  }
+  if (results.length === 0) {
+    return (
+      <output className="block px-4 py-3 text-sm text-muted-foreground" aria-live="polite">
+        No results found
+      </output>
+    );
+  }
+  return (
+    <>
+      {results.map((result, index) => (
+        <button
+          type="button"
+          key={`${result.type}-${result.id}`}
+          id={`search-result-${index}`}
+          onClick={() => onSelect(result)}
+          onMouseEnter={() => onHover(index)}
+          className={cn(
+            "w-full border-b border-border/50 px-4 py-3 text-left transition-colors last:border-b-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            selectedIndex === index ? 'bg-muted' : 'hover:bg-muted/50'
+          )}
+          role="option"
+          aria-selected={selectedIndex === index}
+          aria-label={`${result.type}: ${result.title}`}
+        >
+          <div className="flex items-start gap-3">
+            <span
+              className={cn(
+                "rounded px-2 py-0.5 text-xs font-medium",
+                result.type === 'cluster'
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-secondary text-secondary-foreground'
+              )}
+              aria-hidden="true"
+            >
+              {result.type === 'cluster' ? 'Cluster' : 'Idea'}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium text-foreground">{result.title}</p>
+              <div className="mt-1 flex items-center gap-2">
+                <p className="truncate text-sm text-muted-foreground">{result.description}</p>
+                {result.idea_count && (
+                  <span className="whitespace-nowrap text-xs text-muted-foreground">
+                    {result.idea_count} ideas
+                  </span>
+                )}
+                {result.sentiment && (
+                  <span className={cn("text-xs font-medium", getSentimentColor(result.sentiment))}>
+                    {result.sentiment}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </button>
+      ))}
+    </>
+  );
 }
 
 export const SearchAutocomplete = () => {
@@ -37,6 +118,8 @@ export const SearchAutocomplete = () => {
     }
 
     setIsLoading(true);
+    const lowerQuery = query.toLowerCase();
+    const matchesQuery = (text: string) => text.toLowerCase().includes(lowerQuery);
     const timer = setTimeout(async () => {
       try {
         const [clusterRes, ideaRes] = await Promise.all([
@@ -46,8 +129,8 @@ export const SearchAutocomplete = () => {
 
         const clusters: SearchResult[] = clusterRes.clusters
           .filter((c: Cluster) =>
-            c.label.toLowerCase().includes(query.toLowerCase()) ||
-            c.keywords.some((k: string) => k.toLowerCase().includes(query.toLowerCase()))
+            matchesQuery(c.label) ||
+            c.keywords.some((k: string) => matchesQuery(k))
           )
           .slice(0, 5)
           .map((c: Cluster) => ({
@@ -123,13 +206,15 @@ export const SearchAutocomplete = () => {
 
   const getSentimentColor = (sentiment?: string) => {
     if (!sentiment) return 'text-muted-foreground';
-    return sentiment === 'positive' ? 'text-success' : sentiment === 'negative' ? 'text-destructive' : 'text-muted-foreground';
+    if (sentiment === 'positive') return 'text-success';
+    if (sentiment === 'negative') return 'text-destructive';
+    return 'text-muted-foreground';
   };
 
   return (
     <div ref={searchRef} className="relative w-full max-w-md" role="search">
       <div className="relative">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <input
           ref={inputRef}
           type="search"
@@ -158,7 +243,7 @@ export const SearchAutocomplete = () => {
             className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Clear search query"
           >
-            <XMarkIcon className="h-4 w-4" aria-hidden="true" />
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -176,64 +261,14 @@ export const SearchAutocomplete = () => {
             aria-live="polite"
             className="absolute top-full z-50 mt-2 max-h-96 w-full overflow-y-auto rounded-lg border border-border bg-popover shadow-lg"
           >
-            {isLoading ? (
-              <div className="px-4 py-3 text-sm text-muted-foreground" role="status" aria-live="polite">
-                Searching...
-              </div>
-            ) : results.length === 0 ? (
-              <div className="px-4 py-3 text-sm text-muted-foreground" role="status" aria-live="polite">
-                No results found
-              </div>
-            ) : (
-              <>
-                {results.map((result, index) => (
-                  <button
-                    type="button"
-                    key={`${result.type}-${result.id}`}
-                    id={`search-result-${index}`}
-                    onClick={() => handleSelect(result)}
-                    onMouseEnter={() => setSelectedIndex(index)}
-                    className={cn(
-                      "w-full border-b border-border/50 px-4 py-3 text-left transition-colors last:border-b-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      selectedIndex === index ? 'bg-muted' : 'hover:bg-muted/50'
-                    )}
-                    role="option"
-                    aria-selected={selectedIndex === index}
-                    aria-label={`${result.type}: ${result.title}`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span
-                        className={cn(
-                          "rounded px-2 py-0.5 text-xs font-medium",
-                          result.type === 'cluster'
-                            ? 'bg-primary/10 text-primary'
-                            : 'bg-secondary text-secondary-foreground'
-                        )}
-                        aria-hidden="true"
-                      >
-                        {result.type === 'cluster' ? 'Cluster' : 'Idea'}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium text-foreground">{result.title}</p>
-                        <div className="mt-1 flex items-center gap-2">
-                          <p className="truncate text-sm text-muted-foreground">{result.description}</p>
-                          {result.idea_count && (
-                            <span className="whitespace-nowrap text-xs text-muted-foreground">
-                              {result.idea_count} ideas
-                            </span>
-                          )}
-                          {result.sentiment && (
-                            <span className={cn("text-xs font-medium", getSentimentColor(result.sentiment))}>
-                              {result.sentiment}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </>
-            )}
+            <SearchResultsContent
+              isLoading={isLoading}
+              results={results}
+              selectedIndex={selectedIndex}
+              onSelect={handleSelect}
+              onHover={setSelectedIndex}
+              getSentimentColor={getSentimentColor}
+            />
           </motion.div>
         )}
       </AnimatePresence>

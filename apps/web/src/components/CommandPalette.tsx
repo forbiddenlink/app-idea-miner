@@ -2,9 +2,9 @@
 // Universal search with Cmd+K shortcut (Cmd/Ctrl+K)
 
 import { useState, useEffect, useCallback, useMemo, useRef, useId, Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { useNavigate } from 'react-router-dom';
-import { MagnifyingGlassIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { Search, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/api';
 import { Cluster, Idea } from '@/types';
@@ -198,11 +198,11 @@ export const CommandPalette = () => {
 
     const handleOpenRequest = () => openPalette();
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('app:command-palette-open', handleOpenRequest);
+    globalThis.addEventListener('keydown', handleKeyDown);
+    globalThis.addEventListener('app:command-palette-open', handleOpenRequest);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('app:command-palette-open', handleOpenRequest);
+      globalThis.removeEventListener('keydown', handleKeyDown);
+      globalThis.removeEventListener('app:command-palette-open', handleOpenRequest);
     };
   }, [isOpen, filteredCommands, selectedIndex, handleSelect, openPalette]);
 
@@ -213,8 +213,8 @@ export const CommandPalette = () => {
 
   useEffect(() => {
     if (!isOpen) return;
-    const raf = window.requestAnimationFrame(() => inputRef.current?.focus());
-    return () => window.cancelAnimationFrame(raf);
+    const raf = globalThis.requestAnimationFrame(() => inputRef.current?.focus());
+    return () => globalThis.cancelAnimationFrame(raf);
   }, [isOpen]);
 
   useEffect(() => {
@@ -238,7 +238,7 @@ export const CommandPalette = () => {
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={() => setIsOpen(false)}>
-        <Transition.Child
+        <TransitionChild
           as={Fragment}
           enter="ease-out duration-300"
           enterFrom="opacity-0"
@@ -248,11 +248,11 @@ export const CommandPalette = () => {
           leaveTo="opacity-0"
         >
           <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" />
-        </Transition.Child>
+        </TransitionChild>
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-start justify-center p-4 pt-[15vh]">
-            <Transition.Child
+            <TransitionChild
               as={Fragment}
               enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
@@ -261,18 +261,18 @@ export const CommandPalette = () => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg border border-border bg-popover shadow-lg transition-all">
-                <Dialog.Title className="sr-only">Command palette</Dialog.Title>
+              <DialogPanel className="w-full max-w-2xl overflow-hidden transition-all transform border rounded-lg shadow-lg border-border bg-popover">
+                <DialogTitle className="sr-only">Command palette</DialogTitle>
 
                 {/* Search Input */}
                 <div className="relative border-b border-border">
-                  <MagnifyingGlassIcon className="absolute left-4 top-4 h-5 w-5 text-muted-foreground" />
+                  <Search className="absolute w-5 h-5 left-4 top-4 text-muted-foreground" />
                   <input
                     ref={inputRef}
                     id="command-palette-input"
                     type="text"
                     placeholder="Search clusters, ideas, or pages…"
-                    className="w-full bg-transparent py-4 pl-12 pr-4 text-foreground placeholder:text-muted-foreground focus:outline-none"
+                    className="w-full py-4 pl-12 pr-4 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     aria-label="Search commands, pages, and ideas"
@@ -282,25 +282,25 @@ export const CommandPalette = () => {
                     aria-expanded={isOpen}
                     aria-activedescendant={filteredCommands[selectedIndex] ? `command-result-${filteredCommands[selectedIndex].id}` : undefined}
                   />
-                  <div className="absolute right-4 top-4 rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
+                  <div className="absolute px-2 py-1 text-xs rounded right-4 top-4 bg-muted text-muted-foreground">
                     ⌘K
                   </div>
                 </div>
 
                 {/* Results */}
-                <div id={listboxId} role="listbox" aria-label="Command results" className="max-h-[60vh] overflow-y-auto">
+                <div className="max-h-[60vh] overflow-y-auto">
                   {!query && recentSearches.length > 0 && (
                     <div className="p-2">
                       <div id="command-palette-recent-searches" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground">
-                        <ClockIcon className="h-4 w-4" />
+                        <Clock className="w-4 h-4" />
                         Recent Searches
                       </div>
-                      {recentSearches.map((search, idx) => (
+                      {recentSearches.map((search) => (
                         <button
                           type="button"
-                          key={idx}
+                          key={search}
                           onClick={() => setQuery(search)}
-                          className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="w-full px-3 py-2 text-sm text-left transition-colors rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           aria-describedby="command-palette-recent-searches"
                         >
                           {search}
@@ -315,7 +315,7 @@ export const CommandPalette = () => {
                       <p className="mt-1 text-sm">Try a different search term</p>
                     </div>
                   ) : (
-                    <div className="p-2">
+                    <div id={listboxId} role="listbox" aria-label="Command results" className="p-2">
                       {filteredCommands.map((cmd, index) => (
                         <button
                           type="button"
@@ -331,18 +331,18 @@ export const CommandPalette = () => {
                           aria-selected={index === selectedIndex}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-md shrink-0 bg-muted">
                               <div className={cn("h-2 w-2 rounded-full", getTypeColor(cmd.type))} />
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="truncate font-medium text-foreground">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium truncate text-foreground">
                                 {cmd.title}
                               </div>
                               {cmd.subtitle && (
-                                <div className="truncate text-sm text-muted-foreground">{cmd.subtitle}</div>
+                                <div className="text-sm truncate text-muted-foreground">{cmd.subtitle}</div>
                               )}
                             </div>
-                            <div className="shrink-0 rounded bg-muted px-2 py-1 text-xs uppercase text-muted-foreground">
+                            <div className="px-2 py-1 text-xs uppercase rounded shrink-0 bg-muted text-muted-foreground">
                               {cmd.type}
                             </div>
                           </div>
@@ -353,22 +353,22 @@ export const CommandPalette = () => {
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between border-t border-border px-4 py-2 text-xs text-muted-foreground">
+                <div className="flex items-center justify-between px-4 py-2 text-xs border-t border-border text-muted-foreground">
                   <div className="flex items-center gap-4">
                     <span className="flex items-center gap-1">
-                      <kbd className="rounded bg-muted px-2 py-1">↑↓</kbd> Navigate
+                      <kbd className="px-2 py-1 rounded bg-muted">↑↓</kbd> Navigate
                     </span>
                     <span className="flex items-center gap-1">
-                      <kbd className="rounded bg-muted px-2 py-1">↵</kbd> Select
+                      <kbd className="px-2 py-1 rounded bg-muted">↵</kbd> Select
                     </span>
                     <span className="flex items-center gap-1">
-                      <kbd className="rounded bg-muted px-2 py-1">esc</kbd> Close
+                      <kbd className="px-2 py-1 rounded bg-muted">esc</kbd> Close
                     </span>
                   </div>
                   <span>{filteredCommands.length} results</span>
                 </div>
-              </Dialog.Panel>
-            </Transition.Child>
+              </DialogPanel>
+            </TransitionChild>
           </div>
         </div>
       </Dialog>

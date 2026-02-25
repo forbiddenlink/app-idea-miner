@@ -1,7 +1,7 @@
 // Filter Chips Component
 // Shows active filters as removable chips
 
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface FilterChip {
@@ -48,7 +48,7 @@ export const FilterChips = ({ chips, onClearAll }: FilterChipsProps) => {
               className="ml-1 text-muted-foreground transition-colors hover:text-destructive"
               aria-label={`Remove ${chip.label} filter`}
             >
-              <XMarkIcon className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </button>
           </motion.div>
         ))}
@@ -92,8 +92,8 @@ export const useFilterChips = () => {
 
   const formatLabel = (key: string): string => {
     return key
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/_/g, ' ')
+      .replaceAll(/([A-Z])/g, ' $1')
+      .replaceAll('_', ' ')
       .replace(/^./, (str) => str.toUpperCase())
       .trim();
   };

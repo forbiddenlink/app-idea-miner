@@ -116,3 +116,4 @@ alembic.ini
 
 # Claude Code TypeScript cache
 .claude/tsc-cache/
+.history/

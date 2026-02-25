@@ -1,5 +1,5 @@
 import React from 'react';
-import { FunnelIcon } from '@heroicons/react/24/outline';
+import { Filter } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
 interface FilterSidebarProps {
@@ -20,9 +20,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onMinSizeChange,
 }) => {
   return (
-    <div className="w-64 shrink-0 rounded-lg border border-border bg-card p-5" role="complementary" aria-label="Filter controls">
+    <aside className="w-64 shrink-0 rounded-lg border border-border bg-card p-5" aria-label="Filter controls">
       <div className="mb-5 flex items-center gap-2">
-        <FunnelIcon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        <Filter className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
         <h3 className="text-sm font-semibold text-foreground">Filters</h3>
       </div>
 
@@ -52,7 +52,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           <legend className="mb-2 block text-sm font-medium text-muted-foreground">
             Order
           </legend>
-          <div className="flex gap-2" role="group" aria-label="Sort order">
+          <div className="flex gap-2" aria-label="Sort order">
             <button
               onClick={() => onOrderChange('desc')}
               className={cn(
@@ -93,7 +93,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           type="number"
           value={minSize || ''}
           onChange={(e) =>
-            onMinSizeChange(e.target.value ? parseInt(e.target.value) : undefined)
+            onMinSizeChange(e.target.value ? Number.parseInt(e.target.value) : undefined)
           }
           placeholder="Any size"
           min="1"
@@ -114,6 +114,6 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
       >
         Reset Filters
       </button>
-    </div>
+    </aside>
   );
 };
