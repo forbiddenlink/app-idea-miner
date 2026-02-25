@@ -117,3 +117,9 @@ alembic.ini
 # Claude Code TypeScript cache
 .claude/tsc-cache/
 .history/
+
+# Claude Code local files
+.claude/settings.local.json
+
+# Session notes
+thoughts/
