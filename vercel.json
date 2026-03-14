@@ -24,6 +24,8 @@
         { "src": "/docs", "dest": "api/index.py" },
         { "src": "/redoc", "dest": "api/index.py" },
         { "src": "/openapi.json", "dest": "api/index.py" },
+        { "src": "/assets/(.*)", "dest": "apps/web/assets/$1" },
+        { "src": "/(vite\\.svg|favicon\\.ico|robots\\.txt)", "dest": "apps/web/$1" },
         { "handle": "filesystem" },
         { "src": "/(.*)", "dest": "apps/web/index.html" }
     ]
