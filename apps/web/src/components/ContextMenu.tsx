@@ -101,7 +101,8 @@ export function ContextMenu({ items, children, disabled = false }: Readonly<Cont
   }, [isOpen])
 
   return (
-    <div onContextMenu={handleContextMenu} onKeyDown={handleContextMenuKeyDown} className="relative">
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+    <div role="region" onContextMenu={handleContextMenu} onKeyDown={handleContextMenuKeyDown} className="relative">
       {children}
 
       {isOpen && position && (
