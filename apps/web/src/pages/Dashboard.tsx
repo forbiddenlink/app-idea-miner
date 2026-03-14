@@ -107,8 +107,8 @@ function StatsGrid({ summary, isLoading }: Readonly<{ summary: (ReturnType<typeo
   if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={`skeleton-stat-${i}`} className="card h-32 animate-pulse bg-muted/50" />
+        {["stat-a", "stat-b", "stat-c", "stat-d"].map((id) => (
+          <div key={id} className="card h-32 animate-pulse bg-muted/50" />
         ))}
       </div>
     )
@@ -129,8 +129,8 @@ function TrendingClusters({ clusters, isLoading }: Readonly<{ clusters: Cluster[
   if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={`skeleton-cluster-${i}`} className="card h-48 animate-pulse bg-muted/50" />
+        {["cluster-a", "cluster-b", "cluster-c"].map((id) => (
+          <div key={id} className="card h-48 animate-pulse bg-muted/50" />
         ))}
       </div>
     )

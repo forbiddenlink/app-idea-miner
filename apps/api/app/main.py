@@ -379,38 +379,28 @@ async def root(request: Request):
 
 
 # Import and include routers
-# Note: Some routers require heavy dependencies (ML, Celery) and are disabled on serverless
 import os
 
 _is_serverless = os.getenv("VERCEL", "") == "1"
 
-from apps.api.app.routers import ideas, posts
+from apps.api.app.routers import analytics, clusters, ideas, opportunities, posts
 
-# Posts router (Phase 1) - always available
+# Data query routers - available everywhere (no heavy deps)
 app.include_router(posts.router, prefix="/api/v1/posts", tags=["Posts"])
-
-# Ideas router (Phase 2) - always available
 app.include_router(ideas.router, prefix="/api/v1/ideas", tags=["Ideas"])
+app.include_router(clusters.router, prefix="/api/v1/clusters", tags=["Clusters"])
+app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytics"])
+app.include_router(
+    opportunities.router, prefix="/api/v1/opportunities", tags=["Opportunities"]
+)
 
-# Routers that require heavy dependencies (disabled on serverless)
+# Jobs router requires Celery - only available with workers
 if not _is_serverless:
-    from apps.api.app.routers import analytics, clusters, jobs, opportunities
+    from apps.api.app.routers import jobs
 
-    # Clusters router (Phase 3) - requires ML packages
-    app.include_router(clusters.router, prefix="/api/v1/clusters", tags=["Clusters"])
-
-    # Analytics router (Phase 4)
-    app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytics"])
-
-    # Jobs router (Phase 4) - requires Celery
     app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["Jobs"])
-
-    # Opportunities router (Opportunity Scoring)
-    app.include_router(
-        opportunities.router, prefix="/api/v1/opportunities", tags=["Opportunities"]
-    )
 else:
-    logger.info("Running in serverless mode - some routers disabled")
+    logger.info("Running in serverless mode - jobs router disabled (requires Celery)")
 
 
 if __name__ == "__main__":
