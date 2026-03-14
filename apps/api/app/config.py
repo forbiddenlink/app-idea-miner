@@ -31,8 +31,9 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "appideas"
 
-    # Redis
+    # Redis (standard or Upstash)
     REDIS_URL: str = "redis://redis:6379/0"
+    UPSTASH_REDIS_URL: str = ""  # Upstash REST-compatible Redis URL (rediss://...)
 
     # API Configuration
     API_HOST: str = "0.0.0.0"

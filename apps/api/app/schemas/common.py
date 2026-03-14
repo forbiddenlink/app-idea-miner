@@ -39,3 +39,11 @@ class ErrorResponse(BaseModel):
     """Standard error response."""
 
     detail: str
+
+
+class ExportInfo(BaseModel):
+    """Metadata hint for export streaming responses (used in OpenAPI docs)."""
+
+    export_type: str
+    format: str
+    record_count: int

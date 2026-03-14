@@ -109,7 +109,6 @@ async def test_rate_limit():
 @pytest.mark.asyncio
 async def test_timing_safe_comparison_used():
     """Verify the security module uses secrets.compare_digest."""
-    import secrets
 
     from apps.api.app.core import security
 

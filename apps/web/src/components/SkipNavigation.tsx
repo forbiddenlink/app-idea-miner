@@ -54,13 +54,13 @@ export function SkipNavigation() {
       role="navigation"
       aria-label="Skip navigation"
     >
-      <div className="flex flex-col gap-2 bg-slate-800 border border-slate-700 rounded-lg p-4 shadow-xl">
+      <div className="flex flex-col gap-2 bg-card border border-border rounded-lg p-4 shadow-xl">
         {skipLinks.map((link) => (
           <a
             key={link.id}
             href={`#${link.id}`}
             onClick={(e) => handleSkipClick(e, link.id)}
-            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
           >
             {link.label}
           </a>

@@ -2,13 +2,12 @@ import json
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Optional
-from uuid import UUID
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from packages.core.dedupe import generate_url_hash, is_duplicate_title
+from packages.core.dedupe import generate_url_hash
 from packages.core.models import RawPost
 
 logger = logging.getLogger(__name__)

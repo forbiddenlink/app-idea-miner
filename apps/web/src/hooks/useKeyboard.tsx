@@ -126,7 +126,7 @@ export const KeyboardShortcutsDialog = ({ isOpen, onClose }: { isOpen: boolean; 
   return (
     // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm"
+      className="fixed inset-0 bg-background/50 flex items-center justify-center z-50 backdrop-blur-sm"
       onClick={onClose}
       onKeyDown={(e) => e.key === 'Escape' && onClose()}
       tabIndex={-1}
@@ -135,20 +135,20 @@ export const KeyboardShortcutsDialog = ({ isOpen, onClose }: { isOpen: boolean; 
       aria-modal="true"
     >
       <div
-        className="bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl border border-slate-700"
+        className="bg-card rounded-lg p-6 max-w-md w-full mx-4 shadow-xl border border-border"
         onClick={(e) => e.stopPropagation()}
         role="button"
         tabIndex={0}
         onKeyDown={() => { }}
       >
-        <h2 id="shortcuts-title" className="text-xl font-bold text-white mb-4">
+        <h2 id="shortcuts-title" className="text-xl font-bold text-foreground mb-4">
           Keyboard Shortcuts
         </h2>
         <div className="space-y-3">
           {shortcuts.map((shortcut) => (
             <div key={shortcut.key} className="flex items-center justify-between">
-              <span className="text-slate-300">{shortcut.description}</span>
-              <kbd className="px-2 py-1 bg-slate-700 text-slate-200 rounded text-sm font-mono border border-slate-600">
+              <span className="text-muted-foreground">{shortcut.description}</span>
+              <kbd className="px-2 py-1 bg-muted text-foreground rounded text-sm font-mono border border-border">
                 {shortcut.key}
               </kbd>
             </div>
@@ -156,8 +156,8 @@ export const KeyboardShortcutsDialog = ({ isOpen, onClose }: { isOpen: boolean; 
         </div>
         <button
           onClick={onClose}
-          className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md
-                     transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="mt-6 w-full bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded-md
+                     transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
         >
           Close
         </button>

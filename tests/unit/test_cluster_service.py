@@ -39,7 +39,7 @@ async def test_get_all_clusters_sorting(cluster_service, mock_db):
 
 @pytest.mark.asyncio
 async def test_get_cluster_by_id_found(cluster_service, mock_db):
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     now = datetime.now(UTC)
     mock_cluster = Cluster(

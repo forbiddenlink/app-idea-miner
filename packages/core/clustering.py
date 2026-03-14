@@ -54,6 +54,7 @@ class ClusterEngine:
         max_df: float = 0.85,
         min_cluster_size: int = 3,
         min_samples: int = 2,
+        use_embeddings: bool = False,
     ):
         """
         Initialize clustering engine.
@@ -65,6 +66,7 @@ class ClusterEngine:
             max_df: Maximum document frequency (ignore terms appearing in > max_df * n_docs)
             min_cluster_size: Minimum number of points to form a cluster
             min_samples: Number of neighbors for a point to be considered a core point
+            use_embeddings: If True, use sentence-transformers for vectorization instead of TF-IDF
         """
         self.max_features = max_features
         self.ngram_range = ngram_range
@@ -72,15 +74,18 @@ class ClusterEngine:
         self.max_df = max_df
         self.min_cluster_size = min_cluster_size
         self.min_samples = min_samples
+        self.use_embeddings = use_embeddings
 
         # Initialize components (will be fit during clustering)
         self.vectorizer: TfidfVectorizer | None = None
         self.clusterer: hdbscan.HDBSCAN | None = None
         self.tfidf_matrix = None
+        self.embedding_matrix: np.ndarray | None = None
 
         logger.info(
             f"ClusterEngine initialized: max_features={max_features}, "
-            f"ngram_range={ngram_range}, min_cluster_size={min_cluster_size}"
+            f"ngram_range={ngram_range}, min_cluster_size={min_cluster_size}, "
+            f"use_embeddings={use_embeddings}"
         )
 
     def cluster_ideas(self, texts: list[str]) -> ClusterResult:
@@ -113,7 +118,7 @@ class ClusterEngine:
 
         logger.info(f"Clustering {len(texts)} idea texts...")
 
-        # Step 1: Vectorize texts with TF-IDF
+        # Step 1a: Always run TF-IDF (needed for keyword extraction)
         logger.debug("Vectorizing texts with TF-IDF...")
         self.vectorizer = TfidfVectorizer(
             max_features=self.max_features,
@@ -138,18 +143,45 @@ class ClusterEngine:
                 n_noise=len(texts),
             )
 
+        # Step 1b: Optionally compute sentence embeddings for clustering
+        clustering_matrix = self.tfidf_matrix.toarray()
+        self.embedding_matrix = None
+
+        if self.use_embeddings:
+            try:
+                from sentence_transformers import SentenceTransformer
+
+                logger.info(
+                    "Using sentence embeddings (all-MiniLM-L6-v2) for clustering..."
+                )
+                model = SentenceTransformer("all-MiniLM-L6-v2")
+                embeddings = model.encode(texts, show_progress_bar=False)
+                # L2 normalize embeddings
+                norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
+                norms[norms == 0] = 1  # Avoid division by zero
+                embeddings = embeddings / norms
+                self.embedding_matrix = embeddings
+                clustering_matrix = embeddings
+                logger.debug(f"Embedding matrix shape: {embeddings.shape}")
+            except ImportError:
+                logger.warning(
+                    "sentence-transformers not installed. "
+                    "Falling back to TF-IDF for clustering. "
+                    "Install with: pip install sentence-transformers"
+                )
+
         # Step 2: Run HDBSCAN clustering
         logger.debug("Running HDBSCAN clustering...")
         self.clusterer = hdbscan.HDBSCAN(
             min_cluster_size=self.min_cluster_size,
             min_samples=self.min_samples,
-            metric="euclidean",  # Euclidean works well with L2-normalized TF-IDF
+            metric="euclidean",  # Euclidean works well with L2-normalized vectors
             cluster_selection_method="eom",  # Excess of Mass (stable)
             prediction_data=True,  # Enable soft clustering
         )
 
         try:
-            labels = self.clusterer.fit_predict(self.tfidf_matrix.toarray())
+            labels = self.clusterer.fit_predict(clustering_matrix)
             probabilities = self.clusterer.probabilities_
         except Exception as e:
             logger.error(f"HDBSCAN clustering failed: {e}")
@@ -162,7 +194,7 @@ class ClusterEngine:
 
         # Step 3: Extract keywords for each cluster
         unique_labels = set(labels)
-        n_clusters = len([l for l in unique_labels if l != -1])
+        n_clusters = len([lbl for lbl in unique_labels if lbl != -1])
         n_noise = np.sum(labels == -1)
 
         logger.info(
@@ -230,16 +262,19 @@ class ClusterEngine:
         return keywords
 
     def generate_cluster_label(
-        self, keywords: list[tuple[str, float]], texts: list[str] | None = None
+        self,
+        keywords: list[tuple[str, float]],
+        texts: list[str] | None = None,
+        label_strategy: str = "keywords",
     ) -> str:
         """
         Generate a human-readable label for a cluster.
 
-        Strategy: Use top 3 keywords, capitalize and join with ' + '
-
         Args:
             keywords: List of (term, score) tuples
-            texts: Optional list of texts in cluster (for alternative labeling)
+            texts: Optional list of texts in cluster (used by "representative" strategy)
+            label_strategy: "keywords" (top 3 keywords joined) or "representative"
+                (shortest representative idea under 60 chars, or truncated centroid-closest text)
 
         Returns:
             Human-readable cluster label
@@ -247,13 +282,58 @@ class ClusterEngine:
         if not keywords:
             return "Uncategorized"
 
-        # Take top 3 keywords
+        if label_strategy == "representative" and texts:
+            return self._representative_label(texts)
+
+        # Default "keywords" strategy: top 3 keywords joined
         top_terms = [kw[0] for kw in keywords[:3]]
-
-        # Capitalize and join
         label = " + ".join(term.title() for term in top_terms)
-
         return label
+
+    def _representative_label(self, texts: list[str], max_length: int = 60) -> str:
+        """
+        Pick the most representative text from a cluster as the label.
+
+        Strategy: Find the text closest to the cluster centroid. If any cluster
+        text fits under max_length, prefer the shortest one among the top-3
+        closest-to-centroid; otherwise truncate the closest.
+
+        Args:
+            texts: Texts belonging to this cluster
+            max_length: Maximum label length
+
+        Returns:
+            Representative label string
+        """
+        if len(texts) == 1:
+            text = texts[0]
+            return text if len(text) <= max_length else text[: max_length - 3] + "..."
+
+        # Vectorize cluster texts with a simple TF-IDF to find centroid
+        try:
+            vec = TfidfVectorizer(stop_words="english", norm="l2")
+            matrix = vec.fit_transform(texts).toarray()
+        except ValueError:
+            return (
+                texts[0][: max_length - 3] + "..."
+                if len(texts[0]) > max_length
+                else texts[0]
+            )
+
+        centroid = matrix.mean(axis=0)
+        # Cosine similarity (vectors are L2-normed, so dot product = cosine)
+        similarities = matrix @ centroid
+        ranked_indices = np.argsort(similarities)[::-1]
+
+        # Among top-3 closest to centroid, prefer one that fits under max_length
+        top_candidates = ranked_indices[: min(3, len(ranked_indices))]
+        for idx in top_candidates:
+            if len(texts[idx]) <= max_length:
+                return texts[idx]
+
+        # Truncate the closest-to-centroid text
+        best = texts[ranked_indices[0]]
+        return best if len(best) <= max_length else best[: max_length - 3] + "..."
 
     def score_cluster(
         self,
@@ -364,11 +444,15 @@ def cluster_ideas(texts: list[str], **kwargs) -> ClusterResult:
 
     Args:
         texts: List of problem statements
-        **kwargs: Optional clustering parameters
+        **kwargs: Optional clustering parameters (including use_embeddings)
 
     Returns:
         ClusterResult
     """
+    # Reset singleton when config changes to avoid stale state
+    global _cluster_engine
+    if kwargs:
+        _cluster_engine = None
     engine = get_cluster_engine(**kwargs)
     return engine.cluster_ideas(texts)
 

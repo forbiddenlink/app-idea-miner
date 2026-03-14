@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import os
-from datetime import datetime
+from datetime import UTC, datetime, timezone
 
 import feedparser
 
@@ -88,7 +88,7 @@ class RSSSource(BaseSource):
                             source=source,
                             author=author,
                             published_at=published_at,
-                            fetched_at=datetime.utcnow(),
+                            fetched_at=datetime.now(tz=UTC),
                             source_metadata={
                                 "feed_url": feed_url,
                                 "feed_title": feed.feed.get("title", ""),

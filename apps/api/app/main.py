@@ -41,7 +41,9 @@ async def lifespan(app: FastAPI):
 
     is_serverless = os.getenv("VERCEL", "") == "1"
     has_database = bool(os.getenv("DATABASE_URL"))
-    has_redis = bool(os.getenv("REDIS_URL"))
+    # Support both standard Redis and Upstash Redis (TLS-based, for serverless)
+    redis_url = os.getenv("UPSTASH_REDIS_URL") or os.getenv("REDIS_URL")
+    has_redis = bool(redis_url)
 
     # Startup
     logger.info("Starting App-Idea Miner API...")
@@ -58,21 +60,23 @@ async def lifespan(app: FastAPI):
 
     redis_client = None
 
-    # Initialize Redis client for caching (only if configured)
+    # Initialize Redis client for caching (supports standard Redis and Upstash)
     if has_redis:
         try:
+            is_upstash = redis_url.startswith("rediss://")
             redis_client = await aioredis.from_url(
-                settings.REDIS_URL,
+                redis_url,
                 encoding="utf-8",
                 decode_responses=False,  # We'll handle JSON encoding
             )
             await redis_client.ping()
             set_redis_client(redis_client)
-            logger.info("Redis client initialized for caching")
+            redis_type = "Upstash Redis (TLS)" if is_upstash else "Redis"
+            logger.info(f"{redis_type} client initialized for caching")
         except Exception as e:
             logger.warning(f"Failed to connect to Redis: {e}. Caching disabled.")
     else:
-        logger.warning("REDIS_URL not set - caching disabled")
+        logger.warning("No Redis URL configured - caching disabled")
 
     yield
 
@@ -427,7 +431,14 @@ import os
 
 _is_serverless = os.getenv("VERCEL", "") == "1"
 
-from apps.api.app.routers import analytics, clusters, ideas, opportunities, posts
+from apps.api.app.routers import (
+    analytics,
+    clusters,
+    export,
+    ideas,
+    opportunities,
+    posts,
+)
 
 # Data query routers - available everywhere (no heavy deps)
 app.include_router(posts.router, prefix="/api/v1/posts", tags=["Posts"])
@@ -437,6 +448,7 @@ app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytic
 app.include_router(
     opportunities.router, prefix="/api/v1/opportunities", tags=["Opportunities"]
 )
+app.include_router(export.router, prefix="/api/v1/export", tags=["Export"])
 
 # Jobs router requires Celery - only available with workers
 if not _is_serverless:

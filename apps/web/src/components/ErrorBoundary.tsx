@@ -71,27 +71,27 @@ class ErrorBoundary extends Component<Props, State> {
 
       // Default error UI
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4">
-          <div className="max-w-md w-full bg-slate-800 rounded-lg shadow-xl p-8">
-            <div className="flex items-center justify-center w-16 h-16 bg-red-500/20 rounded-full mx-auto mb-6">
-              <AlertTriangle className="w-8 h-8 text-red-500" />
+        <div className="min-h-screen flex items-center justify-center bg-background px-4">
+          <div className="max-w-md w-full bg-card rounded-lg shadow-xl border border-border p-8">
+            <div className="flex items-center justify-center w-16 h-16 bg-destructive/20 rounded-full mx-auto mb-6">
+              <AlertTriangle className="w-8 h-8 text-destructive" />
             </div>
 
-            <h1 className="text-2xl font-bold text-white text-center mb-2">
+            <h1 className="text-2xl font-bold text-foreground text-center mb-2">
               Something went wrong
             </h1>
 
-            <p className="text-slate-400 text-center mb-6">
+            <p className="text-muted-foreground text-center mb-6">
               We encountered an unexpected error. Our team has been notified.
             </p>
 
             {import.meta.env.DEV && this.state.error && (
-              <div className="mb-6 p-4 bg-slate-900 rounded border border-slate-700 overflow-auto">
-                <p className="text-xs font-mono text-red-400 mb-2">
+              <div className="mb-6 p-4 bg-muted rounded border border-border overflow-auto">
+                <p className="text-xs font-mono text-destructive mb-2">
                   {this.state.error.toString()}
                 </p>
                 {this.state.errorInfo && (
-                  <pre className="text-xs text-slate-500 whitespace-pre-wrap">
+                  <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
                     {this.state.errorInfo.componentStack}
                   </pre>
                 )}
@@ -102,14 +102,14 @@ class ErrorBoundary extends Component<Props, State> {
               <button
                 type="button"
                 onClick={this.handleReset}
-                className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+                className="flex-1 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-colors"
               >
                 Reload Page
               </button>
               <button
                 type="button"
                 onClick={() => globalThis.history.back()}
-                className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
+                className="flex-1 px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-lg font-medium transition-colors"
               >
                 Go Back
               </button>

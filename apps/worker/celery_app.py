@@ -64,7 +64,10 @@ celery_app.conf.update(
             "task": "apps.worker.tasks.ingestion.fetch_rss_feeds",
             "schedule": 21600.0,  # Every 6 hours
         },
-        # Add more scheduled tasks here as needed
+        "fetch-hackernews-stories": {
+            "task": "apps.worker.tasks.ingestion.run_ingestion_cycle",
+            "schedule": 43200.0,  # Every 12 hours
+        },
     },
 )
 

@@ -185,7 +185,9 @@ async def invalidate_cache(pattern: str):
 
     # If no global client, create a temporary one
     if not client:
-        redis_url = os.getenv("REDIS_URL", "redis://redis:6379/0")
+        redis_url = os.getenv("UPSTASH_REDIS_URL") or os.getenv(
+            "REDIS_URL", "redis://redis:6379/0"
+        )
         try:
             client = await aioredis.from_url(
                 redis_url, encoding="utf-8", decode_responses=False

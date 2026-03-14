@@ -599,7 +599,7 @@ class TextProcessor:
 
         import nltk
         from nltk.corpus import stopwords
-        from nltk.tokenize import sent_tokenize, word_tokenize
+        from nltk.tokenize import word_tokenize
 
         # Configure NLTK to use a writable directory in serverless environments
         nltk_data_path = os.path.join("/tmp", "nltk_data")

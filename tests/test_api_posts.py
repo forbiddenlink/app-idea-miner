@@ -52,8 +52,6 @@ async def test_get_single_post(client: AsyncClient):
     # 1. Seed/Create a post
     # We'll use the API to seed if possible, or manual DB insert
     # Let's use manual DB insert to rely less on other endpoints
-    from apps.api.app.database import get_db
-    from packages.core.models import RawPost
 
     # We can't easily access the session from here to insert directly IF we want to strictly use 'client'
     # But we can assume the 'seed' test works or do a manual insert if we had the session fixture

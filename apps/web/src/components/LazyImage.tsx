@@ -90,7 +90,7 @@ export function LazyImage({
 
       {/* Skeleton loader if no blur placeholder */}
       {!blurDataURL && !isLoaded && (
-        <div className="absolute inset-0 bg-slate-800 animate-pulse" />
+        <div className="absolute inset-0 bg-muted animate-pulse" />
       )}
 
       {/* Actual image */}

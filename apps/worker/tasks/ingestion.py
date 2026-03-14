@@ -12,11 +12,11 @@ from apps.worker.celery_app import celery_app
 
 # Source Plugins
 from apps.worker.sources.base import BaseSource
+from apps.worker.sources.hackernews import HackerNewsSource
 from apps.worker.sources.producthunt import ProductHuntSource
 from apps.worker.sources.reddit import RedditSource
 from apps.worker.sources.rss import RSSSource
 from packages.core.database import AsyncSessionLocal
-from packages.core.dedupe import is_duplicate_title
 from packages.core.models import RawPost
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,7 @@ SOURCE_REGISTRY: list[type[BaseSource]] = [
     RSSSource,
     RedditSource,
     ProductHuntSource,
+    HackerNewsSource,
 ]
 
 

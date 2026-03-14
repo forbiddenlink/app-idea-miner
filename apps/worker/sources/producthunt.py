@@ -1,7 +1,7 @@
 import logging
 import os
 import random
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import httpx
