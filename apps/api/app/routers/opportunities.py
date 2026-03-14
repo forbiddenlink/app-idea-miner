@@ -16,6 +16,10 @@ from apps.api.app.core.constants import DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT
 from apps.api.app.core.rate_limit import RateLimiter
 from apps.api.app.core.security import get_api_key
 from apps.api.app.database import get_db
+from apps.api.app.schemas.opportunities import (
+    OpportunityDetailResponse,
+    OpportunityListResponse,
+)
 from apps.api.app.services.opportunity_service import OpportunityService
 
 logger = logging.getLogger(__name__)
@@ -26,7 +30,7 @@ router = APIRouter(
 )
 
 
-@router.get("")
+@router.get("", response_model=OpportunityListResponse)
 async def list_opportunities(
     limit: int = Query(DEFAULT_PAGE_LIMIT, ge=1, le=MAX_PAGE_LIMIT),
     offset: int = Query(0, ge=0),
@@ -57,7 +61,7 @@ async def list_opportunities(
         raise HTTPException(status_code=503, detail="Database unavailable")
 
 
-@router.get("/{cluster_id}")
+@router.get("/{cluster_id}", response_model=OpportunityDetailResponse)
 async def get_opportunity(
     cluster_id: UUID,
     db: AsyncSession = Depends(get_db),

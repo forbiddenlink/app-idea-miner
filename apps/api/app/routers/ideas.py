@@ -13,6 +13,12 @@ from apps.api.app.core.constants import DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT
 from apps.api.app.core.rate_limit import RateLimiter
 from apps.api.app.core.security import get_api_key
 from apps.api.app.database import get_db
+from apps.api.app.schemas.ideas import (
+    IdeaDetailResponse,
+    IdeaListResponse,
+    IdeaSearchResponse,
+    IdeaStatsResponse,
+)
 from apps.api.app.services.idea_service import IdeaService
 
 router = APIRouter(
@@ -22,7 +28,7 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 
-@router.get("")
+@router.get("", response_model=IdeaListResponse)
 async def list_ideas(
     limit: int = Query(DEFAULT_PAGE_LIMIT, ge=1, le=MAX_PAGE_LIMIT),
     offset: int = Query(0, ge=0),
@@ -109,7 +115,7 @@ async def list_ideas(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/{idea_id}")
+@router.get("/{idea_id}", response_model=IdeaDetailResponse)
 async def get_idea(
     idea_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -179,7 +185,7 @@ async def get_idea(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/search/query")
+@router.get("/search/query", response_model=IdeaSearchResponse)
 async def search_ideas(
     q: str = Query(..., min_length=2),
     limit: int = Query(DEFAULT_PAGE_LIMIT, ge=1, le=MAX_PAGE_LIMIT),
@@ -240,7 +246,7 @@ async def search_ideas(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/stats/summary")
+@router.get("/stats/summary", response_model=IdeaStatsResponse)
 async def get_ideas_stats(
     db: AsyncSession = Depends(get_db),
 ):

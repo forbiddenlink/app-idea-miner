@@ -11,6 +11,12 @@ from apps.api.app.core.constants import DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT
 from apps.api.app.core.rate_limit import RateLimiter
 from apps.api.app.core.security import get_api_key
 from apps.api.app.database import get_db
+from apps.api.app.schemas.posts import (
+    PostDetailResponse,
+    PostListResponse,
+    PostStatsResponse,
+    SeedResponse,
+)
 from packages.core.services.post_service import PostService
 
 logger = logging.getLogger(__name__)
@@ -25,8 +31,8 @@ def get_post_service(db: AsyncSession = Depends(get_db)) -> PostService:
     return PostService(db)
 
 
-@router.post("/seed", status_code=status.HTTP_201_CREATED)
-async def seed_sample_data(service: PostService = Depends(get_post_service)) -> dict:
+@router.post("/seed", status_code=status.HTTP_201_CREATED, response_model=SeedResponse)
+async def seed_sample_data(service: PostService = Depends(get_post_service)):
     """
     Load sample posts from data/sample_posts.json.
 
@@ -51,14 +57,14 @@ async def seed_sample_data(service: PostService = Depends(get_post_service)) -> 
         )
 
 
-@router.get("")
+@router.get("", response_model=PostListResponse)
 async def list_posts(
     limit: int = Query(DEFAULT_PAGE_LIMIT, ge=1, le=MAX_PAGE_LIMIT),
     offset: int = Query(0, ge=0),
     source: str | None = None,
     is_processed: bool | None = None,
     service: PostService = Depends(get_post_service),
-) -> dict:
+):
     """
     List raw posts with pagination and filtering.
 
@@ -104,11 +110,11 @@ async def list_posts(
     }
 
 
-@router.get("/{post_id}")
+@router.get("/{post_id}", response_model=PostDetailResponse)
 async def get_post(
     post_id: str,
     service: PostService = Depends(get_post_service),
-) -> dict:
+):
     """
     Get a single post by ID.
 
@@ -144,8 +150,8 @@ async def get_post(
     }
 
 
-@router.get("/stats/summary")
-async def get_stats(service: PostService = Depends(get_post_service)) -> dict:
+@router.get("/stats/summary", response_model=PostStatsResponse)
+async def get_stats(service: PostService = Depends(get_post_service)):
     """
     Get statistics about raw posts.
 

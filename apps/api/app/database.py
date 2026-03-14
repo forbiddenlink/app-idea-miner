@@ -12,6 +12,7 @@ from functools import lru_cache
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.pool import NullPool
 
 # Database URL with asyncpg driver (8x faster than psycopg2)
 DATABASE_URL = os.getenv(
@@ -35,14 +36,24 @@ def get_engine():
     """Get or create async engine (lazy initialization)."""
     global _engine
     if _engine is None:
-        _engine = create_async_engine(
-            DATABASE_URL,
-            pool_size=5 if IS_SERVERLESS else 10,
-            max_overflow=10 if IS_SERVERLESS else 20,
-            pool_recycle=300 if IS_SERVERLESS else 1800,  # Shorter for serverless
-            pool_pre_ping=True,
-            echo=False,
-        )
+        if IS_SERVERLESS:
+            # Serverless: use NullPool (no persistent connections)
+            # Each request creates/closes its own connection
+            _engine = create_async_engine(
+                DATABASE_URL,
+                poolclass=NullPool,
+                echo=False,
+            )
+        else:
+            # Docker/local: use connection pool for performance
+            _engine = create_async_engine(
+                DATABASE_URL,
+                pool_size=10,
+                max_overflow=20,
+                pool_recycle=1800,
+                pool_pre_ping=True,
+                echo=False,
+            )
     return _engine
 
 

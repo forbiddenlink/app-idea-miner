@@ -14,6 +14,12 @@ from apps.api.app.core.constants import DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT
 from apps.api.app.core.rate_limit import RateLimiter
 from apps.api.app.core.security import get_api_key
 from apps.api.app.database import get_db
+from apps.api.app.schemas.clusters import (
+    ClusterDetailResponse,
+    ClusterListResponse,
+    SimilarClustersResponse,
+    TrendingClustersResponse,
+)
 from apps.api.app.services.cluster_service import ClusterService
 from packages.core.cache import cached_route
 
@@ -25,7 +31,7 @@ router = APIRouter(
 )
 
 
-@router.get("")
+@router.get("", response_model=ClusterListResponse)
 @cached_route(
     "clusters:list",
     ttl=300,
@@ -90,7 +96,7 @@ async def list_clusters(
     }
 
 
-@router.get("/{cluster_id}")
+@router.get("/{cluster_id}", response_model=ClusterDetailResponse)
 async def get_cluster(
     cluster_id: UUID,
     include_evidence: bool = Query(True, description="Include representative ideas"),
@@ -117,7 +123,7 @@ async def get_cluster(
     return result
 
 
-@router.get("/{cluster_id}/similar")
+@router.get("/{cluster_id}/similar", response_model=SimilarClustersResponse)
 async def get_similar_clusters(
     cluster_id: UUID,
     limit: int = Query(5, ge=1, le=20, description="Number of similar clusters"),
@@ -141,7 +147,7 @@ async def get_similar_clusters(
     return result
 
 
-@router.get("/trending/list")
+@router.get("/trending/list", response_model=TrendingClustersResponse)
 async def get_trending_clusters(
     limit: int = Query(10, ge=1, le=50, description="Number of clusters"),
     min_trend_score: float = Query(

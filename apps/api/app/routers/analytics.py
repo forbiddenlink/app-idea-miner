@@ -14,6 +14,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from apps.api.app.core.rate_limit import RateLimiter
 from apps.api.app.core.security import get_api_key
 from apps.api.app.database import get_db
+from apps.api.app.schemas.analytics import (
+    AnalyticsSummaryResponse,
+    DomainsResponse,
+    TrendsResponse,
+)
 from packages.core.cache import cached_route
 from packages.core.models import Cluster, IdeaCandidate, RawPost
 
@@ -40,7 +45,7 @@ def _parse_iso_datetime(value: str, field_name: str) -> datetime:
     return parsed
 
 
-@router.get("/summary")
+@router.get("/summary", response_model=AnalyticsSummaryResponse)
 @cached_route("analytics:summary", ttl=300)  # Cache for 5 minutes
 async def get_analytics_summary(db: AsyncSession = Depends(get_db)):
     """
@@ -151,7 +156,7 @@ async def get_analytics_summary(db: AsyncSession = Depends(get_db)):
     }
 
 
-@router.get("/trends")
+@router.get("/trends", response_model=TrendsResponse)
 @cached_route(
     "analytics:trends",
     ttl=300,
@@ -295,7 +300,7 @@ async def get_analytics_trends(
     }
 
 
-@router.get("/domains")
+@router.get("/domains", response_model=DomainsResponse)
 @cached_route("analytics:domains", ttl=300)
 async def get_analytics_domains(db: AsyncSession = Depends(get_db)):
     """

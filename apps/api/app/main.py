@@ -16,6 +16,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from apps.api.app.config import get_settings
 from apps.api.app.core.logging_middleware import RequestLoggingMiddleware
 from apps.api.app.database import engine
+from apps.api.app.schemas.common import HealthResponse
 from packages.core.cache import set_redis_client
 
 # Configure logging
@@ -161,6 +162,49 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
+# Cache-Control middleware for GET endpoints
+class CacheControlMiddleware(BaseHTTPMiddleware):
+    """Set Cache-Control headers on GET responses based on path."""
+
+    # Path prefixes → (max-age, stale-while-revalidate)
+    NO_STORE_PREFIXES = ("/health", "/api/v1/jobs")
+    ANALYTICS_PREFIX = "/api/v1/analytics"
+    # Detail patterns: paths like /api/v1/clusters/{id} or /api/v1/ideas/{id}
+    DETAIL_PREFIXES = ("/api/v1/clusters/", "/api/v1/ideas/")
+    LIST_PREFIXES = (
+        "/api/v1/clusters",
+        "/api/v1/ideas",
+        "/api/v1/posts",
+        "/api/v1/opportunities",
+    )
+
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+
+        if request.method != "GET" or "cache-control" in response.headers:
+            return response
+
+        path = request.url.path
+
+        if any(path.startswith(p) for p in self.NO_STORE_PREFIXES):
+            response.headers["Cache-Control"] = "no-store"
+        elif path.startswith(self.ANALYTICS_PREFIX):
+            response.headers["Cache-Control"] = (
+                "public, max-age=900, stale-while-revalidate=300"
+            )
+        elif any(path.startswith(p) for p in self.DETAIL_PREFIXES):
+            response.headers["Cache-Control"] = (
+                "public, max-age=600, stale-while-revalidate=120"
+            )
+        elif any(path == p or path == p + "/" for p in self.LIST_PREFIXES):
+            response.headers["Cache-Control"] = (
+                "public, max-age=300, stale-while-revalidate=60"
+            )
+
+        return response
+
+
+app.add_middleware(CacheControlMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 
 # Request logging middleware (correlation IDs, timing, structured logs)
@@ -265,7 +309,7 @@ def _check_worker(has_redis: bool, is_serverless: bool) -> dict:
 
 
 # Health check endpoint
-@app.get("/health", tags=["System"])
+@app.get("/health", tags=["System"], response_model=HealthResponse)
 async def health_check():
     """
     Enhanced health check endpoint.
