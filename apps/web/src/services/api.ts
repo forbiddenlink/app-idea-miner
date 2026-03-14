@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios'
+import axios, { AxiosError, AxiosInstance } from 'axios'
 import {
   AnalyticsSummary,
   AnalyticsTrends,
@@ -19,6 +19,27 @@ import {
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 const API_KEY = import.meta.env.VITE_API_KEY || 'dev-api-key'
 
+const MAX_RETRIES = 3
+const RETRY_BASE_DELAY_MS = 1000
+
+function isRetryable(error: AxiosError): boolean {
+  if (!error.response) return true // network error
+  const status = error.response.status
+  return status === 429 || status >= 500
+}
+
+function getRetryDelay(attempt: number, error: AxiosError): number {
+  // Respect Retry-After header if present (rate limiting)
+  const retryAfter = error.response?.headers?.['retry-after']
+  if (retryAfter) {
+    const seconds = Number(retryAfter)
+    if (!Number.isNaN(seconds)) return seconds * 1000
+  }
+  // Exponential backoff with jitter
+  const delay = RETRY_BASE_DELAY_MS * 2 ** attempt
+  return delay + Math.random() * delay * 0.1
+}
+
 class ApiClient {
   private readonly client: AxiosInstance
 
@@ -38,13 +59,22 @@ class ApiClient {
       return config
     })
 
-    // Response interceptor for error handling
+    // Response interceptor with retry logic
     this.client.interceptors.response.use(
       (response) => response,
-      (error) => {
-        if (error.response?.status === 429) {
-          console.error('Rate limit exceeded')
+      async (error: AxiosError) => {
+        const config = error.config as Record<string, unknown> | undefined
+        if (!config) return Promise.reject(error)
+
+        const retryCount = (config.__retryCount as number) || 0
+
+        if (isRetryable(error) && retryCount < MAX_RETRIES) {
+          config.__retryCount = retryCount + 1
+          const delay = getRetryDelay(retryCount, error)
+          await new Promise(resolve => setTimeout(resolve, delay))
+          return this.client(error.config!)
         }
+
         return Promise.reject(error)
       }
     )

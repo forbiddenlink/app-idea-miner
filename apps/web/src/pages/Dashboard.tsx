@@ -228,11 +228,11 @@ export default function Dashboard() {
   const recentIdeas = recentIdeasData?.ideas || []
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-8 space-y-8">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between space-y-2">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h2>
           <p className="text-muted-foreground">
             Discover validated app opportunities from real user needs.
           </p>

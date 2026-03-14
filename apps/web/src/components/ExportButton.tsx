@@ -177,7 +177,7 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
       <button
         onClick={() => setShowMenu(!showMenu)}
         disabled={isExporting}
-        className={`flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+        className={`flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 border border-border rounded-lg text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
         aria-label={`Export ${type} data`}
         aria-haspopup="menu"
         aria-expanded={showMenu}
@@ -197,13 +197,13 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
 
           {/* Menu */}
           <div
-            className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-20"
+            className="absolute right-0 mt-2 w-48 bg-popover border border-border rounded-lg shadow-xl z-20"
             role="menu"
             aria-label="Export format options"
           >
             <button
               onClick={() => handleExport('csv')}
-              className="w-full text-left px-4 py-2 hover:bg-slate-700 text-slate-200 transition-colors rounded-t-lg"
+              className="w-full text-left px-4 py-2 hover:bg-muted text-popover-foreground transition-colors rounded-t-lg"
               role="menuitem"
               aria-label="Export as CSV file"
             >
@@ -211,7 +211,7 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
             </button>
             <button
               onClick={() => handleExport('json')}
-              className="w-full text-left px-4 py-2 hover:bg-slate-700 text-slate-200 transition-colors rounded-b-lg"
+              className="w-full text-left px-4 py-2 hover:bg-muted text-popover-foreground transition-colors rounded-b-lg"
               role="menuitem"
               aria-label="Export as JSON file"
             >

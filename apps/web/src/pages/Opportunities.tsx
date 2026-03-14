@@ -223,13 +223,13 @@ export default function Opportunities() {
   )
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-8 space-y-8">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-6 h-6 text-primary" />
-            <h2 className="text-3xl font-bold tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Opportunity Scores
             </h2>
           </div>

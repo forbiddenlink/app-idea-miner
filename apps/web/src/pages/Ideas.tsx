@@ -300,10 +300,10 @@ export default function Ideas() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-8 space-y-8 min-h-screen">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8 min-h-screen">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Ideas Browser</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Ideas Browser</h1>
           <p className="text-muted-foreground">Explore extracted app ideas with server-side search and filters</p>
         </div>
         <div className="flex items-center gap-2">

@@ -57,7 +57,7 @@ export default function StatCard({
     >
       <div className="space-y-2">
         <p className="text-sm font-medium text-muted-foreground">{name}</p>
-        <p className="text-3xl font-semibold tracking-tight">{value}</p>
+        <p className="text-2xl sm:text-3xl font-semibold tracking-tight">{value}</p>
 
         {(change || trendValue) && (
           <div className="flex items-center gap-1.5 text-xs">
