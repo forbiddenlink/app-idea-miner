@@ -321,8 +321,8 @@ class TestCalculateTrendScore:
     def test_mixed_timestamps(self, engine):
         now = datetime.now(UTC)
         timestamps = [
-            now - timedelta(days=1),   # recent
-            now - timedelta(days=3),   # recent
+            now - timedelta(days=1),  # recent
+            now - timedelta(days=3),  # recent
             now - timedelta(days=30),  # old
             now - timedelta(days=60),  # old
         ]

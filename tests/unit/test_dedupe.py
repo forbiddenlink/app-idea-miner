@@ -209,7 +209,11 @@ class TestIsDuplicateTitle:
         "t1,t2,expected",
         [
             ("app for fitness", "app for fitness", True),
-            ("completely unrelated topic", "a whole different subject matter entirely", False),
+            (
+                "completely unrelated topic",
+                "a whole different subject matter entirely",
+                False,
+            ),
         ],
     )
     def test_parametrized(self, dedup, t1, t2, expected):
@@ -259,7 +263,9 @@ class TestGenerateContentFingerprint:
 
     def test_same_content_same_fingerprint(self, dedup):
         text = "An app for tracking fitness goals daily"
-        assert dedup.generate_content_fingerprint(text) == dedup.generate_content_fingerprint(text)
+        assert dedup.generate_content_fingerprint(
+            text
+        ) == dedup.generate_content_fingerprint(text)
 
     def test_normalized_equivalence(self, dedup):
         """Same logical content with different casing/spacing → same fingerprint."""
@@ -278,7 +284,9 @@ class TestGenerateContentFingerprint:
         text1 = base + " extra content one"
         text2 = base + " extra content two"
         # Default length=200, so first 200 normalized chars are the same
-        assert dedup.generate_content_fingerprint(text1) == dedup.generate_content_fingerprint(text2)
+        assert dedup.generate_content_fingerprint(
+            text1
+        ) == dedup.generate_content_fingerprint(text2)
 
     def test_custom_length(self, dedup):
         fp_short = dedup.generate_content_fingerprint("abcdefghij", length=5)

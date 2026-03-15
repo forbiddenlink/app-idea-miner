@@ -85,6 +85,7 @@ class TestExtractNeedStatements:
         text = "Is there any app that tracks my caffeine intake throughout the day?"
         # Test against the raw regex directly since _split_sentences strips '?'
         import re
+
         pattern = r"(?:Is|Are) there (?:any )?apps? (?:that|to) (.+?)\?"
         assert re.search(pattern, text, re.IGNORECASE) is not None
 
@@ -93,6 +94,7 @@ class TestExtractNeedStatements:
         # so the sentence passed to the regex won't contain '?'.
         # Verify the regex pattern itself matches the original text.
         import re
+
         text = "Does anyone know of an app to manage shared household chores?"
         pattern = r"(?:Does|Do) anyone know (?:of )?(?:an? )?apps? (?:that|to) (.+?)\?"
         assert re.search(pattern, text, re.IGNORECASE) is not None
@@ -155,7 +157,14 @@ class TestAnalyzeSentiment:
 
     def test_result_keys(self, tp):
         result = tp.analyze_sentiment("some text")
-        expected_keys = {"label", "score", "positive", "neutral", "negative", "emotions"}
+        expected_keys = {
+            "label",
+            "score",
+            "positive",
+            "neutral",
+            "negative",
+            "emotions",
+        }
         assert expected_keys == set(result.keys())
 
     def test_score_range(self, tp):
@@ -203,7 +212,9 @@ class TestDetectEmotions:
 
     def test_emotion_scores_capped_at_one(self, tp):
         # Use many keywords to try to exceed 1.0
-        text = "hate frustrated annoyed tired of sick of struggle difficult painful hard"
+        text = (
+            "hate frustrated annoyed tired of sick of struggle difficult painful hard"
+        )
         emotions = tp._detect_emotions(text)
         assert emotions["frustration"] <= 1.0
 
@@ -224,7 +235,9 @@ class TestDetectEmotions:
 
 class TestCalculateQualityScore:
     def test_returns_float_between_0_and_1(self, tp):
-        score = tp.calculate_quality_score("An app to track my running routes with GPS integration.")
+        score = tp.calculate_quality_score(
+            "An app to track my running routes with GPS integration."
+        )
         assert isinstance(score, float)
         assert 0.0 <= score <= 1.0
 
@@ -292,7 +305,9 @@ class TestScoreActionability:
     def test_audience_words_boost(self, tp):
         without = "a tool for scheduling"
         with_audience = "a tool for scheduling for students and professionals"
-        assert tp._score_actionability(with_audience) >= tp._score_actionability(without)
+        assert tp._score_actionability(with_audience) >= tp._score_actionability(
+            without
+        )
 
     def test_bounded_0_to_1(self, tp):
         assert 0.0 <= tp._score_actionability("something whatever stuff things") <= 1.0
@@ -348,7 +363,9 @@ class TestExtractDomain:
         assert tp.extract_domain(text) == expected_domain
 
     def test_unknown_domain_returns_other(self, tp):
-        assert tp.extract_domain("the quick brown fox jumps over the lazy dog") == "other"
+        assert (
+            tp.extract_domain("the quick brown fox jumps over the lazy dog") == "other"
+        )
 
     def test_multi_domain_picks_highest(self, tp):
         """When multiple domains match, the one with more keywords wins."""
@@ -410,7 +427,9 @@ class TestExtractFeatures:
 class TestExtractKeywords:
     def test_returns_list_of_strings(self, tp):
         try:
-            kws = tp.extract_keywords("A fitness tracker app for monitoring daily workouts and exercise routines")
+            kws = tp.extract_keywords(
+                "A fitness tracker app for monitoring daily workouts and exercise routines"
+            )
             assert isinstance(kws, list)
             for kw in kws:
                 assert isinstance(kw, str)
