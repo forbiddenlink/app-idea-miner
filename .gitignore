@@ -27,7 +27,6 @@ venv/
 ENV/
 env/
 .python-version
-
 # Testing
 .pytest_cache/
 .coverage
@@ -37,7 +36,6 @@ htmlcov/
 .mypy_cache/
 .dmypy.json
 dmypy.json
-
 # IDEs
 .vscode/
 .idea/
@@ -46,7 +44,6 @@ dmypy.json
 *~
 *.sublime-project
 *.sublime-workspace
-
 # OS
 .DS_Store
 .DS_Store?
@@ -55,32 +52,26 @@ dmypy.json
 .Trashes
 ehthumbs.db
 Thumbs.db
-
 # Environment
 .env
 .env.local
 .env.*.local
 .envrc
-
 # Logs
 *.log
 logs/
 *.log.*
-
 # Database
 *.db
 *.sqlite
 *.sqlite3
-
 # Backups
 backups/
 *.backup
 *.bak
-
 # Data
 data/*.json
 !data/sample_posts.json
-
 # Node (for web UI)
 node_modules/
 npm-debug.log*
@@ -88,39 +79,32 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .pnpm-store/
-dist/
 .cache/
 playwright-report/
 test-results/
-
 # Docker
 .docker/
-
 # Temporary files
 tmp/
 temp/
 *.tmp
-
 # UV
 # uv.lock is needed for reproducible builds on Railway/Docker
-
 # Alembic
 alembic.ini
-
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
 .vercel
-
 # Specter knowledge graph cache
 .specter/
-
 # Claude Code TypeScript cache
 .claude/tsc-cache/
 .history/
-
 # Claude Code local files
 .claude/settings.local.json
-
 # Session notes
 thoughts/
 *.png
+# Build output
+.next/
+out/
