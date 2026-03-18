@@ -40,6 +40,24 @@ interface ResultsViewProps {
   updateParam: (key: string, value: string | undefined, options?: { resetOffset?: boolean }) => void;
 }
 
+const parseBoundedNumber = (value: string | null, min: number, max: number, fallback: number): number => {
+  if (value == null) return fallback;
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+};
+
+const parseNonNegativeInt = (value: string | null, fallback = 0): number => {
+  const parsed = Number.parseInt(value || '', 10);
+  if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+  return parsed;
+};
+
+const toCsvCell = (value: string | number): string => {
+  const text = String(value);
+  return `"${text.replaceAll('"', '""')}"`;
+};
+
 function IdeasResultsView(props: Readonly<ResultsViewProps>) {
   const {
     showInitialLoading,
@@ -79,7 +97,7 @@ function IdeasResultsView(props: Readonly<ResultsViewProps>) {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="rounded-xl border bg-card text-card-foreground shadow-sm p-12 text-center"
+        className="card p-12 text-center"
       >
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
           <Search className="h-6 w-6 text-muted-foreground" />
@@ -138,9 +156,7 @@ export default function Ideas() {
   const activeSearch = searchParams.get('search')?.trim() || '';
   const selectedSentiment = searchParams.get('sentiment') || '';
   const selectedDomain = searchParams.get('domain') || '';
-  const minQuality = searchParams.get('min_quality')
-    ? Number.parseFloat(searchParams.get('min_quality')!)
-    : 0;
+  const minQuality = parseBoundedNumber(searchParams.get('min_quality'), 0, 1, 0);
   const sortByRaw = searchParams.get('sort_by');
   const sortOrderRaw = searchParams.get('order');
   const sortBy: SortBy =
@@ -148,7 +164,7 @@ export default function Ideas() {
       ? sortByRaw
       : 'quality';
   const sortOrder: SortOrder = sortOrderRaw === 'asc' || sortOrderRaw === 'desc' ? sortOrderRaw : 'desc';
-  const offset = Number.parseInt(searchParams.get('offset') || '0', 10);
+  const offset = parseNonNegativeInt(searchParams.get('offset'));
 
   const [searchQuery, setSearchQuery] = useState(activeSearch);
   const debouncedSearch = useDebounce(searchQuery, 350);
@@ -286,8 +302,8 @@ export default function Ideas() {
     ]);
 
     const csv = [
-      headers.join(','),
-      ...rows.map((row: (string | number)[]) => row.map((cell) => `"${cell}"`).join(',')),
+      headers.map(toCsvCell).join(','),
+      ...rows.map((row: (string | number)[]) => row.map(toCsvCell).join(',')),
     ].join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -300,11 +316,12 @@ export default function Ideas() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8 min-h-screen">
+    <div className="app-page min-h-screen">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Ideas Browser</h1>
-          <p className="text-muted-foreground">Explore extracted app ideas with server-side search and filters</p>
+          <p className="section-kicker">Ideas</p>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-bold">Ideas Browser</h1>
+          <p className="mt-1 text-muted-foreground">Explore extracted app ideas with server-side search and filters</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setShowFilters((prev) => !prev)}>
@@ -319,31 +336,32 @@ export default function Ideas() {
               onClick={() => setExportMenuOpen((open) => !open)}
               aria-expanded={exportMenuOpen}
               aria-controls="ideas-export-menu"
-              aria-haspopup="menu"
+              aria-haspopup="true"
             >
               <Download className="mr-2 h-4 w-4" />
               Export
             </Button>
             <div
               id="ideas-export-menu"
-              role="menu"
-              className={`absolute right-0 z-20 mt-2 w-40 rounded-md border bg-popover text-popover-foreground shadow-md transition-all duration-150 ${
-                exportMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'
+              aria-label="Export format options"
+              aria-hidden={!exportMenuOpen}
+              className={`absolute right-0 z-20 mt-2 w-40 rounded-md border bg-popover text-popover-foreground shadow-md transition-opacity duration-150 ${
+                exportMenuOpen ? 'visible opacity-100' : 'invisible opacity-0 pointer-events-none'
               }`}
             >
               <button
                 type="button"
-                role="menuitem"
                 onClick={() => handleExport('json')}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground transition-colors rounded-t-md"
+                aria-label="Export page as JSON"
+                className="focus-ring w-full rounded-t-xl px-4 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
               >
                 Export Page (JSON)
               </button>
               <button
                 type="button"
-                role="menuitem"
                 onClick={() => handleExport('csv')}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground transition-colors rounded-b-md"
+                aria-label="Export page as CSV"
+                className="focus-ring w-full rounded-b-xl px-4 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
               >
                 Export Page (CSV)
               </button>
@@ -359,9 +377,9 @@ export default function Ideas() {
             animate={{ opacity: 1, x: 0 }}
             className="w-full xl:w-72 xl:sticky xl:top-4"
           >
-            <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 space-y-6">
+            <div className="card p-6 space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Filters</h3>
+                <h2 className="font-semibold">Filters</h2>
                 <Button variant="ghost" size="sm" className="h-auto p-0" onClick={clearAllFilters}>
                   Clear
                 </Button>
@@ -381,8 +399,8 @@ export default function Ideas() {
                     type="search"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search ideas..."
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 pl-9 pr-10 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    placeholder="Search ideas…"
+                    className="field-control h-9 pl-9 pr-10"
                   />
                   {searchQuery && (
                     <button
@@ -391,7 +409,7 @@ export default function Ideas() {
                         setSearchQuery('');
                         updateParam('search', undefined);
                       }}
-                      className="absolute right-2 top-1.5 rounded p-1 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="focus-ring absolute right-2 top-1.5 rounded-lg p-1 text-muted-foreground hover:text-foreground"
                       aria-label="Clear search"
                     >
                       <X className="h-4 w-4" />
@@ -408,7 +426,7 @@ export default function Ideas() {
                   id="sentiment-select"
                   value={selectedSentiment}
                   onChange={(e) => updateParam('sentiment', e.target.value || undefined)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="field-control h-9"
                 >
                   <option value="">All Sentiments</option>
                   {sentimentOptions.map((sentiment) => (
@@ -427,7 +445,7 @@ export default function Ideas() {
                   id="domain-select"
                   value={selectedDomain}
                   onChange={(e) => updateParam('domain', e.target.value || undefined)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="field-control h-9"
                 >
                   <option value="">All Domains</option>
                   {domainOptions.map((domain) => (
@@ -472,7 +490,7 @@ export default function Ideas() {
                   id="sort-select"
                   value={sortBy}
                   onChange={(e) => updateParam('sort_by', e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="field-control h-9"
                 >
                   <option value="quality">Quality Score</option>
                   <option value="date">Date (Newest by default)</option>
@@ -488,7 +506,7 @@ export default function Ideas() {
                   id="order-select"
                   value={sortOrder}
                   onChange={(e) => updateParam('order', e.target.value as SortOrder)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="field-control h-9"
                 >
                   <option value="desc">Descending</option>
                   <option value="asc">Ascending</option>
@@ -500,7 +518,7 @@ export default function Ideas() {
 
         <div className="flex-1 space-y-4">
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mb-4">
-            <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
+            <div className="flex items-center gap-1.5 rounded-xl border border-border/70 bg-card px-2.5 py-1 shadow-sm">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
               <span className="font-medium text-foreground">
                 {startItem}-{endItem}
@@ -518,10 +536,10 @@ export default function Ideas() {
           {showUpdating && (
             <output
               data-testid="ideas-updating-indicator"
-              className="inline-flex items-center rounded-md border bg-muted/40 px-3 py-1 text-xs text-muted-foreground"
+              className="inline-flex items-center rounded-xl border border-border/70 bg-card px-3 py-1 text-xs font-medium text-muted-foreground"
               aria-live="polite"
             >
-              Updating results...
+              Updating results…
             </output>
           )}
 

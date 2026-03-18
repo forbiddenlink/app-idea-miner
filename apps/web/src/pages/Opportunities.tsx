@@ -96,7 +96,7 @@ function OpportunityCard({ opportunity }: Readonly<{ opportunity: Opportunity }>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="overflow-hidden border rounded-xl border-border bg-card"
+      className="card overflow-hidden"
     >
       {/* Header */}
       <div className="p-6">
@@ -116,7 +116,7 @@ function OpportunityCard({ opportunity }: Readonly<{ opportunity: Opportunity }>
 
           {/* Score Badge */}
           <div
-            className={`flex flex-col items-center rounded-lg border px-4 py-2 ${getGradeBg(score.grade)}`}
+            className={`flex flex-col items-center rounded-xl border px-4 py-2 ${getGradeBg(score.grade)}`}
           >
             <span className={`text-2xl font-bold ${getGradeColor(score.grade)}`}>
               {score.total}
@@ -150,6 +150,7 @@ function OpportunityCard({ opportunity }: Readonly<{ opportunity: Opportunity }>
       {/* Expandable Breakdown */}
       <div className="border-t border-border">
         <button
+          type="button"
           onClick={() => setExpanded(!expanded)}
           className="flex items-center justify-between w-full px-6 py-3 text-sm transition-colors text-muted-foreground hover:text-foreground"
         >
@@ -223,15 +224,16 @@ export default function Opportunities() {
   )
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
+    <div className="app-page">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <p className="section-kicker mb-1">Opportunity Ranking</p>
+          <div className="flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold">
               Opportunity Scores
-            </h2>
+            </h1>
           </div>
           <p className="text-muted-foreground">
             Market validation scores for each opportunity cluster, ranked by
@@ -252,7 +254,7 @@ export default function Opportunities() {
           {(["A", "B", "C", "D", "F"] as const).map((grade) => (
             <div
               key={grade}
-              className={`rounded-lg border p-4 text-center ${getGradeBg(grade)}`}
+              className={`card rounded-xl p-4 text-center ${getGradeBg(grade)}`}
             >
               <div className={`text-2xl font-bold ${getGradeColor(grade)}`}>
                 {gradeDistribution[grade] || 0}
@@ -266,7 +268,7 @@ export default function Opportunities() {
       )}
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="card flex flex-wrap items-center gap-3 p-3">
         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <Filter className="w-4 h-4" />
           Sort by:
@@ -288,7 +290,7 @@ export default function Opportunities() {
           </Button>
         ))}
 
-        <div className="flex items-center gap-2 ml-auto text-sm">
+        <div className="ml-auto flex items-center gap-2 text-sm">
           <label htmlFor="min-score" className="text-muted-foreground">
             Min score:
           </label>
@@ -297,9 +299,18 @@ export default function Opportunities() {
             type="number"
             min={0}
             max={100}
+            inputMode="numeric"
+            aria-label="Minimum opportunity score"
             value={minScore}
-            onChange={(e) => setMinScore(Number(e.target.value))}
-            className="w-16 px-2 py-1 text-sm border rounded-md border-border bg-background"
+            onChange={(e) => {
+              const parsed = Number(e.target.value);
+              if (!Number.isFinite(parsed)) {
+                setMinScore(0);
+                return;
+              }
+              setMinScore(Math.min(100, Math.max(0, parsed)));
+            }}
+            className="field-control h-9 w-20 px-2"
           />
         </div>
       </div>
@@ -310,7 +321,7 @@ export default function Opportunities() {
           {["skel-1", "skel-2", "skel-3", "skel-4", "skel-5", "skel-6"].map((id) => (
             <div
               key={id}
-              className="h-48 rounded-xl bg-muted/50 animate-pulse"
+              className="card h-48 animate-pulse bg-muted/45"
             />
           ))}
         </div>

@@ -16,7 +16,7 @@ const queryClient = new QueryClient({
   },
 })
 
-if (import.meta.env.DEV) {
+if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_AXE === 'true') {
   import('@axe-core/react').then((axe) => {
     axe.default(React, ReactDOM, 1000);
   });

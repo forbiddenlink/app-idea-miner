@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
 import { Cluster, Idea } from '@/types';
 import { apiClient } from '@/services/api';
+import { useGlobalToast } from '@/contexts/ToastContext';
 
 type ExportFormat = 'csv' | 'json';
 type ExportType = 'clusters' | 'ideas' | 'analytics';
@@ -13,8 +14,26 @@ interface ExportButtonProps {
 }
 
 export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) => {
+  const toast = useGlobalToast();
   const [isExporting, setIsExporting] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const menuId = `export-menu-${type}`;
+
+  useEffect(() => {
+    if (!showMenu) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('keydown', onEscape);
+    return () => document.removeEventListener('keydown', onEscape);
+  }, [showMenu]);
+
+  const toCsvCell = (value: unknown): string => {
+    const stringValue = value == null ? '' : String(value);
+    return `"${stringValue.replaceAll('"', '""')}"`;
+  };
 
   const fetchAllClusters = async (): Promise<Cluster[]> => {
     const allClusters: Cluster[] = []
@@ -51,23 +70,17 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
 
     const headers = Object.keys(data[0]);
     const csvContent = [
-      headers.join(','),
+      headers.map(toCsvCell).join(','),
       ...data.map((row) =>
         headers.map((header) => {
           const value = row[header];
-          // Handle arrays and objects
           if (Array.isArray(value)) {
-            return `"${value.map(String).join('; ')}"`;
+            return toCsvCell(value.map(String).join('; '));
           }
           if (typeof value === 'object' && value !== null) {
-            return `"${JSON.stringify(value)}"`;
+            return toCsvCell(JSON.stringify(value));
           }
-          // Escape quotes in strings
-          const stringValue = value == null ? '' : String(value);
-          if (stringValue.includes(',')) {
-            return `"${stringValue.replaceAll('"', '""')}"`;
-          }
-          return stringValue;
+          return toCsvCell(value);
         }).join(',')
       ),
     ].join('\n');
@@ -166,7 +179,7 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
       }
     } catch (error) {
       console.error('Export error:', error);
-      alert('Failed to export data. Please try again.');
+      toast.error('Failed to export data. Please try again.');
     } finally {
       setIsExporting(false);
     }
@@ -175,15 +188,17 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => setShowMenu(!showMenu)}
         disabled={isExporting}
-        className={`flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 border border-border rounded-lg text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+        className={`focus-ring flex h-10 items-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground shadow-raised transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
         aria-label={`Export ${type} data`}
-        aria-haspopup="menu"
+        aria-haspopup="true"
+        aria-controls={menuId}
         aria-expanded={showMenu}
       >
         <Download className="w-5 h-5" aria-hidden="true" />
-        <span>{isExporting ? 'Exporting...' : 'Export'}</span>
+        <span>{isExporting ? 'Exporting…' : 'Export'}</span>
       </button>
 
       {showMenu && !isExporting && (
@@ -197,22 +212,22 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
 
           {/* Menu */}
           <div
-            className="absolute right-0 mt-2 w-48 bg-popover border border-border rounded-lg shadow-xl z-20"
-            role="menu"
+            id={menuId}
+            className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-border bg-popover shadow-overlay"
             aria-label="Export format options"
           >
             <button
+              type="button"
               onClick={() => handleExport('csv')}
-              className="w-full text-left px-4 py-2 hover:bg-muted text-popover-foreground transition-colors rounded-t-lg"
-              role="menuitem"
+              className="focus-ring w-full rounded-t-xl px-4 py-2 text-left text-sm font-medium text-popover-foreground transition-colors hover:bg-accent"
               aria-label="Export as CSV file"
             >
               Export as CSV
             </button>
             <button
+              type="button"
               onClick={() => handleExport('json')}
-              className="w-full text-left px-4 py-2 hover:bg-muted text-popover-foreground transition-colors rounded-b-lg"
-              role="menuitem"
+              className="focus-ring w-full rounded-b-xl px-4 py-2 text-left text-sm font-medium text-popover-foreground transition-colors hover:bg-accent"
               aria-label="Export as JSON file"
             >
               Export as JSON

@@ -108,7 +108,7 @@ function StatsGrid({ summary, isLoading }: Readonly<{ summary: (ReturnType<typeo
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {["stat-a", "stat-b", "stat-c", "stat-d"].map((id) => (
-          <div key={id} className="card h-32 animate-pulse bg-muted/50" />
+          <div key={id} className="card h-32 animate-pulse bg-muted/45" />
         ))}
       </div>
     )
@@ -130,7 +130,7 @@ function TrendingClusters({ clusters, isLoading }: Readonly<{ clusters: Cluster[
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {["cluster-a", "cluster-b", "cluster-c"].map((id) => (
-          <div key={id} className="card h-48 animate-pulse bg-muted/50" />
+          <div key={id} className="card h-48 animate-pulse bg-muted/45" />
         ))}
       </div>
     )
@@ -228,12 +228,13 @@ export default function Dashboard() {
   const recentIdeas = recentIdeasData?.ideas || []
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
+    <div className="app-page">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h2>
-          <p className="text-muted-foreground">
+          <p className="section-kicker">Overview</p>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-bold">Dashboard</h1>
+          <p className="mt-1 text-muted-foreground">
             Discover validated app opportunities from real user needs.
           </p>
         </div>
@@ -261,9 +262,9 @@ export default function Dashboard() {
       <StatsGrid summary={summary} isLoading={summaryLoading} />
 
       {/* Quick Actions */}
-      <div className="rounded-xl border border-border bg-card/50 p-4">
+      <div className="card p-4">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-sm font-medium text-muted-foreground mr-2">Quick Actions</span>
+          <span className="section-kicker mr-2">Quick Actions</span>
           <Button
             variant="outline"
             size="sm"
@@ -271,7 +272,7 @@ export default function Dashboard() {
             disabled={ingestMutation.isPending}
           >
             <Play className={`mr-2 h-4 w-4 ${ingestMutation.isPending ? "animate-pulse" : ""}`} />
-            {ingestMutation.isPending ? "Ingesting..." : "Run Ingestion"}
+            {ingestMutation.isPending ? "Ingesting…" : "Run Ingestion"}
           </Button>
           <Button
             variant="outline"
@@ -280,20 +281,20 @@ export default function Dashboard() {
             disabled={clusterMutation.isPending}
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${clusterMutation.isPending ? "animate-spin" : ""}`} />
-            {clusterMutation.isPending ? "Clustering..." : "Re-cluster"}
+            {clusterMutation.isPending ? "Clustering…" : "Re-cluster"}
           </Button>
-          <Link to="/opportunities">
-            <Button variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/opportunities">
               <Sparkles className="mr-2 h-4 w-4" />
               View Opportunities
-            </Button>
-          </Link>
-          <Link to="/ideas">
-            <Button variant="outline" size="sm">
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/ideas">
               <Download className="mr-2 h-4 w-4" />
               Export Data
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
 
@@ -302,7 +303,7 @@ export default function Dashboard() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <h2 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+              <h2 className="text-2xl font-semibold flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
                 Top Opportunities
               </h2>
@@ -310,11 +311,11 @@ export default function Dashboard() {
                 Highest-scoring market opportunities by validation signals.
               </p>
             </div>
-            <Link to="/opportunities">
-              <Button variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/opportunities">
                 View All <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
@@ -323,7 +324,7 @@ export default function Dashboard() {
                 key={opp.cluster_id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`rounded-xl border p-5 ${getGradeBg(opp.opportunity_score.grade)}`}
+                className={`card card-hover border p-5 ${getGradeBg(opp.opportunity_score.grade)}`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -341,14 +342,14 @@ export default function Dashboard() {
                     <div className={`text-xl font-bold ${getGradeColor(opp.opportunity_score.grade)}`}>
                       {opp.opportunity_score.total}
                     </div>
-                    <div className={`text-[10px] font-semibold ${getGradeColor(opp.opportunity_score.grade)}`}>
+                    <div className={`text-xs font-semibold ${getGradeColor(opp.opportunity_score.grade)}`}>
                       Grade {opp.opportunity_score.grade}
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-1 mt-3">
                   {opp.keywords.slice(0, 3).map((kw) => (
-                    <span key={kw} className="text-[10px] bg-background/50 rounded px-1.5 py-0.5 text-muted-foreground">
+                    <span key={kw} className="rounded-md bg-background/70 px-1.5 py-0.5 text-xs text-muted-foreground">
                       {kw}
                     </span>
                   ))}
@@ -363,7 +364,7 @@ export default function Dashboard() {
       {recentIdeas.length > 0 && (
         <div className="space-y-4">
           <div className="space-y-1">
-            <h2 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <h2 className="text-2xl font-semibold flex items-center gap-2">
               <Clock className="h-5 w-5 text-muted-foreground" />
               Recent Activity
             </h2>
@@ -372,28 +373,28 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="rounded-xl border border-border bg-card divide-y divide-border">
+          <div className="card divide-y divide-border">
             {recentIdeas.map((idea) => (
               <div key={idea.id} className="flex items-start gap-3 px-4 py-3">
                 <div className="mt-0.5 rounded-full bg-primary/10 p-1.5">
                   <LightbulbIcon className="h-3.5 w-3.5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm line-clamp-1">
+                  <Link to={`/ideas/${idea.id}`} className="text-sm line-clamp-1 hover:text-primary transition-colors">
                     {idea.problem_statement.length > 80
-                      ? `${idea.problem_statement.slice(0, 80)}...`
+                      ? `${idea.problem_statement.slice(0, 80)}…`
                       : idea.problem_statement}
-                  </p>
+                  </Link>
                   <div className="flex items-center gap-2 mt-1">
                     {idea.domain && (
-                      <span className="text-[10px] bg-muted/50 rounded px-1.5 py-0.5 text-muted-foreground">
+                      <span className="rounded-md bg-muted/50 px-1.5 py-0.5 text-xs text-muted-foreground">
                         {idea.domain}
                       </span>
                     )}
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       Quality: {(idea.quality_score * 100).toFixed(0)}%
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {timeAgo(idea.extracted_at)}
                     </span>
                   </div>
@@ -408,14 +409,14 @@ export default function Dashboard() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h2 className="text-2xl font-semibold tracking-tight">Trending Opportunities</h2>
+            <h2 className="text-2xl font-semibold">Trending Opportunities</h2>
             <p className="text-sm text-muted-foreground">
               High-growth clusters identified in the last 7 days.
             </p>
           </div>
-          <Link to="/clusters">
-            <Button variant="ghost">View All</Button>
-          </Link>
+          <Button asChild variant="ghost">
+            <Link to="/clusters">View All</Link>
+          </Button>
         </div>
 
         <TrendingClusters clusters={clustersData} isLoading={clustersLoading} />

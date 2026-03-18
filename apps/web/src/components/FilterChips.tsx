@@ -24,9 +24,9 @@ export const FilterChips = ({ chips, onClearAll }: FilterChipsProps) => {
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-4"
+      className="card mb-4 flex flex-wrap items-center gap-2 p-4"
     >
-      <span className="text-sm font-medium text-muted-foreground">Active Filters:</span>
+      <span className="section-kicker">Active Filters:</span>
 
       <AnimatePresence mode="popLayout">
         {chips.map((chip) => (
@@ -36,7 +36,7 @@ export const FilterChips = ({ chips, onClearAll }: FilterChipsProps) => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.2 }}
-            className="group flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted/80"
+            className="group flex items-center gap-2 rounded-xl border border-border bg-secondary px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-accent"
           >
             <span className="font-medium text-muted-foreground">{chip.label}:</span>
             <span>{chip.value}</span>
@@ -44,8 +44,9 @@ export const FilterChips = ({ chips, onClearAll }: FilterChipsProps) => {
               <span className="text-xs text-muted-foreground">({chip.count})</span>
             )}
             <button
+              type="button"
               onClick={chip.onRemove}
-              className="ml-1 text-muted-foreground transition-colors hover:text-destructive"
+              className="focus-ring ml-1 rounded p-0.5 text-muted-foreground transition-colors hover:text-destructive"
               aria-label={`Remove ${chip.label} filter`}
             >
               <X className="h-4 w-4" />
@@ -56,10 +57,11 @@ export const FilterChips = ({ chips, onClearAll }: FilterChipsProps) => {
 
       {onClearAll && chips.length > 1 && (
         <motion.button
+          type="button"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={onClearAll}
-          className="ml-auto rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
+          className="focus-ring ml-auto rounded-xl px-3 py-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-destructive"
         >
           Clear All
         </motion.button>

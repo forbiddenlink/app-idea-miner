@@ -48,7 +48,7 @@ const ClusterCard: FC<ClusterCardProps> = ({ cluster }) => {
       >
         <Link
           to={`/clusters/${cluster.id}`}
-          className="group relative block rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className="group focus-ring card card-hover relative block border-border/80 p-5"
           aria-label={`View cluster: ${cluster.label}`}
         >
           {/* Header */}
@@ -67,7 +67,7 @@ const ClusterCard: FC<ClusterCardProps> = ({ cluster }) => {
                 aria-pressed={!!favorited}
                 aria-label={favorited ? `Remove ${cluster.label} from favorites` : `Add ${cluster.label} to favorites`}
                 className={cn(
-                  "shrink-0 rounded p-1 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  "focus-ring shrink-0 rounded-lg p-1.5 transition-colors hover:bg-accent",
                   favorited ? "text-red-500" : "text-muted-foreground hover:text-red-400"
                 )}
               >
@@ -77,7 +77,7 @@ const ClusterCard: FC<ClusterCardProps> = ({ cluster }) => {
           </div>
 
           {/* Keywords - inline text, not chips */}
-          <p className="mb-4 text-sm text-muted-foreground">
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
             {cluster.keywords.slice(0, 3).join(' · ')}
             {cluster.keywords.length > 3 && (
               <span className="ml-1 opacity-60">+{cluster.keywords.length - 3}</span>
@@ -85,7 +85,7 @@ const ClusterCard: FC<ClusterCardProps> = ({ cluster }) => {
           </p>
 
           {/* Metrics row */}
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 border-t border-border/70 pt-3 text-sm text-muted-foreground">
             <span>
               <span className="font-medium text-foreground">{cluster.idea_count}</span>
               {' '}ideas

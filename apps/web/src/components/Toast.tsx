@@ -19,22 +19,14 @@ interface ToastProps {
 }
 
 const toastStyles = {
-  success: 'backdrop-blur-xl bg-success/10 text-success border-success/30 shadow-lg shadow-success/20',
-  error: 'backdrop-blur-xl bg-destructive/10 text-destructive border-destructive/30 shadow-lg shadow-destructive/20',
-  info: 'backdrop-blur-xl bg-primary/10 text-primary border-primary/30 shadow-lg shadow-primary/20',
-  warning: 'backdrop-blur-xl bg-warning/10 text-warning border-warning/30 shadow-lg shadow-warning/20',
+  success: 'bg-success/10 text-success border-success/25',
+  error: 'bg-destructive/10 text-destructive border-destructive/25',
+  info: 'bg-primary/10 text-primary border-primary/25',
+  warning: 'bg-warning/10 text-warning border-warning/25',
 };
 
 const ToastIcon = ({ type }: { type: ToastType }) => {
-  const baseClass = "h-5 w-5 flex-shrink-0";
-  const animations = {
-    success: "animate-bounce",
-    error: "animate-pulse",
-    warning: "animate-pulse",
-    info: ""
-  };
-
-  const className = `${baseClass} ${animations[type]}`;
+  const className = "h-5 w-5 flex-shrink-0";
 
   switch (type) {
     case 'success':
@@ -92,17 +84,16 @@ export const ToastItem = ({ toast, onClose }: ToastProps) => {
       aria-live="polite"
       aria-atomic="true"
       className={`
-        relative flex items-center gap-3 p-4 rounded-lg border backdrop-blur-sm overflow-hidden
+        relative flex max-w-md items-center gap-3 overflow-hidden rounded-2xl border p-4 backdrop-blur-sm
         ${toastStyles[toast.type]}
-        transition-all duration-300 transform
+        border-border/70 shadow-overlay transition-transform transition-opacity duration-300 transform
         ${isExiting ? 'translate-x-full opacity-0' : 'translate-x-0 opacity-100'}
-        shadow-lg max-w-md
       `}
     >
       {/* Progress bar */}
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5">
         <div
-          className={`h-full transition-all duration-50 ${progressColor}`}
+          className={`h-full transition-[width] duration-50 ${progressColor}`}
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -110,8 +101,9 @@ export const ToastItem = ({ toast, onClose }: ToastProps) => {
       <ToastIcon type={toast.type} />
       <p className="flex-1 text-sm font-medium">{toast.message}</p>
       <button
+        type="button"
         onClick={handleClose}
-        className="p-1 hover:bg-white/10 rounded transition-colors"
+        className="focus-ring rounded p-1 transition-colors hover:bg-white/10"
         aria-label="Close notification"
       >
         <X className="h-4 w-4" />
@@ -122,7 +114,7 @@ export const ToastItem = ({ toast, onClose }: ToastProps) => {
 
 export const ToastContainer = ({ toasts, onClose }: { toasts: Toast[]; onClose: (id: string) => void }) => {
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 sm:bottom-6 sm:right-6">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onClose={onClose} />
       ))}

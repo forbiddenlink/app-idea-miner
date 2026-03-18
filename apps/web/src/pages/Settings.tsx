@@ -82,7 +82,7 @@ export default function Settings() {
   // ---- render ----
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-8 space-y-8">
+    <div className="app-page mx-auto max-w-3xl space-y-8">
       {/* Page header */}
       <div className="flex items-center gap-3">
         <SettingsIcon className="h-6 w-6 text-muted-foreground" />
@@ -90,11 +90,12 @@ export default function Settings() {
       </div>
 
       {/* ── Data Refresh Settings ────────────────────────────────── */}
-      <section className="rounded-xl border bg-card p-6 space-y-4">
+      <section className="card p-6 space-y-4">
         <h2 className="text-lg font-semibold">Data Refresh Settings</h2>
         <p className="text-sm text-muted-foreground">
           Control how frequently the dashboard polls for new data. The summary
-          panel refreshes every 30 s and other queries every 60 s by default.
+          panel refreshes every 60 s and most other queries every 120 s by
+          default.
         </p>
 
         {/* Auto-refresh toggle */}
@@ -108,6 +109,8 @@ export default function Settings() {
           <button
             onClick={toggleAutoRefresh}
             type="button"
+            role="switch"
+            aria-checked={autoRefresh}
             className={cn(
               "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
               autoRefresh ? "bg-primary" : "bg-muted",
@@ -137,7 +140,7 @@ export default function Settings() {
             disabled={!autoRefresh}
             aria-label="Refresh interval"
             className={cn(
-              "rounded-md border border-input bg-background px-3 py-1.5 text-sm",
+              "field-control h-9 min-w-[10rem] py-0",
               !autoRefresh && "opacity-50 cursor-not-allowed",
             )}
           >
@@ -151,7 +154,7 @@ export default function Settings() {
       </section>
 
       {/* ── Data Sources ─────────────────────────────────────────── */}
-      <section className="rounded-xl border bg-card p-6 space-y-4">
+      <section className="card p-6 space-y-4">
         <h2 className="text-lg font-semibold">Data Sources</h2>
         <p className="text-sm text-muted-foreground">
           Plugins that feed raw posts into the pipeline for clustering and
@@ -190,7 +193,7 @@ export default function Settings() {
       </section>
 
       {/* ── About ────────────────────────────────────────────────── */}
-      <section className="rounded-xl border bg-card p-6 space-y-4">
+      <section className="card p-6 space-y-4">
         <h2 className="text-lg font-semibold">About</h2>
 
         <dl className="space-y-3 text-sm">

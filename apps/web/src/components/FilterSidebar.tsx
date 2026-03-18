@@ -20,10 +20,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onMinSizeChange,
 }) => {
   return (
-    <aside className="w-64 shrink-0 rounded-lg border border-border bg-card p-5" aria-label="Filter controls">
+    <div className="card w-64 shrink-0 p-5" aria-label="Filter controls">
       <div className="mb-5 flex items-center gap-2">
         <Filter className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-        <h3 className="text-sm font-semibold text-foreground">Filters</h3>
+        <h2 className="text-sm font-semibold uppercase tracking-[0.1em] text-foreground">Filters</h2>
       </div>
 
       {/* Sort By */}
@@ -35,7 +35,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           id="sort-by-select"
           value={sortBy}
           onChange={(e) => onSortChange(e.target.value)}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="field-control"
           aria-label="Select sorting criteria"
         >
           <option value="size">Size (Idea Count)</option>
@@ -54,12 +54,13 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </legend>
           <div className="flex gap-2" aria-label="Sort order">
             <button
+              type="button"
               onClick={() => onOrderChange('desc')}
               className={cn(
-                "flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "focus-ring flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
                 order === 'desc'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-raised'
+                  : 'bg-secondary text-muted-foreground hover:text-foreground'
               )}
               aria-pressed={order === 'desc'}
               aria-label="Sort high to low"
@@ -67,12 +68,13 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
               High to Low
             </button>
             <button
+              type="button"
               onClick={() => onOrderChange('asc')}
               className={cn(
-                "flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "focus-ring flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
                 order === 'asc'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-raised'
+                  : 'bg-secondary text-muted-foreground hover:text-foreground'
               )}
               aria-pressed={order === 'asc'}
               aria-label="Sort low to high"
@@ -97,23 +99,24 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           }
           placeholder="Any size"
           min="1"
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="field-control"
           aria-label="Minimum number of ideas in cluster"
         />
       </div>
 
       {/* Reset Button */}
       <button
+        type="button"
         onClick={() => {
           onSortChange('size');
           onOrderChange('desc');
           onMinSizeChange(undefined);
         }}
-        className="w-full rounded-md bg-muted px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
+        className="focus-ring w-full rounded-xl border border-border bg-secondary px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
         aria-label="Reset all filters to default values"
       >
         Reset Filters
       </button>
-    </aside>
+    </div>
   );
 };

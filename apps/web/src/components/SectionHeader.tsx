@@ -21,7 +21,7 @@ export function SectionHeader({ title, description, icon: Icon, action }: Readon
       <div className="flex items-center gap-3 min-w-0">
         {Icon && (
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Icon className="h-4.5 w-4.5" />
+            <Icon className="h-4 w-4" />
           </div>
         )}
         <div className="min-w-0">

@@ -14,6 +14,21 @@ import { ExportButton } from '@/components/ExportButton';
 import { FilterChips, useFilterChips, type FilterChip } from '@/components/FilterChips';
 import { Button } from '@/components/ui/button';
 
+const validSortBy = new Set(['size', 'quality', 'sentiment', 'trend', 'created_at']);
+const validOrder = new Set(['asc', 'desc']);
+
+const parsePositiveInt = (value: string | null): number | undefined => {
+  if (!value) return undefined;
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+};
+
+const parseNonNegativeInt = (value: string | null, fallback = 0): number => {
+  const parsed = Number.parseInt(value || '', 10);
+  if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+  return parsed;
+};
+
 export default function ClusterExplorer() {
   const { enabled: autoRefresh, interval: refreshInterval } = useRefreshSettings()
   const queryClient = useQueryClient()
@@ -22,12 +37,14 @@ export default function ClusterExplorer() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
   // Get filter params from URL
-  const sortBy = searchParams.get('sort_by') || 'size';
-  const order = searchParams.get('order') || 'desc';
-  const minSize = searchParams.get('min_size') ? Number.parseInt(searchParams.get('min_size')!) : undefined;
+  const sortByRaw = searchParams.get('sort_by');
+  const orderRaw = searchParams.get('order');
+  const sortBy = sortByRaw && validSortBy.has(sortByRaw) ? sortByRaw : 'size';
+  const order = orderRaw && validOrder.has(orderRaw) ? orderRaw : 'desc';
+  const minSize = parsePositiveInt(searchParams.get('min_size'));
   const activeSearch = searchParams.get('search')?.trim() || '';
   const limit = 20;
-  const offset = Number.parseInt(searchParams.get('offset') || '0');
+  const offset = parseNonNegativeInt(searchParams.get('offset'));
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -54,7 +71,7 @@ export default function ClusterExplorer() {
   };
 
   const {
-    data: clusters,
+    data: clustersResponse,
     isLoading,
     isFetching,
     isPlaceholderData,
@@ -72,7 +89,7 @@ export default function ClusterExplorer() {
         limit,
         offset,
       });
-      return res.clusters;
+      return res;
     },
     placeholderData: keepPreviousData,
     refetchInterval: autoRefresh ? refreshInterval * 2 : false,
@@ -92,8 +109,10 @@ export default function ClusterExplorer() {
   };
 
   const hasPrevPage = offset > 0;
-  const hasNextPage = Boolean(clusters?.length === limit);
-  const showInitialLoading = isLoading && !clusters;
+  const clusters = clustersResponse?.clusters || [];
+  const pagination = clustersResponse?.pagination;
+  const hasNextPage = Boolean(pagination?.has_more);
+  const showInitialLoading = isLoading && !clustersResponse;
   const showUpdating = isFetching && !showInitialLoading;
 
   useEffect(() => {
@@ -125,12 +144,13 @@ export default function ClusterExplorer() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
+    <div className="app-page">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Explore Clusters</h1>
-          <p className="text-muted-foreground">
+          <p className="section-kicker">Clusters</p>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-bold">Explore Clusters</h1>
+          <p className="mt-1 text-muted-foreground">
             Browse all opportunity clusters with advanced filtering and search
           </p>
         </div>
@@ -154,19 +174,20 @@ export default function ClusterExplorer() {
       </div>
 
       {/* Search Bar */}
-      <form onSubmit={handleSearch} className="relative max-w-lg">
+      <form onSubmit={handleSearch} className="relative max-w-xl">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search clusters by keyword..."
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 pr-28 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder="Search clusters by keyword…"
+          aria-label="Search clusters by keyword"
+          className="field-control pl-9 pr-28"
         />
         {searchQuery && (
           <button
             type="button"
-            className="absolute right-16 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="focus-ring absolute right-16 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
             onClick={() => {
               setSearchQuery('')
               updateParam('search', undefined)
@@ -177,7 +198,7 @@ export default function ClusterExplorer() {
         )}
         <button
           type="submit"
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="focus-ring absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground shadow-raised transition-colors hover:bg-primary/90"
         >
           Go
         </button>
@@ -202,26 +223,26 @@ export default function ClusterExplorer() {
           <FilterChips chips={activeFilters} onClearAll={clearAllFilters} />
 
           {showUpdating && (
-            <div className="inline-flex items-center rounded-md border bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
-              Updating clusters...
-            </div>
+            <output aria-live="polite" className="inline-flex items-center rounded-xl border border-border/70 bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+              Updating clusters…
+            </output>
           )}
 
           {showInitialLoading && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={`skeleton-cluster-${i}`} className="h-64 rounded-xl border bg-muted/50 animate-pulse" />
+                <div key={`skeleton-cluster-${i}`} className="card h-64 animate-pulse bg-muted/45" />
               ))}
             </div>
           )}
 
           {error && (
-            <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-destructive">
+            <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-destructive">
               Failed to load clusters. Please try again.
             </div>
           )}
 
-          {clusters && clusters.length > 0 && (
+          {clusters.length > 0 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {clusters.map((cluster: Cluster) => (
@@ -230,7 +251,7 @@ export default function ClusterExplorer() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between border-t pt-4">
+              <div className="flex items-center justify-between border-t border-border/70 pt-4">
                 <Button
                   variant="outline"
                   onClick={handlePrevPage}
@@ -255,7 +276,7 @@ export default function ClusterExplorer() {
           )}
 
           {/* Empty State */}
-          {clusters?.length === 0 && (
+          {clusters.length === 0 && (
             activeSearch || minSize ? (
               <EmptySearchResults
                 onClearSearch={() => {

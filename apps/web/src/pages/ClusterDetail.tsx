@@ -27,9 +27,13 @@ export default function ClusterDetail() {
     refetchInterval: autoRefresh ? refreshInterval * 2 : false,
   });
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(globalThis.location.href);
-    toast.success('Link copied to clipboard!');
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(globalThis.location.href);
+      toast.success('Link copied to clipboard!');
+    } catch {
+      toast.error('Could not copy link. Please copy from the address bar.');
+    }
   };
 
   const handleExport = () => {
@@ -39,7 +43,8 @@ export default function ClusterDetail() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `cluster-${cluster.id}-${cluster.label.replaceAll(/\s+/g, '-').toLowerCase()}.json`;
+    const safeLabel = cluster.label.replaceAll(/[^a-zA-Z0-9-_]+/g, '-').toLowerCase();
+    a.download = `cluster-${cluster.id}-${safeLabel}.json`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success('Cluster data exported!');
@@ -47,7 +52,7 @@ export default function ClusterDetail() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-5xl px-6 py-8 space-y-8">
+      <div className="app-page max-w-5xl space-y-8">
         <div className="h-8 bg-muted rounded w-24 animate-pulse" />
         <DetailHeaderSkeleton />
       </div>
@@ -56,7 +61,7 @@ export default function ClusterDetail() {
 
   if (error || !cluster) {
     return (
-      <div className="mx-auto max-w-5xl px-6 py-8">
+      <div className="app-page max-w-5xl">
         <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-6 text-destructive">
           <p>Failed to load cluster details. Please try again.</p>
           <Button variant="link" asChild className="mt-4 px-0 text-destructive hover:text-destructive/80">
@@ -93,7 +98,7 @@ export default function ClusterDetail() {
   const qualityInfo = getQualityGrade(cluster.quality_score);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-8 space-y-8">
+    <div className="app-page max-w-5xl space-y-8">
       {/* Navigation Bar */}
       <div className="flex items-center justify-between">
         <Button variant="ghost" asChild className="-ml-4 text-muted-foreground hover:text-foreground">
@@ -122,7 +127,7 @@ export default function ClusterDetail() {
       </div>
 
       {/* Header Card */}
-      <div className="card overflow-hidden border bg-card text-card-foreground shadow-raised rounded-xl">
+      <div className="card overflow-hidden">
         <div className="p-6">
           <div className="flex justify-between items-start gap-4 mb-6">
             <div className="space-y-2">
@@ -137,7 +142,7 @@ export default function ClusterDetail() {
               <div className={cn("text-2xl font-bold", qualityInfo.color)}>
                 {qualityInfo.grade}
               </div>
-              <div className="text-[10px] text-muted-foreground">Grade</div>
+              <div className="text-xs text-muted-foreground">Grade</div>
             </div>
           </div>
 
@@ -188,7 +193,7 @@ export default function ClusterDetail() {
       </div>
 
       {/* Keywords Section */}
-      <div className="card border bg-card text-card-foreground shadow-sm rounded-xl p-6">
+      <div className="card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-semibold">Key Topics</h2>
@@ -230,7 +235,7 @@ export default function ClusterDetail() {
 
       {/* Related Clusters */}
       {cluster.related_clusters && cluster.related_clusters.length > 0 && (
-        <div className="card border bg-card text-card-foreground shadow-sm rounded-xl p-6">
+        <div className="card p-6">
           <h2 className="text-xl font-semibold mb-4">
             Related Opportunities
           </h2>

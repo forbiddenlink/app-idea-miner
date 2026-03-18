@@ -105,6 +105,41 @@ export const CommandPalette = () => {
         type: 'page',
         action: () => navigate('/analytics'),
         keywords: ['charts', 'graphs', 'trends'],
+      },
+      {
+        id: 'page-saved',
+        title: 'Saved',
+        subtitle: 'Review bookmarked ideas and clusters',
+        type: 'page',
+        action: () => navigate('/saved'),
+        keywords: ['bookmarks', 'favorites', 'saved'],
+      },
+      {
+        id: 'page-opportunities',
+        title: 'Opportunity Scores',
+        subtitle: 'Review top market opportunities',
+        type: 'page',
+        action: () => navigate('/opportunities'),
+        keywords: ['market', 'scoring', 'grade'],
+      },
+      {
+        id: 'page-settings',
+        title: 'Settings',
+        subtitle: 'Adjust refresh and data preferences',
+        type: 'page',
+        action: () => navigate('/settings'),
+        keywords: ['preferences', 'configuration'],
+      },
+      {
+        id: 'action-shortcuts',
+        title: 'Show Keyboard Shortcuts',
+        subtitle: 'Open shortcuts reference dialog',
+        type: 'action',
+        action: () => {
+          globalThis.dispatchEvent(new Event('app:keyboard-shortcuts-open'));
+          setIsOpen(false);
+        },
+        keywords: ['help', 'shortcuts', 'keyboard'],
       }
     );
 
@@ -132,7 +167,7 @@ export const CommandPalette = () => {
           subtitle: `${idea.sentiment} · Quality: ${(idea.quality_score * 100).toFixed(0)}%`,
           type: 'idea',
           action: () => {
-            navigate(`/ideas?search=${encodeURIComponent(idea.problem_statement)}`);
+            navigate(`/ideas/${idea.id}`);
             setIsOpen(false);
           },
         });
@@ -261,7 +296,7 @@ export const CommandPalette = () => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="w-full max-w-2xl overflow-hidden transition-all transform border rounded-lg shadow-lg border-border bg-popover">
+              <DialogPanel className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-popover shadow-overlay transition-transform transform">
                 <DialogTitle className="sr-only">Command palette</DialogTitle>
 
                 {/* Search Input */}
@@ -282,7 +317,7 @@ export const CommandPalette = () => {
                     aria-expanded={isOpen}
                     aria-activedescendant={filteredCommands[selectedIndex] ? `command-result-${filteredCommands[selectedIndex].id}` : undefined}
                   />
-                  <div className="absolute px-2 py-1 text-xs rounded right-4 top-4 bg-muted text-muted-foreground">
+                  <div className="absolute right-4 top-4 rounded-lg bg-muted px-2 py-1 text-xs text-muted-foreground">
                     ⌘K
                   </div>
                 </div>
@@ -300,7 +335,7 @@ export const CommandPalette = () => {
                           type="button"
                           key={search}
                           onClick={() => setQuery(search)}
-                          className="w-full px-3 py-2 text-sm text-left transition-colors rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="focus-ring w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                           aria-describedby="command-palette-recent-searches"
                         >
                           {search}
@@ -324,14 +359,14 @@ export const CommandPalette = () => {
                           onClick={() => handleSelect(cmd)}
                           onMouseEnter={() => setSelectedIndex(index)}
                           className={cn(
-                            "group w-full rounded-md px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                            index === selectedIndex ? "bg-muted" : "hover:bg-muted/50"
+                            "focus-ring group w-full rounded-xl px-3 py-3 text-left transition-colors",
+                            index === selectedIndex ? "bg-accent" : "hover:bg-accent/70"
                           )}
                           role="option"
                           aria-selected={index === selectedIndex}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-md shrink-0 bg-muted">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent">
                               <div className={cn("h-2 w-2 rounded-full", getTypeColor(cmd.type))} />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -342,7 +377,7 @@ export const CommandPalette = () => {
                                 <div className="text-sm truncate text-muted-foreground">{cmd.subtitle}</div>
                               )}
                             </div>
-                            <div className="px-2 py-1 text-xs uppercase rounded shrink-0 bg-muted text-muted-foreground">
+                            <div className="shrink-0 rounded-lg bg-accent px-2 py-1 text-xs uppercase text-muted-foreground">
                               {cmd.type}
                             </div>
                           </div>
@@ -356,13 +391,13 @@ export const CommandPalette = () => {
                 <div className="flex items-center justify-between px-4 py-2 text-xs border-t border-border text-muted-foreground">
                   <div className="flex items-center gap-4">
                     <span className="flex items-center gap-1">
-                      <kbd className="px-2 py-1 rounded bg-muted">↑↓</kbd> Navigate
+                      <kbd className="rounded bg-muted px-2 py-1">↑↓</kbd> Navigate
                     </span>
                     <span className="flex items-center gap-1">
-                      <kbd className="px-2 py-1 rounded bg-muted">↵</kbd> Select
+                      <kbd className="rounded bg-muted px-2 py-1">↵</kbd> Select
                     </span>
                     <span className="flex items-center gap-1">
-                      <kbd className="px-2 py-1 rounded bg-muted">esc</kbd> Close
+                      <kbd className="rounded bg-muted px-2 py-1">esc</kbd> Close
                     </span>
                   </div>
                   <span>{filteredCommands.length} results</span>

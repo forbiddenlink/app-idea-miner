@@ -3,6 +3,12 @@ import {
   AnalyticsSummary,
   AnalyticsTrends,
   AnalyticsTrendsParams,
+  BookmarkClearResponse,
+  BookmarkCreateRequest,
+  BookmarkListResponse,
+  BookmarkMutationResponse,
+  BookmarkQueryParams,
+  BookmarkItemType,
   Cluster,
   ClusterQueryParams,
   DomainStats,
@@ -19,13 +25,15 @@ import {
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 const API_KEY = import.meta.env.VITE_API_KEY || 'dev-api-key'
 
-const MAX_RETRIES = 3
+const MAX_RETRIES = 1
 const RETRY_BASE_DELAY_MS = 1000
 
-function isRetryable(error: AxiosError): boolean {
+function isRetryable(error: AxiosError, method?: string): boolean {
+  const normalizedMethod = (method || 'get').toLowerCase()
+  if (normalizedMethod !== 'get') return false
   if (!error.response) return true // network error
   const status = error.response.status
-  return status === 429 || status >= 500
+  return status === 429 || status === 502 || status === 503 || status === 504
 }
 
 function getRetryDelay(attempt: number, error: AxiosError): number {
@@ -68,7 +76,8 @@ class ApiClient {
 
         const retryCount = (config.__retryCount as number) || 0
 
-        if (isRetryable(error) && retryCount < MAX_RETRIES) {
+        const method = typeof config.method === 'string' ? config.method : undefined
+        if (isRetryable(error, method) && retryCount < MAX_RETRIES) {
           config.__retryCount = retryCount + 1
           const delay = getRetryDelay(retryCount, error)
           await new Promise(resolve => setTimeout(resolve, delay))
@@ -203,6 +212,41 @@ class ApiClient {
     const response = await this.client.get(`/api/v1/opportunities/${clusterId}`)
     return response.data
   }
+
+  // Bookmarks
+  async getBookmarks(params?: BookmarkQueryParams): Promise<BookmarkListResponse> {
+    const response = await this.client.get('/api/v1/bookmarks', { params })
+    return response.data
+  }
+
+  async addBookmark(payload: BookmarkCreateRequest): Promise<BookmarkMutationResponse> {
+    const response = await this.client.post('/api/v1/bookmarks', payload)
+    return response.data
+  }
+
+  async removeBookmark(
+    itemType: BookmarkItemType,
+    itemId: string,
+    scopeKey = 'default'
+  ): Promise<BookmarkMutationResponse> {
+    const response = await this.client.delete(`/api/v1/bookmarks/${itemType}/${itemId}`, {
+      params: { scope_key: scopeKey },
+    })
+    return response.data
+  }
+
+  async clearBookmarks(
+    scopeKey = 'default',
+    itemType?: BookmarkItemType
+  ): Promise<BookmarkClearResponse> {
+    const response = await this.client.delete('/api/v1/bookmarks', {
+      params: {
+        scope_key: scopeKey,
+        item_type: itemType,
+      },
+    })
+    return response.data
+  }
 }
 
 export const apiClient = new ApiClient()
@@ -225,3 +269,9 @@ export const triggerClustering = (params?: ReclusterParams) => apiClient.trigger
 export const getJobStatus = (jobId: string) => apiClient.getJobStatus(jobId)
 export const getOpportunities = (params?: OpportunityQueryParams) => apiClient.getOpportunities(params)
 export const getOpportunity = (clusterId: string) => apiClient.getOpportunity(clusterId)
+export const getBookmarks = (params?: BookmarkQueryParams) => apiClient.getBookmarks(params)
+export const addBookmark = (payload: BookmarkCreateRequest) => apiClient.addBookmark(payload)
+export const removeBookmark = (itemType: BookmarkItemType, itemId: string, scopeKey?: string) =>
+  apiClient.removeBookmark(itemType, itemId, scopeKey)
+export const clearBookmarks = (scopeKey?: string, itemType?: BookmarkItemType) =>
+  apiClient.clearBookmarks(scopeKey, itemType)

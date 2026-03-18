@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { RefreshCw, Clock } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -29,6 +29,7 @@ function DataFreshness({
   onRefresh,
   className,
 }: DataFreshnessProps) {
+  const reduceMotion = useReducedMotion();
   const [relativeTime, setRelativeTime] = useState(() =>
     formatRelativeTime(dataUpdatedAt)
   );
@@ -52,7 +53,7 @@ function DataFreshness({
       onClick={onRefresh}
       disabled={!isClickable || isRefetching}
       className={cn(
-        'inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors',
+        'focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border/70 bg-card px-2.5 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors',
         isClickable && 'cursor-pointer hover:text-foreground',
         !isClickable && 'cursor-default',
         className
@@ -70,8 +71,8 @@ function DataFreshness({
               'inline-block h-1.5 w-1.5 rounded-full',
               isStale ? 'bg-amber-500' : 'bg-emerald-500'
             )}
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            animate={reduceMotion ? undefined : { opacity: [0.5, 1, 0.5] }}
+            transition={reduceMotion ? undefined : { duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
           <Clock className="w-3 h-3" />
           <span>Updated {relativeTime}</span>

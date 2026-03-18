@@ -34,7 +34,7 @@ function SearchResultsContent({
   if (isLoading) {
     return (
       <output className="block px-4 py-3 text-sm text-muted-foreground" aria-live="polite">
-        Searching...
+        Searching…
       </output>
     );
   }
@@ -55,8 +55,8 @@ function SearchResultsContent({
           onClick={() => onSelect(result)}
           onMouseEnter={() => onHover(index)}
           className={cn(
-            "w-full border-b border-border/50 px-4 py-3 text-left transition-colors last:border-b-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            selectedIndex === index ? 'bg-muted' : 'hover:bg-muted/50'
+            "focus-ring w-full border-b border-border/50 px-4 py-3 text-left transition-colors last:border-b-0",
+            selectedIndex === index ? 'bg-accent' : 'hover:bg-accent/70'
           )}
           role="option"
           aria-selected={selectedIndex === index}
@@ -68,7 +68,7 @@ function SearchResultsContent({
                 "rounded px-2 py-0.5 text-xs font-medium",
                 result.type === 'cluster'
                   ? 'bg-primary/10 text-primary'
-                  : 'bg-secondary text-secondary-foreground'
+                  : 'bg-success/10 text-success'
               )}
               aria-hidden="true"
             >
@@ -144,7 +144,7 @@ export const SearchAutocomplete = () => {
         const ideas: SearchResult[] = ideaRes.results.map((i: Idea) => ({
           type: 'idea' as const,
           id: i.id,
-          title: i.problem_statement.substring(0, 80) + (i.problem_statement.length > 80 ? '...' : ''),
+          title: i.problem_statement.substring(0, 80) + (i.problem_statement.length > 80 ? '…' : ''),
           description: i.domain || 'Idea',
           sentiment: i.sentiment,
         }));
@@ -197,7 +197,7 @@ export const SearchAutocomplete = () => {
     if (result.type === 'cluster') {
       navigate(`/clusters/${result.id}`);
     } else {
-      navigate(`/clusters?idea=${result.id}`);
+      navigate(`/ideas/${result.id}`);
     }
     setQuery('');
     setIsOpen(false);
@@ -223,7 +223,7 @@ export const SearchAutocomplete = () => {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
-          className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="field-control py-2 pl-9 pr-9"
           aria-label="Search clusters and ideas"
           aria-autocomplete="list"
           aria-controls={listboxId}
@@ -259,7 +259,7 @@ export const SearchAutocomplete = () => {
             role="listbox"
             aria-label="Search results"
             aria-live="polite"
-            className="absolute top-full z-50 mt-2 max-h-96 w-full overflow-y-auto rounded-lg border border-border bg-popover shadow-lg"
+            className="absolute top-full z-50 mt-2 max-h-96 w-full overflow-y-auto rounded-2xl border border-border bg-popover shadow-overlay"
           >
             <SearchResultsContent
               isLoading={isLoading}
