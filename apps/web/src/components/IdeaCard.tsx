@@ -1,31 +1,35 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Idea } from '@/types';
-import { ExternalLink, Calendar, Link as LinkIcon, Heart } from 'lucide-react';
-import { useFavorites } from '@/hooks/useFavorites';
-import { ContextMenu, createIdeaContextMenu } from './ContextMenu';
-import { cn } from '@/utils/cn';
+import React from "react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { Idea } from "@/types";
+import { ExternalLink, Calendar, Link as LinkIcon, Heart } from "lucide-react";
+import { useFavorites } from "@/hooks/useFavorites";
+import { ContextMenu, createIdeaContextMenu } from "./ContextMenu";
+import { cn } from "@/utils/cn";
 
 interface IdeaCardProps {
   idea: Idea;
   showCluster?: boolean;
 }
 
-export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, showCluster = false }) => {
-  const { isFavorite, toggleFavorite } = useFavorites()
-  const favorited = isFavorite(idea.id, 'idea')
+export const IdeaCard: React.FC<IdeaCardProps> = ({
+  idea,
+  showCluster = false,
+}) => {
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorited = isFavorite(idea.id, "idea");
   const contextMenuItems = createIdeaContextMenu({
     id: idea.id,
     problem_statement: idea.problem_statement,
     source: idea.source_url ? { url: idea.source_url } : undefined,
-  }, () => toggleFavorite(idea.id, 'idea'), favorited);
+  });
 
-  const sentimentColor = idea.sentiment.toLowerCase() === 'positive'
-    ? 'text-success'
-    : idea.sentiment.toLowerCase() === 'negative'
-      ? 'text-destructive'
-      : 'text-muted-foreground';
+  const sentimentColor =
+    idea.sentiment.toLowerCase() === "positive"
+      ? "text-success"
+      : idea.sentiment.toLowerCase() === "negative"
+        ? "text-destructive"
+        : "text-muted-foreground";
 
   return (
     <ContextMenu items={contextMenuItems}>
@@ -40,19 +44,26 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, showCluster = false })
         <div className="mb-2 flex items-start justify-between gap-3">
           {/* Problem Statement */}
           <h3 className="text-base font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
-            <Link to={`/ideas/${idea.id}`} className="hover:underline underline-offset-2">
+            <Link
+              to={`/ideas/${idea.id}`}
+              className="hover:underline underline-offset-2"
+            >
               {idea.problem_statement}
             </Link>
           </h3>
 
           <button
             type="button"
-            onClick={() => toggleFavorite(idea.id, 'idea')}
+            onClick={() => toggleFavorite(idea.id, "idea")}
             aria-pressed={favorited}
-            aria-label={favorited ? 'Remove idea from favorites' : 'Add idea to favorites'}
+            aria-label={
+              favorited ? "Remove idea from favorites" : "Add idea to favorites"
+            }
             className={cn(
               "focus-ring shrink-0 rounded-lg p-1.5 transition-colors hover:bg-accent",
-              favorited ? "text-red-500" : "text-muted-foreground hover:text-red-400"
+              favorited
+                ? "text-red-500"
+                : "text-muted-foreground hover:text-red-400",
             )}
           >
             <Heart className={cn("h-4 w-4", favorited && "fill-current")} />
@@ -76,9 +87,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({ idea, showCluster = false })
           <span className="text-border">·</span>
 
           {/* Sentiment */}
-          <span className={sentimentColor}>
-            {idea.sentiment}
-          </span>
+          <span className={sentimentColor}>{idea.sentiment}</span>
 
           {/* Domain */}
           {idea.domain && (
