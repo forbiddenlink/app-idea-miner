@@ -349,7 +349,7 @@ tokenizers==0.22.2
     # via transformers
 torch==2.11.0
     # via sentence-transformers
-tornado==6.5.4
+tornado==6.5.5
     # via flower
 tqdm==4.67.3
     # via
