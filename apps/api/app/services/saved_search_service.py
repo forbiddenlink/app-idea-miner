@@ -84,6 +84,7 @@ class SavedSearchService:
         )
         self.db.add(saved_search)
         await self.db.flush()
+        await self.db.refresh(saved_search)
         return self._serialize(saved_search)
 
     async def update_saved_search(
@@ -117,6 +118,7 @@ class SavedSearchService:
             saved_search_any.alert_frequency = alert_frequency
 
         await self.db.flush()
+        await self.db.refresh(saved_search)
         return self._serialize(saved_search)
 
     async def delete_saved_search(self, user_id: str, saved_search_id: UUID) -> bool:
