@@ -8,6 +8,7 @@ import uuid
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     Column,
     DateTime,
     Float,
@@ -20,6 +21,9 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.sql import func
+
+# Shared cascade option used across all parent→child relationships
+_CASCADE_DELETE_ORPHAN = "all, delete-orphan"
 
 
 class Base(DeclarativeBase):
@@ -73,7 +77,7 @@ class RawPost(Base):
 
     # Relationships
     ideas = relationship(
-        "IdeaCandidate", back_populates="raw_post", cascade="all, delete-orphan"
+        "IdeaCandidate", back_populates="raw_post", cascade=_CASCADE_DELETE_ORPHAN
     )
 
     # Indexes
@@ -148,7 +152,7 @@ class IdeaCandidate(Base):
     # Relationships
     raw_post = relationship("RawPost", back_populates="ideas")
     cluster_memberships = relationship(
-        "ClusterMembership", back_populates="idea", cascade="all, delete-orphan"
+        "ClusterMembership", back_populates="idea", cascade=_CASCADE_DELETE_ORPHAN
     )
 
     # Indexes
@@ -204,7 +208,7 @@ class Cluster(Base):
 
     # Relationships
     memberships = relationship(
-        "ClusterMembership", back_populates="cluster", cascade="all, delete-orphan"
+        "ClusterMembership", back_populates="cluster", cascade=_CASCADE_DELETE_ORPHAN
     )
 
     # Indexes
@@ -270,3 +274,104 @@ class ClusterMembership(Base):
 
     def __repr__(self):
         return f"<ClusterMembership(cluster={self.cluster_id}, idea={self.idea_id}, score={self.similarity_score:.2f})>"
+
+
+class User(Base):
+    """
+    User account for authentication.
+    Supports email/password login with bcrypt hashing.
+    """
+
+    __tablename__ = "users"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    hashed_password = Column(String(255), nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    is_admin = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now()
+    )
+
+    # Relationships
+    bookmarks = relationship(
+        "Bookmark", back_populates="user", cascade=_CASCADE_DELETE_ORPHAN
+    )
+    saved_searches = relationship(
+        "SavedSearch", back_populates="user", cascade=_CASCADE_DELETE_ORPHAN
+    )
+
+    def __repr__(self):
+        return f"<User(id={self.id}, email='{self.email}', active={self.is_active})>"
+
+
+class Bookmark(Base):
+    """Persisted saved item reference for clusters and ideas."""
+
+    __tablename__ = "bookmarks"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    item_type = Column(String(20), nullable=False, index=True)  # cluster | idea
+    item_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "item_type IN ('cluster', 'idea')", name="ck_bookmarks_item_type"
+        ),
+        Index("uq_bookmarks_user_item", "user_id", "item_type", "item_id", unique=True),
+        Index("idx_bookmarks_user_created_desc", "user_id", created_at.desc()),
+    )
+
+    user = relationship("User", back_populates="bookmarks")
+
+    def __repr__(self):
+        return f"<Bookmark(user_id={self.user_id}, type={self.item_type}, item_id={self.item_id})>"
+
+
+class SavedSearch(Base):
+    """Persisted user-defined query presets with optional alert settings."""
+
+    __tablename__ = "saved_searches"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    name = Column(String(120), nullable=False)
+    query_params = Column(JSONB, nullable=False, default={})
+    alert_enabled = Column(Boolean, nullable=False, default=False)
+    alert_frequency = Column(String(16), nullable=False, default="weekly")
+    created_at = Column(DateTime(timezone=True), default=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "alert_frequency IN ('daily', 'weekly')",
+            name="ck_saved_searches_alert_frequency",
+        ),
+        Index("idx_saved_searches_user_created_desc", "user_id", created_at.desc()),
+    )
+
+    user = relationship("User", back_populates="saved_searches")
+
+    def __repr__(self):
+        return (
+            f"<SavedSearch(user_id={self.user_id}, name='{self.name}', "
+            f"alert_enabled={self.alert_enabled})>"
+        )
