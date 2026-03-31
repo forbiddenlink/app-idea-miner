@@ -107,15 +107,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS Middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # GZip compression middleware (70% size reduction on JSON responses)
 app.add_middleware(
     GZipMiddleware,
@@ -181,6 +172,7 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
         "/api/v1/posts",
         "/api/v1/opportunities",
     )
+    PRIVATE_NO_STORE_PREFIXES = ("/api/v1/bookmarks",)
 
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
@@ -191,6 +183,8 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
         path = request.url.path
 
         if any(path.startswith(p) for p in self.NO_STORE_PREFIXES):
+            response.headers["Cache-Control"] = "no-store"
+        elif any(path.startswith(p) for p in self.PRIVATE_NO_STORE_PREFIXES):
             response.headers["Cache-Control"] = "no-store"
         elif path.startswith(self.ANALYTICS_PREFIX):
             response.headers["Cache-Control"] = (
@@ -213,6 +207,15 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 # Request logging middleware (correlation IDs, timing, structured logs)
 app.add_middleware(RequestLoggingMiddleware)
+
+# CORS Middleware — added last so FastAPI (LIFO) places it outermost, processing every request first
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # --- Health check helpers ---
@@ -433,20 +436,30 @@ _is_serverless = os.getenv("VERCEL", "") == "1"
 
 from apps.api.app.routers import (
     analytics,
+    auth,
+    bookmarks,
     clusters,
     export,
     ideas,
     opportunities,
     posts,
+    saved_searches,
 )
 
 # Data query routers - available everywhere (no heavy deps)
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(posts.router, prefix="/api/v1/posts", tags=["Posts"])
 app.include_router(ideas.router, prefix="/api/v1/ideas", tags=["Ideas"])
 app.include_router(clusters.router, prefix="/api/v1/clusters", tags=["Clusters"])
 app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytics"])
 app.include_router(
     opportunities.router, prefix="/api/v1/opportunities", tags=["Opportunities"]
+)
+app.include_router(bookmarks.router, prefix="/api/v1/bookmarks", tags=["Bookmarks"])
+app.include_router(
+    saved_searches.router,
+    prefix="/api/v1/saved-searches",
+    tags=["Saved Searches"],
 )
 app.include_router(export.router, prefix="/api/v1/export", tags=["Export"])
 
