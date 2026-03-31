@@ -12,6 +12,7 @@ app = None
 # Try to import the app
 try:
     from apps.api.app.main import app as imported_app
+
     app = imported_app
 except Exception as e:
     error_info = {
