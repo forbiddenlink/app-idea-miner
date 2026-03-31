@@ -12,4 +12,5 @@ dependencies = [
     "feedparser>=6.0.0",
     "python-dotenv>=1.0.0",
     "asyncpraw>=7.8.0",
+    "sentence-transformers>=3.0.0",
 ]

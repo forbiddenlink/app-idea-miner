@@ -26,12 +26,14 @@ celery_app.conf.update(
         "apps.worker.tasks.ingestion",
         "apps.worker.tasks.processing",
         "apps.worker.tasks.clustering",
+        "apps.worker.tasks.saved_search_alerts",
     ],
     # Task Routing
     task_routes={
         "apps.worker.tasks.ingestion.*": {"queue": "ingestion"},
         "apps.worker.tasks.processing.*": {"queue": "processing"},
         "apps.worker.tasks.clustering.*": {"queue": "clustering"},
+        "apps.worker.tasks.saved_search_alerts.*": {"queue": "alerts"},
     },
     # Task Queues
     task_queues=(
@@ -39,6 +41,7 @@ celery_app.conf.update(
         Queue("ingestion", Exchange("ingestion"), routing_key="ingestion"),
         Queue("processing", Exchange("processing"), routing_key="processing"),
         Queue("clustering", Exchange("clustering"), routing_key="clustering"),
+        Queue("alerts", Exchange("alerts"), routing_key="alerts"),
     ),
     # Task Execution
     task_acks_late=True,
@@ -60,13 +63,25 @@ celery_app.conf.update(
     worker_max_tasks_per_child=1000,
     # Beat (Scheduled Tasks)
     beat_schedule={
-        "fetch-rss-feeds": {
-            "task": "apps.worker.tasks.ingestion.fetch_rss_feeds",
+        "ingest-all-sources": {
+            "task": "apps.worker.tasks.ingestion.run_ingestion_cycle",
             "schedule": 21600.0,  # Every 6 hours
         },
-        "fetch-hackernews-stories": {
-            "task": "apps.worker.tasks.ingestion.run_ingestion_cycle",
-            "schedule": 43200.0,  # Every 12 hours
+        "run-processing-pipeline": {
+            "task": "apps.worker.tasks.processing.process_raw_posts",
+            "schedule": 21600.0,  # Every 6 hours (after ingestion)
+        },
+        "run-clustering": {
+            "task": "apps.worker.tasks.clustering.run_clustering",
+            "schedule": 86400.0,  # Every 24 hours
+        },
+        "send-daily-saved-search-alerts": {
+            "task": "apps.worker.tasks.saved_search_alerts.send_daily_saved_search_alerts",
+            "schedule": 86400.0,  # Every 24 hours
+        },
+        "send-weekly-saved-search-alerts": {
+            "task": "apps.worker.tasks.saved_search_alerts.send_weekly_saved_search_alerts",
+            "schedule": 604800.0,  # Every 7 days
         },
     },
 )
