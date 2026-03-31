@@ -52,7 +52,7 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d postgres -c "CREATE DATABASE appideas_migration"
           psql -h 127.0.0.1 -U postgres -d appideas_migration -c "CREATE EXTENSION IF NOT EXISTS vector"
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/appideas_migration
-          uv run alembic upgrade head
+          uv run alembic -c alembic.ini upgrade head
 
       - name: Run Unit Tests (No DB)
         env:
