@@ -13,6 +13,7 @@ Key components:
 """
 
 import logging
+import os
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
@@ -290,6 +291,50 @@ class ClusterEngine:
         label = " + ".join(term.title() for term in top_terms)
         return label
 
+    # Common filler prefixes that add no label value
+    _FILLER_PREFIXES: tuple[str, ...] = (
+        "i wish there was an app that ",
+        "i wish there was an app for ",
+        "i wish there was an app to ",
+        "i wish there was an app ",
+        "there should be an app that ",
+        "there should be an app for ",
+        "there should be an app to ",
+        "there should be an app ",
+        "why isn't there an app that ",
+        "why isn't there an app for ",
+        "why isn't there an app to ",
+        "why isn't there an app ",
+        "why is there no app that ",
+        "why is there no app for ",
+        "why is there no app ",
+        "someone should build an app that ",
+        "someone should build an app for ",
+        "someone should build an app to ",
+        "someone should build an app ",
+        "i want an app that ",
+        "i want an app for ",
+        "i want an app to ",
+        "i want an app ",
+        "there needs to be an app that ",
+        "there needs to be an app for ",
+        "there needs to be an app ",
+        "why don't we have an app that ",
+        "why don't we have an app for ",
+        "why don't we have an app ",
+        "why don't we have an app that ",
+    )
+
+    def _strip_filler_prefix(self, text: str) -> str:
+        """Strip common 'I wish there was an app' filler prefixes from text."""
+        lower = text.lower()
+        for prefix in self._FILLER_PREFIXES:
+            if lower.startswith(prefix):
+                remainder = text[len(prefix) :].strip()
+                if remainder:
+                    return remainder[0].upper() + remainder[1:]
+        return text
+
     def _representative_label(self, texts: list[str], max_length: int = 60) -> str:
         """
         Pick the most representative text from a cluster as the label.
@@ -306,7 +351,7 @@ class ClusterEngine:
             Representative label string
         """
         if len(texts) == 1:
-            text = texts[0]
+            text = self._strip_filler_prefix(texts[0])
             return text if len(text) <= max_length else text[: max_length - 3] + "..."
 
         # Vectorize cluster texts with a simple TF-IDF to find centroid
@@ -328,11 +373,12 @@ class ClusterEngine:
         # Among top-3 closest to centroid, prefer one that fits under max_length
         top_candidates = ranked_indices[: min(3, len(ranked_indices))]
         for idx in top_candidates:
-            if len(texts[idx]) <= max_length:
-                return texts[idx]
+            cleaned = self._strip_filler_prefix(texts[idx])
+            if len(cleaned) <= max_length:
+                return cleaned
 
         # Truncate the closest-to-centroid text
-        best = texts[ranked_indices[0]]
+        best = self._strip_filler_prefix(texts[ranked_indices[0]])
         return best if len(best) <= max_length else best[: max_length - 3] + "..."
 
     def score_cluster(
@@ -423,6 +469,10 @@ def get_cluster_engine(**kwargs) -> ClusterEngine:
     """
     Get or create singleton cluster engine instance.
 
+    Reads ``USE_SENTENCE_EMBEDDINGS`` environment variable (``1`` / ``true`` /
+    ``yes``) to enable sentence-transformer embeddings.  An explicit
+    ``use_embeddings`` kwarg always takes precedence.
+
     Args:
         **kwargs: Optional configuration parameters for ClusterEngine
 
@@ -432,6 +482,10 @@ def get_cluster_engine(**kwargs) -> ClusterEngine:
     global _cluster_engine
 
     if _cluster_engine is None:
+        if "use_embeddings" not in kwargs:
+            kwargs["use_embeddings"] = os.getenv(
+                "USE_SENTENCE_EMBEDDINGS", ""
+            ).lower() in ("1", "true", "yes")
         _cluster_engine = ClusterEngine(**kwargs)
 
     return _cluster_engine

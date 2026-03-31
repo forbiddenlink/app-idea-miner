@@ -7,7 +7,7 @@ creating cluster records, and managing cluster memberships.
 
 import asyncio
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import delete, select
@@ -114,8 +114,6 @@ async def _run_clustering_async(
 
             # Step 3: Run clustering
             texts = [idea.problem_statement for idea in ideas]
-            idea_ids = [idea.id for idea in ideas]
-
             logger.info("Running clustering algorithm...")
             cluster_result = run_clustering_algorithm(
                 texts, min_cluster_size=min_cluster_size
@@ -167,8 +165,14 @@ async def _run_clustering_async(
                 keywords = cluster_result.keywords.get(cluster_id, [])
                 keyword_list = [kw[0] for kw in keywords]
 
-                # Generate label
-                label = engine.generate_cluster_label(keywords)
+                # Generate label using the most representative idea text
+                # (falls back to keyword join if texts are too long or sparse)
+                cluster_texts = [idea.problem_statement for idea in cluster_ideas]
+                label = engine.generate_cluster_label(
+                    keywords,
+                    texts=cluster_texts,
+                    label_strategy="representative",
+                )
 
                 # Create Cluster record
                 cluster = Cluster(
@@ -327,7 +331,7 @@ async def _update_cluster_trends_async() -> dict[str, Any]:
 
                 # Update cluster
                 cluster.trend_score = new_trend_score
-                cluster.updated_at = datetime.utcnow()
+                cluster.updated_at = datetime.now(UTC)
                 updated_count += 1
 
             await session.commit()

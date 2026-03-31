@@ -20,7 +20,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
+          cpus: "2"
           memory: 2G
 
   redis:
@@ -37,7 +37,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
+          cpus: "1"
           memory: 512M
 
   api:
@@ -91,6 +91,25 @@ services:
         condition: service_healthy
     restart: unless-stopped
     command: uv run celery -A apps.worker.celery_app worker --loglevel=info
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.worker
+    container_name: app-idea-miner-beat
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/appideas
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - LOG_LEVEL=info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: uv run celery -A apps.worker.celery_app beat --loglevel=info
 
   flower:
     build:

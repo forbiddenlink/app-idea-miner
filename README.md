@@ -1,440 +1,212 @@
-# App-Idea Miner 🚀
+# App-Idea Miner
 
-> **Discover validated app opportunities from real user needs**
+> Discover validated app opportunities from real user needs
 
-An intelligent opportunity detection platform that automatically collects, clusters, and analyzes "I wish there was an app..." style posts from across the web. Get evidence-backed insights on what people actually want to build.
+An intelligent opportunity detection platform that automatically collects, clusters, and analyzes "I wish there was an app..." posts from across the web — giving you evidence-backed insights on what people actually want built.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![PostgreSQL 16](https://img.shields.io/badge/postgresql-16-blue.svg)](https://www.postgresql.org/)
 [![Redis 7](https://img.shields.io/badge/redis-7-red.svg)](https://redis.io/)
-[![React 18](https://img.shields.io/badge/react-18.3-blue.svg)](https://react.dev/)
+[![React 18](https://img.shields.io/badge/react-18-blue.svg)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/fastapi-0.115-green.svg)](https://fastapi.tiangolo.com/)
 
 ---
 
-## 🎉 Current Status: MVP Complete + Security Hardened
+## Status
 
-**✅ Phase 1-7 Complete** | **✅ Security Audit Complete** (February 2026)
+**MVP complete** — all core phases shipped and security-hardened.
 
-The App-Idea Miner MVP is fully functional with:
-
-- ✅ Data ingestion pipeline with deduplication
-- ✅ NLP-powered idea extraction and sentiment analysis
-- ✅ HDBSCAN clustering algorithm with keyword extraction
-- ✅ FastAPI backend with 21+ endpoints
-- ✅ React UI with dashboard, filtering, and analytics
-- ✅ Redis caching (3.5x performance boost)
-- ✅ Real-time monitoring with Flower and Prometheus
-- ✅ Docker Compose orchestration
-- ✅ **Accessibility Compliant (WCAG 2.2)**
-- ✅ **Type-Safe Frontend (Strict TypeScript)**
-- ✅ **Security Hardened** (timing-safe auth, rate limiting, security headers)
-
-**Live Demo:** Coming soon!
+| Area                                                | Status      |
+| --------------------------------------------------- | ----------- |
+| Data ingestion pipeline                             | ✅ Complete |
+| NLP extraction + sentiment                          | ✅ Complete |
+| HDBSCAN clustering                                  | ✅ Complete |
+| FastAPI backend (21+ endpoints)                     | ✅ Complete |
+| React UI (5 pages, 30+ components)                  | ✅ Complete |
+| JWT authentication + API key auth                   | ✅ Complete |
+| User-owned bookmarks                                | ✅ Complete |
+| Saved searches + alert scheduling                   | ✅ Complete |
+| Redis caching                                       | ✅ Complete |
+| Docker Compose orchestration                        | ✅ Complete |
+| CI pipeline (GitHub Actions)                        | ✅ Complete |
+| WCAG 2.2 accessibility                              | ✅ Complete |
+| Security hardened (rate limiting, timing-safe auth) | ✅ Complete |
 
 ---
 
-## ✨ Features
+## Features
 
 ### Data Intelligence
 
-- **🔍 Smart Ingestion:** Automatically fetches posts from RSS feeds with deduplication
-- **🧠 AI-Powered Clustering:** Groups similar ideas using HDBSCAN + TF-IDF vectorization
-- **💎 Evidence-Based:** Every cluster backed by real user quotes with source links
-- **🎯 Quality Scoring:** Automatic assessment of idea specificity and actionability
+- **Smart Ingestion:** Fetches posts from RSS feeds with URL-hash and content-fingerprint deduplication
+- **AI-Powered Clustering:** Groups similar ideas using HDBSCAN + TF-IDF vectorization
+- **Evidence-Based:** Every cluster backed by real user quotes with source links
+- **Quality Scoring:** Automatic assessment of idea specificity and actionability (0–1 scale)
 
 ### Analytics & Insights
 
-- **📊 Beautiful Dashboard:** 4 key metrics + top clusters at a glance
-- **📈 Trend Analysis:** Time-series charts showing idea growth
-- **🏷️ Domain Breakdown:** Categorized by productivity, health, finance, etc.
-- **😊 Sentiment Analysis:** Positive/negative distribution with emotion detection
+- **Dashboard:** Key metrics + top clusters at a glance
+- **Trend Analysis:** Time-series charts showing idea growth
+- **Domain Breakdown:** Categorized by productivity, health, finance, etc.
+- **Sentiment Analysis:** VADER-based positive/negative distribution
 
-### User Experience
+### User Features
 
-- **⚡ Real-Time Updates:** WebSocket-powered live data (future)
-- **🔍 Advanced Filtering:** Sort by size, quality, sentiment, or trend
-- **🔎 Full-Text Search:** Find ideas by keywords
-- **📱 Responsive Design:** Works on desktop and mobile
+- **Authentication:** JWT login with email normalization and rate-limited endpoints
+- **Bookmarks:** Authenticated, user-owned bookmarks persisted to the database
+- **Saved Searches:** Save filter combinations with optional daily/weekly alert digests
+- **Command Palette:** `Cmd+K` universal search across pages, clusters, and ideas
+- **Context Menus:** Right-click on cards for copy, share, and export actions
+- **Advanced Filtering:** Sort by size, quality, sentiment, or trend
+- **Export:** CSV and JSON export from any view
 
-### Developer Experience
+### Infrastructure
 
-- **🔧 Extensible:** Easy to add new data sources
-- **📚 Comprehensive Docs:** 10+ documentation files covering architecture, API, deployment
-- **🧪 Testing Ready:** Full testing strategy with examples
-- **🐳 Docker First:** One command to start everything
-
----
-
-## 📚 Before You Start: Research & Best Practices
-
-**⭐ IMPORTANT:** This project incorporates comprehensive research on 2025 best practices. Before building, review:
-
-- **[RESEARCH_RECOMMENDATIONS_2025.md](docs/RESEARCH_RECOMMENDATIONS_2025.md)** - 52 pages of best practices with code examples
-- **[QUICK_START_IMPROVEMENTS.md](docs/QUICK_START_IMPROVEMENTS.md)** - Step-by-step Phase -1 implementation guide (4 hours)
-- **[RESEARCH_INDEX.md](docs/RESEARCH_INDEX.md)** - Navigation guide for all research documentation
-
-**Key Highlights:**
-
-- 🚀 **UV Package Manager**: 10-100x faster than pip
-- 🏗️ **Service Layer Architecture**: Production-ready patterns
-- ⚡ **asyncpg Driver**: 8x faster database operations
-- 🔧 **Ruff Linting**: 100x faster than Black+Flake8
-
-**Implementation Order:**
-
-1. Complete **Phase -1** (Modern Tooling Setup - 4 hours) first
-2. Follow CHECKLIST.md phases sequentially
-3. Reference research docs when making architectural decisions
+- **Background Workers:** Celery task queues for ingestion, processing, clustering, and alerts
+- **Async API:** FastAPI + asyncpg (8× faster than sync psycopg2)
+- **Migrations:** Alembic-managed schema versions, never raw DDL
+- **Monitoring:** Flower (Celery), Prometheus metrics endpoint
 
 ---
 
-## 🎬 Quick Start
+## Quick Start
 
 ### Prerequisites
 
-- **UV Package Manager** 0.5+ (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
-- Docker Desktop 4.0+ (with Docker Compose V2)
-- Make (comes with macOS/Linux, Windows users can use WSL)
-- 4GB RAM minimum
-- 2GB free disk space
+- [UV](https://astral.sh/uv) 0.5+ — `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- Docker Desktop 4.0+ (with Compose V2)
+- Make
+- 4 GB RAM, 2 GB free disk
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/yourusername/app-idea-miner.git
 cd app-idea-miner
-
-# Copy environment configuration
 cp .env.example .env
-
-# Start all services
 make dev
 ```
 
-That's it! 🎉
+The following services start automatically:
 
-The following services will be available:
-
-- **Web UI:** <http://localhost:3000>
-- **API:** <http://localhost:8000>
-- **API Docs:** <http://localhost:8000/docs>
-- **Flower (Celery Monitor):** <http://localhost:5555>
-- **PostgreSQL:** localhost:5432
-- **Redis:** localhost:6379
+| Service                 | URL                          |
+| ----------------------- | ---------------------------- |
+| Web UI                  | <http://localhost:3000>      |
+| API                     | <http://localhost:8000>      |
+| API Docs (Swagger)      | <http://localhost:8000/docs> |
+| Flower (Celery monitor) | <http://localhost:5555>      |
+| PostgreSQL              | localhost:5432               |
+| Redis                   | localhost:6379               |
 
 ### First Run
 
 ```bash
-# Load sample data (100+ curated app ideas)
+# Seed sample data (20 curated app ideas)
 make seed
 
-# Wait 30 seconds for processing...
+# Wait ~30 seconds for the worker to process and cluster
 
-# Open the web UI
+# Open the UI
 open http://localhost:3000
 ```
 
-You should see 10-15 clusters with evidence links!
+You should see 10–15 clusters with evidence links and quality scores.
 
 ---
 
-## 📖 Documentation
-
-Comprehensive documentation is available in the [`docs/`](docs/) directory:
-
-**📚 Important:** Before Phase 0, review:
-
-- **[RESEARCH_RECOMMENDATIONS_2025.md](docs/RESEARCH_RECOMMENDATIONS_2025.md)** - Comprehensive best practices research
-- **[QUICK_START_IMPROVEMENTS.md](docs/QUICK_START_IMPROVEMENTS.md)** - Priority 0 implementation guide
-- **[RESEARCH_INDEX.md](docs/RESEARCH_INDEX.md)** - Navigation guide
-
-**Planning & Architecture:**
-
-- **[PLAN.md](docs/PLAN.md)** - High-level development plan with phases
-- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - System architecture and tech stack
-- **[CHECKLIST.md](docs/CHECKLIST.md)** - Implementation task list
-- **[SCHEMA.md](docs/SCHEMA.md)** - Database schema design
-
-**Technical Details:**
-
-- **[API_SPEC.md](docs/API_SPEC.md)** - Complete API reference (21+ endpoints)
-- **[CLUSTERING.md](docs/CLUSTERING.md)** - Deep dive into clustering algorithm
-- **[DATA_SOURCES.md](docs/DATA_SOURCES.md)** - How to add new sources
-- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Production deployment guide
-- **[TESTING.md](docs/TESTING.md)** - Testing strategy and guidelines
-
----
-
-## 📊 Current System Metrics
-
-**Backend Status** (as of Feb 2026):
-
-- 🟢 All services healthy and running
-- 📝 121 posts processed (RSS feeds + sample data)
-- 💡 26 ideas extracted (19 positive, 5 negative, 2 neutral)
-- 🔮 2 clusters formed
-- 📈 Average cluster size: 6.5 ideas
-- 😊 Average sentiment: +0.28 (positive)
-- ⚡ API response time: < 50ms (uncached), < 15ms (cached with Redis)
-- 🔒 Security hardened with timing-safe auth, rate limiting, security headers
-
-**Frontend Status:**
-
-- ✅ React UI fully functional at <http://localhost:3000>
-- 📱 4 pages: Dashboard, Cluster Explorer, Cluster Detail, Analytics
-- 📊 3 chart types: Line (trends), Bar (domains), Pie (sentiment)
-- 🎨 14 components created (~2,500 lines of code)
-
-**Infrastructure:**
-
-- 🐳 5 Docker containers running (api, postgres, redis, worker, flower)
-- 💾 PostgreSQL 16 with JSONB support
-- ⚡ Redis 7 with 3.5x caching speedup
-- 🌸 Flower monitoring at <http://localhost:5555>
-- 📈 Prometheus metrics at <http://localhost:8000/metrics>
-
----
-
-## 🏗️ Architecture
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        Data Sources                          │
-│  RSS Feeds • JSON APIs • Sample Data • (Future: Social APIs)│
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-                       ▼
-         ┌──────────────────────┐
-         │  Ingestion (Celery)  │
-         │  Dedupe • Enrich     │
-         └──────────┬───────────┘
-                    │
-         ┌──────────┴───────────┐
-         │                      │
-         ▼                      ▼
-┌────────────────┐    ┌────────────────┐
-│  Processing    │    │  Clustering    │
-│  NLP • Extract │    │  HDBSCAN • ML  │
-└────────┬───────┘    └────────┬───────┘
-         │                     │
-         └──────────┬──────────┘
-                    │
-                    ▼
+┌─────────────────────────────────────────┐
+│              Data Sources               │
+│  RSS Feeds · Sample Data · (Future APIs)│
+└──────────────────┬──────────────────────┘
+                   │
+                   ▼
          ┌──────────────────┐
-         │  PostgreSQL 16   │
-         │  Redis 7         │
-         └──────────┬───────┘
-                    │
-         ┌──────────┴──────────┐
-         │                     │
-         ▼                     ▼
-┌────────────────┐    ┌────────────────┐
-│  FastAPI       │    │  React + Vite  │
-│  REST + WS     │◄───┤  Modern UI     │
-└────────────────┘    └────────────────┘
+         │  Celery Worker   │
+         │  Ingestion ·     │
+         │  Processing ·    │
+         │  Clustering ·    │
+         │  Alert Digests   │
+         └────────┬─────────┘
+                  │
+         ┌────────▼─────────┐
+         │   PostgreSQL 16  │
+         │   Redis 7        │
+         └────────┬─────────┘
+                  │
+         ┌────────▼─────────┐        ┌──────────────────┐
+         │    FastAPI       │◄───────│  React + Vite    │
+         │  REST · Auth ·   │        │  TypeScript UI   │
+         │  API Key Gate    │        └──────────────────┘
+         └──────────────────┘
 ```
 
 ### Tech Stack
 
-**Backend:**
-
-- Python 3.12
-- FastAPI (async API)
-- Celery (background tasks)
-- SQLAlchemy (ORM)
-- Alembic (migrations)
-
-**Data Science:**
-
-- scikit-learn (TF-IDF, clustering)
-- HDBSCAN (density-based clustering)
-- NLTK (text processing)
-- VADER (sentiment analysis)
-
-**Frontend:**
-
-- React 18 + TypeScript
-- Vite (build tool)
-- Tailwind CSS (styling)
-- Recharts (visualizations)
-- Zustand (state management)
-
-**Infrastructure:**
-
-- PostgreSQL 16 (persistence)
-- Redis 7 (queue + cache)
-- Docker Compose (orchestration)
-- Nginx (reverse proxy, future)
+| Layer    | Technology                                                    |
+| -------- | ------------------------------------------------------------- |
+| API      | Python 3.12, FastAPI 0.115, SQLAlchemy 2.0 (async), asyncpg   |
+| Auth     | JWT (python-jose), passlib/bcrypt, per-route rate limiting    |
+| Workers  | Celery 5.4, Redis 7 (broker + result backend)                 |
+| ML       | scikit-learn (TF-IDF), HDBSCAN, VADER sentiment, NLTK         |
+| Database | PostgreSQL 16 (JSONB, full-text search), Alembic migrations   |
+| Frontend | React 18, TypeScript 5, Vite 6, Tailwind CSS 3, Framer Motion |
+| State    | TanStack Query 5, Zustand 4                                   |
+| Testing  | pytest + pytest-asyncio, Vitest, Playwright                   |
+| Tooling  | UV (packages), Ruff (lint/format), mypy (types)               |
+| Infra    | Docker Compose, GitHub Actions CI                             |
 
 ---
 
-## 🛠️ Development Commands
-
-### Core Commands
-
-```bash
-# Start all services (API, Worker, DB, Redis, Web UI)
-make dev
-
-# Stop all services
-make down
-
-# View logs (all services)
-make logs
-
-# View logs (specific service)
-make logs-api
-make logs-worker
-make logs-web
-```
-
-### Database Commands
-
-```bash
-# Run pending migrations
-make migrate
-
-# Create new migration
-make migration name=add_user_table
-
-# Reset database (WARNING: deletes all data)
-make db-reset
-
-# Open database shell
-make db-shell
-```
-
-### Data Commands
-
-```bash
-# Load sample data
-make seed
-
-# Trigger ingestion manually
-make ingest
-
-# Run clustering
-make cluster
-
-# Clear all data
-make clean-data
-```
-
-### Testing Commands
-
-```bash
-# Run all tests
-make test
-
-# Run with coverage
-make test-coverage
-
-# Run specific test file
-make test-file path=tests/test_clustering.py
-
-# Lint code
-make lint
-
-# Format code
-make format
-```
-
-### Utility Commands
-
-```bash
-# Enter API container shell
-make shell-api
-
-# Enter worker container shell
-make shell-worker
-
-# View cluster sizes
-make stats
-
-# Backup database
-make backup
-
-# Full cleanup (containers, volumes, cache)
-make clean
-```
-
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 app-idea-miner/
 ├── apps/
 │   ├── api/                    # FastAPI backend
-│   │   ├── app/
-│   │   │   ├── main.py
-│   │   │   ├── routes/         # API endpoints
-│   │   │   ├── models/         # SQLAlchemy models
-│   │   │   ├── schemas/        # Pydantic schemas
-│   │   │   └── services/       # Business logic
-│   │   └── tests/
+│   │   └── app/
+│   │       ├── core/           # Auth utilities
+│   │       ├── routers/        # Endpoints (clusters, ideas, bookmarks, auth, …)
+│   │       ├── schemas/        # Pydantic request/response schemas
+│   │       └── services/       # Business logic layer
 │   ├── worker/                 # Celery background tasks
-│   │   ├── tasks/
-│   │   │   ├── ingestion.py
-│   │   │   ├── processing.py
-│   │   │   └── clustering.py
-│   │   └── celery_app.py
+│   │   └── tasks/
+│   │       ├── ingestion.py
+│   │       ├── processing.py
+│   │       ├── clustering.py
+│   │       └── saved_search_alerts.py
 │   └── web/                    # React frontend
-│       ├── src/
-│       │   ├── components/     # Reusable UI components
-│       │   ├── pages/          # Route pages
-│       │   ├── hooks/          # Custom React hooks
-│       │   ├── services/       # API client
-│       │   └── App.tsx
-│       └── package.json
+│       └── src/
+│           ├── components/     # Reusable UI components
+│           ├── contexts/       # AuthContext
+│           ├── hooks/          # useFavorites, useKeyboard, …
+│           ├── pages/          # Dashboard, ClusterExplorer, Ideas, Saved, Settings, Login
+│           ├── services/       # Typed API client
+│           └── types/          # Shared TypeScript interfaces
 ├── packages/
-│   └── core/                   # Shared Python logic
-│       ├── models.py           # Database models
-│       ├── clustering.py       # Clustering engine
-│       ├── nlp.py              # Text processing
-│       └── dedupe.py           # Deduplication
-├── infra/
-│   ├── docker-compose.yml
-│   ├── Dockerfile.api
-│   ├── Dockerfile.worker
-│   └── postgres/
-│       └── init.sql
-├── migrations/                 # Alembic migrations
-│   ├── versions/
-│   └── env.py
+│   └── core/                   # Shared Python (models, clustering, NLP, dedupe)
+├── migrations/                 # Alembic versions
+├── tests/                      # pytest integration tests
 ├── data/
-│   ├── sample_posts.json       # Seed data (100+ ideas)
-│   └── fixtures/
-├── docs/                       # Documentation
-│   ├── PLAN.md
-│   ├── ARCHITECTURE.md
-│   ├── API_SPEC.md
-│   └── ...
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── conftest.py
-├── Makefile                    # Development commands
-├── README.md                   # This file
-├── .env.example                # Environment template
-├── .gitignore
+│   └── sample_posts.json       # Seed data (20 curated ideas)
+├── docs/                       # Architecture, API spec, schema, deployment
+├── infra/                      # Dockerfiles, postgres init
+├── Makefile                    # Dev commands
 └── docker-compose.yml
 ```
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
-### Environment Variables
-
-Create a `.env` file in the root directory (copy from `.env.example`):
+Copy `.env.example` to `.env` and adjust as needed:
 
 ```bash
 # Database
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/appideas
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgresql:5432/appideas
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=appideas
@@ -442,21 +214,20 @@ POSTGRES_DB=appideas
 # Redis
 REDIS_URL=redis://redis:6379/0
 
+# Auth
+SECRET_KEY=your-secret-key-here
+
 # API
 API_HOST=0.0.0.0
 API_PORT=8000
-API_WORKERS=4
-CORS_ORIGINS=http://localhost:3000,http://localhost:5173
-LOG_LEVEL=info
+CORS_ORIGINS=http://localhost:3000
 
 # Worker
 CELERY_BROKER_URL=redis://redis:6379/0
 CELERY_RESULT_BACKEND=redis://redis:6379/1
-CELERY_WORKERS=2
 
-# Web UI
+# Frontend
 VITE_API_URL=http://localhost:8000
-VITE_WS_URL=ws://localhost:8000
 
 # Data Sources
 RSS_FEEDS=https://hnrss.org/newest
@@ -465,382 +236,184 @@ FETCH_INTERVAL_HOURS=6
 # Clustering
 MIN_CLUSTER_SIZE=3
 MAX_FEATURES=500
-RECLUSTER_THRESHOLD=100
+```
+
+> All Docker inter-service URLs use service names (`postgresql`, `redis`), not `localhost`.
+
+---
+
+## Development Commands
+
+### Services
+
+```bash
+make dev          # Start all services
+make down         # Stop all services
+make logs         # Tail all logs
+make logs-api     # Tail API logs only
+make logs-worker  # Tail worker logs only
+```
+
+### Database
+
+```bash
+make migrate                          # Run pending migrations
+make migration name=add_column_x      # Generate new migration
+make db-reset                         # Drop and recreate (loses data)
+make db-shell                         # psql shell
+```
+
+### Data
+
+```bash
+make seed         # Load sample_posts.json
+make ingest       # Trigger ingestion task manually
+make cluster      # Run clustering task manually
+make clean-data   # Truncate all data tables
+```
+
+### Testing
+
+```bash
+make test                                        # All tests
+make test-coverage                               # With HTML coverage report
+make test-file path=tests/test_api_auth.py       # Single file
+cd apps/web && npm test                          # Frontend unit tests
+cd apps/web && npm run test:e2e                  # Playwright E2E tests
+```
+
+> Tests marked `@pytest.mark.requires_db` are skipped locally unless `DATABASE_URL` points to a live Postgres instance. They always run in CI (GitHub Actions provides a Postgres service).
+
+### Code Quality
+
+```bash
+make lint         # Ruff linter
+make format       # Ruff auto-format
+cd apps/web && npm run lint    # ESLint (0 warnings policy)
+cd apps/web && npm run build   # TypeScript + Vite build check
 ```
 
 ---
 
-## 🚀 Usage Examples
+## API Overview
 
-### Example 1: View Top Clusters
+Full reference: [`docs/API_SPEC.md`](docs/API_SPEC.md)
 
-```bash
-curl -H "X-API-Key: dev-api-key" "http://localhost:8000/api/v1/clusters?sort_by=size&limit=5"
+Authentication options:
+
+- **API Key:** `X-API-Key: <key>` header (server-to-server)
+- **JWT Bearer:** `Authorization: Bearer <token>` (user sessions)
+
+Key endpoints:
+
 ```
+GET  /api/v1/clusters           List clusters (sort, filter, paginate)
+GET  /api/v1/clusters/{id}      Cluster detail with evidence
+GET  /api/v1/ideas              List ideas (search, filter)
+GET  /api/v1/analytics/summary  Aggregated platform metrics
 
-**Response:**
+POST /api/v1/auth/register      Create account
+POST /api/v1/auth/login         Exchange credentials for JWT
+GET  /api/v1/auth/me            Current user info
 
-```json
-{
-  "data": {
-    "clusters": [
-      {
-        "id": "...",
-        "label": "Book Reading & Progress Tracking",
-        "keywords": ["reading", "books", "progress", "tracking"],
-        "idea_count": 23,
-        "avg_sentiment": 0.58,
-        "trend_score": 0.82
-      }
-    ]
-  }
-}
-```
+GET  /api/v1/bookmarks          User's saved bookmarks
+POST /api/v1/bookmarks          Bookmark a cluster or idea
+DELETE /api/v1/bookmarks/{id}   Remove bookmark
 
-### Example 2: Search for Ideas
+GET  /api/v1/saved-searches     User's saved searches
+POST /api/v1/saved-searches     Create saved search with alert options
+DELETE /api/v1/saved-searches/{id}
 
-```bash
-curl -H "X-API-Key: dev-api-key" "http://localhost:8000/api/v1/ideas/search?q=budget+tracking"
-```
-
-### Example 3: Trigger Ingestion
-
-```bash
-curl -X POST -H "X-API-Key: dev-api-key" http://localhost:8000/api/v1/jobs/ingest
-```
-
-### Example 4: Real-Time Updates (JavaScript)
-
-```javascript
-const ws = new WebSocket('ws://localhost:8000/ws/updates');
-
-ws.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-
-  if (message.event === 'cluster_created') {
-    console.log('New opportunity:', message.data.label);
-  }
-};
+POST /api/v1/jobs/ingest        Trigger ingestion
+POST /api/v1/jobs/cluster       Trigger clustering
+GET  /health                    Health check
+GET  /metrics                   Prometheus metrics
 ```
 
 ---
 
-## 🎨 UI Screenshots
-
-### Dashboard
-
-![Dashboard](docs/assets/dashboard.png)
-*Overview with stats, trending clusters, and recent activity*
-
-### Cluster Detail
-
-![Cluster Detail](docs/assets/cluster-detail.png)
-*Evidence links, keywords, sentiment, and trends*
-
-### Analytics
-
-![Analytics](docs/assets/analytics.png)
-*Time-series charts, domain breakdown, sentiment distribution*
-
----
-
-## 🧪 Testing
-
-### Run Test Suite
-
-```bash
-# All tests
-make test
-
-# With coverage report
-make test-coverage
-
-# Specific module
-pytest tests/unit/test_clustering.py -v
-```
-
-### Test Coverage
-
-Current coverage: **~16%** (unit tests only, integration tests require Docker)
-
-Key areas:
-
-- ✅ Security tests: 100% (14 tests)
-- ✅ Service layer tests: passing
-- ⚠️ Full integration tests require Docker environment
-
----
-
-## 🔍 How It Works
+## How It Works
 
 ### 1. Ingestion
 
-The system fetches posts from:
-
-- **RSS Feeds:** Hacker News, Product Hunt (configurable)
-- **Sample Data:** 100+ curated examples in `data/sample_posts.json`
-- **Future:** Reddit API, Twitter API, GitHub Issues
-
-Posts are deduplicated by URL hash and content fingerprinting.
+Posts are fetched from RSS feeds on a configurable schedule. Each post is deduplicated using a SHA-256 URL hash and fuzzy title matching before being stored.
 
 ### 2. Processing
 
-Each post is analyzed to extract:
+Each post is run through:
 
-- **Problem Statements:** "I wish there was an app for X"
-- **Sentiment:** Positive, neutral, or negative (VADER)
-- **Emotions:** Frustration, hope, urgency levels
-- **Domain:** Productivity, health, finance, etc.
-- **Quality Score:** Specificity + actionability (0-1)
+- **Idea extraction:** pattern matching for "I wish there was an app…" phrases
+- **Sentiment analysis:** VADER scores (compound, positive, negative, neutral)
+- **Domain tagging:** productivity, health, finance, etc.
+- **Quality scoring:** specificity × actionability → 0–1 float
 
 ### 3. Clustering
 
-Similar ideas are grouped using:
+Ideas are grouped using:
 
-- **TF-IDF Vectorization:** Convert text to numerical features
-- **HDBSCAN:** Density-based clustering (auto-detects cluster count)
-- **Keyword Extraction:** Top 10 terms per cluster
-- **Label Generation:** Human-readable cluster names
+1. **TF-IDF vectorization** (500 features, 1–3 grams, L2-normalized)
+2. **HDBSCAN** (min_cluster_size=2, euclidean distance) — auto-detects cluster count and handles noise
+3. **Keyword extraction:** top-10 TF-IDF terms per cluster
+4. **Quality scoring:** silhouette score + average sentiment + source diversity
 
-**Example Cluster:**
-
-```
-Label: "Budget & Expense Tracking"
-Keywords: [budget, expense, tracking, finance, spending, ...]
-Ideas: 23
-Avg Sentiment: 0.65 (positive)
-Trend: 0.82 (hot!)
-```
-
-### 4. API & UI
-
-- **FastAPI** serves REST endpoints and WebSockets
-- **React UI** displays clusters, ideas, and analytics
-- **Real-time updates** via WebSocket push notifications
+See [`docs/CLUSTERING.md`](docs/CLUSTERING.md) for the full algorithm breakdown.
 
 ---
 
-## 📊 Sample Data
-
-The `data/sample_posts.json` contains 100+ curated "I wish there was an app" examples across domains:
-
-- **Productivity:** Task managers, note-taking, habit trackers
-- **Health:** Fitness, nutrition, mental health
-- **Finance:** Budgeting, investing, expense tracking
-- **Social:** Networking, dating, community building
-- **Education:** Learning platforms, tutoring, skill development
-- **Entertainment:** Media discovery, recommendations, gaming
-
-Load it with:
+## Testing
 
 ```bash
-make seed
+# Backend
+make test                     # All tests (DB tests skip without live Postgres)
+make test-coverage            # HTML report at htmlcov/index.html
+
+# Frontend
+cd apps/web
+npm test                      # Vitest unit tests
+npm run test:coverage         # With coverage
+npm run test:e2e              # Playwright smoke + flow tests
 ```
 
----
-
-## 🌟 Adding New Data Sources
-
-See [DATA_SOURCES.md](docs/DATA_SOURCES.md) for detailed instructions.
-
-**Quick Example (RSS Feed):**
-
-1. Edit `.env`:
-
-```bash
-RSS_FEEDS=https://hnrss.org/newest,https://example.com/feed.xml
-```
-
-1. Restart worker:
-
-```bash
-docker-compose restart worker
-```
-
-1. Trigger ingestion:
-
-```bash
-make ingest
-```
-
-**Custom Source (API):**
-
-Create a new fetcher in `apps/worker/tasks/ingestion.py`:
-
-```python
-@celery_app.task
-def fetch_from_custom_api():
-    response = httpx.get('https://api.example.com/ideas')
-    posts = response.json()
-
-    for post in posts:
-        save_raw_post(
-            url=post['url'],
-            title=post['title'],
-            content=post['body'],
-            source='custom_api',
-            published_at=post['created_at']
-        )
-```
+CI runs both suites on every push. The backend job provides a Postgres 16 service container so all tests (including `requires_db`) execute in CI.
 
 ---
 
-## 🚧 Roadmap
+## Deployment
 
-### MVP (Current)
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for full instructions.
 
-- [x] RSS feed ingestion
-- [x] Sample data loader
-- [x] HDBSCAN clustering
-- [x] FastAPI backend
-- [x] React UI
-- [x] Real-time updates
-- [x] Docker Compose setup
+The project ships with:
 
-### Phase 2 (Next 2 months)
-
-- [ ] Reddit API integration
-- [ ] Twitter/X API integration
-- [ ] User authentication
-- [ ] Cluster voting/feedback
-- [ ] Email alerts for hot clusters
-- [ ] Export to PDF/CSV
-
-### Phase 3 (Q2 2026)
-
-- [ ] Competition analysis (auto-detect existing apps)
-- [ ] Market sizing estimates
-- [ ] GPT-4 cluster descriptions
-- [ ] Multi-language support
-- [ ] Public API with keys
-- [ ] Team collaboration features
-
-### Long-term
-
-- [ ] Mobile app (React Native)
-- [ ] Kubernetes deployment
-- [ ] Graph database (relationships)
-- [ ] ML model fine-tuning
-- [ ] Monetization (premium tier)
+- `railway.toml` for [Railway](https://railway.app) deployment
+- `vercel.json` for Vercel (frontend)
+- `api/` directory with a serverless-ready entrypoint
 
 ---
 
-## 🐛 Troubleshooting
+## Documentation
 
-### Containers won't start
-
-```bash
-# Check if ports are in use
-lsof -i :8000  # API
-lsof -i :5432  # PostgreSQL
-lsof -i :6379  # Redis
-
-# Kill conflicting processes or change ports in .env
-```
-
-### Database connection error
-
-```bash
-# Ensure PostgreSQL is running
-docker-compose ps postgres
-
-# Check logs
-docker-compose logs postgres
-
-# Restart
-docker-compose restart postgres
-```
-
-### No clusters appearing
-
-```bash
-# Check if data was seeded
-docker-compose exec api python -c "from app.models import RawPost; from app.database import SessionLocal; db = SessionLocal(); print(db.query(RawPost).count())"
-
-# Manually trigger clustering
-curl -X POST -H "X-API-Key: dev-api-key" http://localhost:8000/api/v1/jobs/recluster
-
-# Check worker logs
-docker-compose logs worker -f
-```
-
-### Slow clustering
-
-```bash
-# Reduce data size for testing
-# Edit data/sample_posts.json (keep first 20 entries)
-
-# Or adjust parameters in .env
-MIN_CLUSTER_SIZE=5  # Larger = faster but coarser
-```
+| File                                           | Contents                             |
+| ---------------------------------------------- | ------------------------------------ |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System design decisions              |
+| [`docs/API_SPEC.md`](docs/API_SPEC.md)         | Full API reference (21+ endpoints)   |
+| [`docs/SCHEMA.md`](docs/SCHEMA.md)             | Database schema and relationships    |
+| [`docs/CLUSTERING.md`](docs/CLUSTERING.md)     | HDBSCAN algorithm deep dive          |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)     | Production deployment guide          |
+| [`docs/TESTING.md`](docs/TESTING.md)           | Testing strategy and patterns        |
+| [`docs/MONITORING.md`](docs/MONITORING.md)     | Metrics, alerting, and observability |
 
 ---
 
-## 📄 License
+## Contributing
 
-MIT License - see [LICENSE](LICENSE) file for details.
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-**Quick steps:**
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing`)
-3. Commit your changes (`git commit -am 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing`)
-5. Open a Pull Request
+1. Fork the repo and create a feature branch
+2. Run `make dev` to start the stack
+3. Write tests for new behavior
+4. Ensure `make lint` and `make test` pass
+5. Open a pull request
 
 ---
 
-## 💬 Community & Support
+## License
 
-- **Issues:** [GitHub Issues](https://github.com/yourusername/app-idea-miner/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/yourusername/app-idea-miner/discussions)
-- **Email:** <support@app-idea-miner.com>
-- **Twitter:** [@AppIdeaMiner](https://twitter.com/AppIdeaMiner)
-
----
-
-## 🙏 Acknowledgments
-
-Inspired by:
-
-- **Brandwatch** - Social listening and analytics
-- **ProductGapHunt** - Idea validation tools
-- **Academic research** on app review mining and NLP
-
-Built with love using:
-
-- FastAPI, scikit-learn, HDBSCAN, React, and many more amazing open-source tools
-
----
-
-## 📈 Statistics
-
-- **Lines of Code:** ~15,000
-- **Test Coverage:** 85%
-- **Docker Images:** 4 (API, Worker, Web, Postgres)
-- **API Endpoints:** 25+
-- **UI Components:** 30+
-- **Supported Data Sources:** 3 (RSS, JSON, Sample)
-
----
-
-## 🎯 Goals
-
-Our mission is to **democratize opportunity discovery** by making it easy for anyone to:
-
-- Identify real user needs
-- Validate ideas with evidence
-- Understand market demand
-- Build products people actually want
-
-**Let's build the future together!** 🚀
-
----
-
-Made with ❤️ by Elizabeth Stein
+[MIT](LICENSE)

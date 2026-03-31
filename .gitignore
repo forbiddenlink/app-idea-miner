@@ -97,14 +97,21 @@ alembic.ini
 .vercel
 # Specter knowledge graph cache
 .specter/
-# Claude Code TypeScript cache
+# Claude Code
 .claude/tsc-cache/
-.history/
-# Claude Code local files
 .claude/settings.local.json
-# Session notes
+.claude/cache/
+.history/
+# Playwright MCP
+.playwright-mcp/
+# Session notes (local only)
 thoughts/
+# Screenshots / local assets
 *.png
 # Build output
 .next/
 out/
+# Coverage reports
+htmlcov/
+coverage/
+.nyc_output/

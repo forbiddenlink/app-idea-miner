@@ -5,6 +5,7 @@ Provides ability to trigger background tasks and check their status.
 """
 
 import logging
+from typing import Annotated
 
 from celery import Celery
 from celery.exceptions import CeleryError
@@ -16,6 +17,11 @@ from pydantic import BaseModel
 from apps.api.app.config import get_settings
 from apps.api.app.core.rate_limit import RateLimiter
 from apps.api.app.core.security import get_api_key
+from apps.api.app.schemas.jobs import (
+    JobCancelResponse,
+    JobQueuedResponse,
+    JobStatusResponse,
+)
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -47,9 +53,13 @@ class ReclusterJobRequest(BaseModel):
     force: bool = True
 
 
-@router.post("/ingest")
+@router.post(
+    "/ingest",
+    response_model=JobQueuedResponse,
+    responses={400: {"description": "Bad request"}},
+)
 async def trigger_ingestion(
-    request: IngestJobRequest = Body(default=IngestJobRequest()),
+    request: Annotated[IngestJobRequest, Body()] = IngestJobRequest(),
 ):
     """
     Trigger a new ingestion job.
@@ -89,9 +99,9 @@ class ProcessJobRequest(BaseModel):
     min_quality: float = 0.3
 
 
-@router.post("/process")
+@router.post("/process", response_model=JobQueuedResponse)
 async def trigger_processing(
-    request: ProcessJobRequest = Body(default=ProcessJobRequest()),
+    request: Annotated[ProcessJobRequest, Body()] = ProcessJobRequest(),
 ):
     """
     Trigger processing of raw posts into ideas.
@@ -122,9 +132,9 @@ async def trigger_processing(
     }
 
 
-@router.post("/recluster")
+@router.post("/recluster", response_model=JobQueuedResponse)
 async def trigger_reclustering(
-    request: ReclusterJobRequest = Body(default=ReclusterJobRequest()),
+    request: Annotated[ReclusterJobRequest, Body()] = ReclusterJobRequest(),
 ):
     """
     Trigger re-clustering of all ideas.
@@ -157,7 +167,14 @@ async def trigger_reclustering(
     }
 
 
-@router.get("/{job_id}")
+@router.get(
+    "/{job_id}",
+    response_model=JobStatusResponse,
+    responses={
+        503: {"description": "Message broker unavailable"},
+        500: {"description": "Failed to check job status"},
+    },
+)
 async def get_job_status(job_id: str):
     """
     Check the status of a background job.
@@ -226,7 +243,14 @@ async def get_job_status(job_id: str):
         raise HTTPException(status_code=500, detail="Failed to check job status")
 
 
-@router.delete("/{job_id}")
+@router.delete(
+    "/{job_id}",
+    response_model=JobCancelResponse,
+    responses={
+        503: {"description": "Message broker unavailable"},
+        500: {"description": "Failed to cancel job"},
+    },
+)
 async def cancel_job(job_id: str):
     """
     Cancel a running or pending job.

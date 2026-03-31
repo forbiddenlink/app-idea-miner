@@ -8,7 +8,8 @@ import csv
 import io
 import json
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
@@ -157,11 +158,17 @@ _EXPORTERS = {
 }
 
 
-@router.get("/{export_type}")
+@router.get(
+    "/{export_type}",
+    response_class=StreamingResponse,
+    responses={400: {"description": "Invalid export type"}},
+)
 async def export_data(
     export_type: str,
-    format: str = Query("json", pattern="^(csv|json)$", description="Export format"),
-    db: AsyncSession = Depends(get_db),
+    format: Annotated[
+        str, Query(description="Export format", pattern="^(csv|json)$")
+    ] = "json",
+    db: Annotated[AsyncSession, Depends(get_db)] = ...,
 ):
     """
     Export clusters, ideas, or posts as CSV or JSON file download.
@@ -177,7 +184,7 @@ async def export_data(
         )
 
     rows, fields = await exporter(db)
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     filename = f"{export_type}_{timestamp}"
 
     if format == "csv":

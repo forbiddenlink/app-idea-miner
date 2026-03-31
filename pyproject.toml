@@ -43,6 +43,7 @@ dev = [
     "vaderSentiment>=3.3.2",
     "greenlet>=3.3.0",
     "alembic>=1.18.0",
+    "feedparser>=6.0.0",
 ]
 
 [tool.ruff]
@@ -87,4 +88,8 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 asyncio_mode = "auto"
-addopts = "-v --cov=apps --cov=packages --cov-report=html --cov-report=term-missing"
+# Coverage is opt-in: run with `make test` (which passes --cov) or
+# `pytest --cov=apps --cov=packages` manually.  Plain `pytest` works without
+# pytest-cov being on PATH, which avoids "unrecognized arguments" errors in
+# environments where only the venv python is available.
+addopts = "-v -p no:cov"
