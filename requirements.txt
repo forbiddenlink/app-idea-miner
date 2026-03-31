@@ -303,7 +303,7 @@ regex==2026.1.15
     # via
     #   nltk
     #   transformers
-requests==2.32.5
+requests==2.33.0
     # via
     #   update-checker
     #   vadersentiment
