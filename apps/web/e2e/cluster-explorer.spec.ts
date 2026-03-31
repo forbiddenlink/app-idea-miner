@@ -112,8 +112,53 @@ async function mockClustersApi(page: Page) {
   });
 }
 
+async function mockBookmarksApi(page: Page) {
+  await page.route('**/api/v1/bookmarks**', async (route) => {
+    const request = route.request();
+    const requestUrl = new URL(request.url());
+
+    if (request.method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          bookmarks: [],
+          pagination: {
+            total: 0,
+            limit: Number(requestUrl.searchParams.get('limit') ?? '20'),
+            offset: Number(requestUrl.searchParams.get('offset') ?? '0'),
+            has_more: false,
+          },
+        }),
+      });
+      return;
+    }
+
+    if (request.method() === 'POST') {
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, message: 'Bookmark saved' }),
+      });
+      return;
+    }
+
+    if (request.method() === 'DELETE') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, message: 'Bookmark removed', deleted: 0 }),
+      });
+      return;
+    }
+
+    await route.continue();
+  });
+}
+
 test.beforeEach(async ({ page }) => {
   await mockClustersApi(page);
+  await mockBookmarksApi(page);
 });
 
 test('cluster filters update URL and clear-all resets back to defaults', async ({ page }) => {
@@ -122,7 +167,7 @@ test('cluster filters update URL and clear-all resets back to defaults', async (
   await expect(page.getByRole('heading', { name: 'Explore Clusters' })).toBeVisible();
   await expect(page.getByRole('heading', { name: /^General Cluster 30$/ })).toBeVisible();
 
-  await page.getByPlaceholder('Search clusters by keyword...').fill('budget');
+  await page.getByRole('textbox', { name: 'Search clusters by keyword' }).fill('budget');
   await page.getByRole('button', { name: 'Go' }).click();
 
   await expect
@@ -161,7 +206,7 @@ test('cluster pagination keeps previous page rendered while next page fetches', 
 
   await page.getByRole('button', { name: 'Next' }).click();
 
-  await expect(page.getByText('Updating clusters...')).toBeVisible();
+  await expect(page.getByText(/Updating clusters/)).toBeVisible();
   await expect(page.getByRole('heading', { name: /^General Cluster 30$/ })).toBeVisible();
 
   await expect(page.getByRole('heading', { name: /^General Cluster 21$/ })).toBeVisible();

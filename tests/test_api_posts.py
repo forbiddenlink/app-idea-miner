@@ -3,6 +3,8 @@ from httpx import AsyncClient
 
 from apps.api.app.config import get_settings
 
+pytestmark = pytest.mark.requires_db
+
 settings = get_settings()
 API_KEY_HEADER = {"X-API-Key": settings.API_KEY}
 

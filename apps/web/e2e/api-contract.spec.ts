@@ -95,4 +95,32 @@ test.describe('Real API contract checks', () => {
 
     expect(response.status()).toBe(422);
   });
+
+  test('bookmarks list and clear endpoints return expected shape', async ({ request }) => {
+    const scopeKey = `contract-${Date.now()}`;
+
+    const listResponse = await request.get(`${apiBaseUrl}/api/v1/bookmarks`, {
+      headers: { 'X-API-Key': apiKey },
+      params: { scope_key: scopeKey, limit: 20, offset: 0 },
+    });
+
+    expect(listResponse.status()).toBe(200);
+    const listPayload = asObject(await listResponse.json());
+    expect(Array.isArray(listPayload.bookmarks)).toBe(true);
+    const pagination = asObject(listPayload.pagination);
+    expect(typeof pagination.total).toBe('number');
+    expect(typeof pagination.limit).toBe('number');
+    expect(typeof pagination.offset).toBe('number');
+    expect(typeof pagination.has_more).toBe('boolean');
+
+    const clearResponse = await request.delete(`${apiBaseUrl}/api/v1/bookmarks`, {
+      headers: { 'X-API-Key': apiKey },
+      params: { scope_key: scopeKey },
+    });
+
+    expect(clearResponse.status()).toBe(200);
+    const clearPayload = asObject(await clearResponse.json());
+    expect(typeof clearPayload.success).toBe('boolean');
+    expect(typeof clearPayload.deleted).toBe('number');
+  });
 });

@@ -23,6 +23,25 @@ TEST_DATABASE_URL = os.getenv(
 )
 
 
+def pytest_configure(config):
+    """Register custom marks."""
+    config.addinivalue_line(
+        "markers", "requires_db: mark test as requiring a live PostgreSQL connection"
+    )
+
+
+async def _check_db_available() -> bool:
+    """Return True if PostgreSQL is reachable."""
+    try:
+        engine = create_async_engine(ADMIN_DATABASE_URL, poolclass=NullPool)
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        await engine.dispose()
+        return True
+    except Exception:
+        return False
+
+
 @pytest.fixture(scope="session")
 def event_loop():
     """
@@ -66,7 +85,13 @@ async def db_engine():
     """
     Session-scoped database engine.
     Creates DB and tables once per session.
+    Skips automatically when PostgreSQL is not reachable.
     """
+    if not await _check_db_available():
+        pytest.skip(
+            "PostgreSQL not available – set ADMIN_DATABASE_URL to enable integration tests"
+        )
+
     await create_test_database()
 
     engine = create_async_engine(TEST_DATABASE_URL, poolclass=NullPool)

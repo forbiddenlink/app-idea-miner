@@ -3,6 +3,8 @@ from sqlalchemy import select
 
 from packages.core.models import IdeaCandidate, RawPost
 
+pytestmark = pytest.mark.requires_db
+
 
 @pytest.mark.asyncio
 async def test_create_raw_post(db_session):
