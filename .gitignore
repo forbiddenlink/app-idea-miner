@@ -91,7 +91,6 @@ temp/
 # UV
 # uv.lock is needed for reproducible builds on Railway/Docker
 # Alembic
-alembic.ini
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
 .vercel
