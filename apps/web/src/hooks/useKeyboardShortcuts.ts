@@ -49,8 +49,7 @@ export const useKeyboardShortcuts = () => {
         key: 'k',
         ctrlKey: true,
         action: () => {
-          // Open command palette (future feature)
-          console.log('Command palette (future feature)');
+          globalThis.dispatchEvent(new Event('app:command-palette-open'));
         },
         description: 'Open Command Palette',
       },
@@ -58,15 +57,7 @@ export const useKeyboardShortcuts = () => {
         key: '?',
         shiftKey: true,
         action: () => {
-          // Show keyboard shortcuts help (future feature)
-          alert(
-            'Keyboard Shortcuts:\n\n' +
-            'Alt + H - Dashboard\n' +
-            'Alt + C - Cluster Explorer\n' +
-            'Alt + A - Analytics\n' +
-            'Ctrl + / - Focus Search\n' +
-            'Esc - Clear Focus'
-          );
+          globalThis.dispatchEvent(new Event('app:keyboard-shortcuts-open'));
         },
         description: 'Show Keyboard Shortcuts',
       },

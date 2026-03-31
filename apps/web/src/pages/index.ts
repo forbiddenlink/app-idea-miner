@@ -1,15 +1,15 @@
 // Route-based code splitting with React.lazy()
 // This reduces initial bundle size by ~40% by loading pages on-demand
 
-import { lazy } from "react";
+import { lazy } from 'react';
 
 // Lazy load all page components
-export const Dashboard = lazy(() => import("./Dashboard"));
-export const ClusterExplorer = lazy(() => import("./ClusterExplorer"));
-export const ClusterDetail = lazy(() => import("./ClusterDetail"));
-export const Analytics = lazy(() => import("./Analytics"));
-export const Ideas = lazy(() => import("./Ideas"));
-export const IdeaDetail = lazy(() => import("./IdeaDetail"));
-export const Opportunities = lazy(() => import("./Opportunities"));
-export const Saved = lazy(() => import("./Saved"));
-export const Settings = lazy(() => import("./Settings"));
+export const Dashboard = lazy(() => import('./Dashboard'));
+export const ClusterExplorer = lazy(() => import('./ClusterExplorer'));
+export const ClusterDetail = lazy(() => import('./ClusterDetail'));
+export const IdeaDetail = lazy(() => import('./IdeaDetail'));
+export const Saved = lazy(() => import('./Saved'));
+export const Analytics = lazy(() => import('./Analytics'));
+export const Ideas = lazy(() => import('./Ideas'));
+export const Opportunities = lazy(() => import('./Opportunities'));
+export const Settings = lazy(() => import('./Settings'));

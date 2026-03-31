@@ -4,7 +4,7 @@
 export interface ExportData {
   filename: string;
   data: unknown;
-  format: 'csv' | 'json';
+  format: "csv" | "json";
 }
 
 /**
@@ -12,16 +12,26 @@ export interface ExportData {
  */
 export const exportAsJSON = (data: unknown, filename: string) => {
   const jsonString = JSON.stringify(data, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
+  const blob = new Blob([jsonString], { type: "application/json" });
   downloadBlob(blob, `${filename}.json`);
+};
+
+/** Serializes an unknown value to a CSV-safe string, avoiding [object Object] for plain objects. */
+const toCSVValue = (value: unknown): string => {
+  if (value == null) return "";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
 };
 
 /**
  * Download data as CSV file
  */
-export const exportAsCSV = (data: Record<string, unknown>[], filename: string) => {
+export const exportAsCSV = (
+  data: Record<string, unknown>[],
+  filename: string,
+) => {
   if (data.length === 0) {
-    console.warn('No data to export');
+    console.warn("No data to export");
     return;
   }
 
@@ -30,22 +40,28 @@ export const exportAsCSV = (data: Record<string, unknown>[], filename: string) =
 
   // Convert to CSV format
   const csvRows = [
-    headers.join(','), // Header row
-    ...data.map(row =>
-      headers.map(header => {
-        const value = row[header];
-        // Handle quotes and commas in values
-        const stringValue = String(value ?? '');
-        if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
-          return `"${stringValue.replace(/"/g, '""')}"`;
-        }
-        return stringValue;
-      }).join(',')
-    )
+    headers.join(","), // Header row
+    ...data.map((row) =>
+      headers
+        .map((header) => {
+          const value = row[header];
+          // Handle quotes and commas in values
+          const stringValue = toCSVValue(value);
+          if (
+            stringValue.includes(",") ||
+            stringValue.includes('"') ||
+            stringValue.includes("\n")
+          ) {
+            return `"${stringValue.replaceAll('"', '""')}"`;
+          }
+          return stringValue;
+        })
+        .join(","),
+    ),
   ];
 
-  const csvString = csvRows.join('\n');
-  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  const csvString = csvRows.join("\n");
+  const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
   downloadBlob(blob, `${filename}.csv`);
 };
 
@@ -54,34 +70,40 @@ export const exportAsCSV = (data: Record<string, unknown>[], filename: string) =
  */
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
   URL.revokeObjectURL(url);
 };
 
-import { Cluster, Idea, DomainStats, TrendDataPoint } from '@/types';
+import { Cluster, DomainStats, Idea, TrendDataPoint } from "@/types";
 
 /**
  * Export cluster evidence as CSV
  */
-export const exportClusterEvidence = (cluster: Cluster, evidence: Idea[], format: 'csv' | 'json' = 'csv') => {
-  const filename = `cluster-${cluster.label.replace(/\s+/g, '-').toLowerCase()}-evidence`;
+export const exportClusterEvidence = (
+  cluster: Cluster,
+  evidence: Idea[],
+  format: "csv" | "json" = "csv",
+) => {
+  const filename = `cluster-${cluster.label.replaceAll(/\s+/g, "-").toLowerCase()}-evidence`;
 
-  if (format === 'json') {
+  if (format === "json") {
     exportAsJSON({ cluster, evidence }, filename);
   } else {
-    const csvData = evidence.map(idea => ({
-      'Problem Statement': idea.problem_statement,
-      'Sentiment': idea.sentiment,
-      'Sentiment Score': idea.sentiment_score.toFixed(2),
-      'Quality Score': idea.quality_score.toFixed(2),
-      'Domain': idea.domain || 'N/A',
-      'Source URL': idea.source_url || 'N/A',
-      'Extracted Date': idea.extracted_at ? new Date(idea.extracted_at).toLocaleDateString() : 'N/A',
+    const csvData = evidence.map((idea) => ({
+      "Problem Statement": idea.problem_statement,
+      Sentiment: idea.sentiment,
+      "Sentiment Score": idea.sentiment_score.toFixed(2),
+      "Quality Score": idea.quality_score.toFixed(2),
+      Domain: idea.domain || "N/A",
+      "Source URL": idea.source_url || "N/A",
+      "Extracted Date": idea.extracted_at
+        ? new Date(idea.extracted_at).toLocaleDateString()
+        : "N/A",
     }));
     exportAsCSV(csvData, filename);
   }
@@ -90,16 +112,19 @@ export const exportClusterEvidence = (cluster: Cluster, evidence: Idea[], format
 /**
  * Export analytics domain breakdown as CSV
  */
-export const exportDomainBreakdown = (domains: DomainStats[], format: 'csv' | 'json' = 'csv') => {
-  const filename = `domain-breakdown-${new Date().toISOString().split('T')[0]}`;
+export const exportDomainBreakdown = (
+  domains: DomainStats[],
+  format: "csv" | "json" = "csv",
+) => {
+  const filename = `domain-breakdown-${new Date().toISOString().split("T")[0]}`;
 
-  if (format === 'json') {
+  if (format === "json") {
     exportAsJSON(domains, filename);
   } else {
-    const csvData = domains.map(d => ({
-      'Domain': d.domain,
-      'Idea Count': d.idea_count,
-      'Percentage': `${d.percentage}%`,
+    const csvData = domains.map((d) => ({
+      Domain: d.domain,
+      "Idea Count": d.idea_count,
+      Percentage: `${d.percentage}%`,
     }));
     exportAsCSV(csvData, filename);
   }
@@ -108,16 +133,20 @@ export const exportDomainBreakdown = (domains: DomainStats[], format: 'csv' | 'j
 /**
  * Export trend data as CSV
  */
-export const exportTrendData = (trends: TrendDataPoint[], metric: string, format: 'csv' | 'json' = 'csv') => {
-  const filename = `trends-${metric}-${new Date().toISOString().split('T')[0]}`;
+export const exportTrendData = (
+  trends: TrendDataPoint[],
+  metric: string,
+  format: "csv" | "json" = "csv",
+) => {
+  const filename = `trends-${metric}-${new Date().toISOString().split("T")[0]}`;
 
-  if (format === 'json') {
+  if (format === "json") {
     exportAsJSON(trends, filename);
   } else {
-    const csvData = trends.map(t => ({
-      'Date': t.date,
-      'Value': t.value,
-      'Average Sentiment': t.avg_sentiment ? t.avg_sentiment.toFixed(2) : 'N/A',
+    const csvData = trends.map((t) => ({
+      Date: t.date,
+      Value: t.value,
+      "Average Sentiment": t.avg_sentiment ? t.avg_sentiment.toFixed(2) : "N/A",
     }));
     exportAsCSV(csvData, filename);
   }

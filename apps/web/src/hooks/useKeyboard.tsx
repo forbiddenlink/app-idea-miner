@@ -124,22 +124,18 @@ export const KeyboardShortcutsDialog = ({ isOpen, onClose }: { isOpen: boolean; 
   ];
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-    <div
-      className="fixed inset-0 bg-background/50 flex items-center justify-center z-50 backdrop-blur-sm"
-      onClick={onClose}
-      onKeyDown={(e) => e.key === 'Escape' && onClose()}
-      tabIndex={-1}
-      role="dialog"
-      aria-labelledby="shortcuts-title"
-      aria-modal="true"
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+      <button
+        type="button"
+        className="absolute inset-0"
+        onClick={onClose}
+        aria-label="Close keyboard shortcuts dialog"
+      />
       <div
-        className="bg-card rounded-lg p-6 max-w-md w-full mx-4 shadow-xl border border-border"
-        onClick={(e) => e.stopPropagation()}
-        role="button"
-        tabIndex={0}
-        onKeyDown={() => { }}
+        className="relative bg-card rounded-lg p-6 max-w-md w-full mx-4 shadow-xl border border-border"
+        role="dialog"
+        aria-labelledby="shortcuts-title"
+        aria-modal="true"
       >
         <h2 id="shortcuts-title" className="text-xl font-bold text-foreground mb-4">
           Keyboard Shortcuts

@@ -1,21 +1,39 @@
-import { useEffect, useState } from 'react';
-import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import { Search, RotateCw } from 'lucide-react';
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { RotateCw, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
-import { apiClient } from '@/services/api';
-import { Cluster } from '@/types';
-import ClusterCard from '@/components/ClusterCard';
-import DataFreshness from '@/components/DataFreshness';
-import { useRefreshSettings } from './Settings';
-import { FilterSidebar } from '@/components/FilterSidebar';
-import { EmptyClusterList, EmptySearchResults } from '@/components/EmptyStates';
-import { ExportButton } from '@/components/ExportButton';
-import { FilterChips, useFilterChips, type FilterChip } from '@/components/FilterChips';
-import { Button } from '@/components/ui/button';
+import ClusterCard from "@/components/ClusterCard";
+import DataFreshness from "@/components/DataFreshness";
+import {
+  EmptyClusterList,
+  EmptySearchResults,
+  ErrorState,
+} from "@/components/EmptyStates";
+import { ExportButton } from "@/components/ExportButton";
+import {
+  FilterChips,
+  useFilterChips,
+  type FilterChip,
+} from "@/components/FilterChips";
+import { FilterSidebar } from "@/components/FilterSidebar";
+import { Button } from "@/components/ui/button";
+import { apiClient } from "@/services/api";
+import { Cluster } from "@/types";
+import { useRefreshSettings } from "./Settings";
 
-const validSortBy = new Set(['size', 'quality', 'sentiment', 'trend', 'created_at']);
-const validOrder = new Set(['asc', 'desc']);
+const validSortBy = new Set([
+  "size",
+  "quality",
+  "sentiment",
+  "trend",
+  "created_at",
+]);
+const validOrder = new Set(["asc", "desc"]);
 
 const parsePositiveInt = (value: string | null): number | undefined => {
   if (!value) return undefined;
@@ -24,40 +42,43 @@ const parsePositiveInt = (value: string | null): number | undefined => {
 };
 
 const parseNonNegativeInt = (value: string | null, fallback = 0): number => {
-  const parsed = Number.parseInt(value || '', 10);
+  const parsed = Number.parseInt(value || "", 10);
   if (!Number.isFinite(parsed) || parsed < 0) return fallback;
   return parsed;
 };
 
 export default function ClusterExplorer() {
-  const { enabled: autoRefresh, interval: refreshInterval } = useRefreshSettings()
-  const queryClient = useQueryClient()
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const { enabled: autoRefresh, interval: refreshInterval } =
+    useRefreshSettings();
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || "",
+  );
 
   // Get filter params from URL
-  const sortByRaw = searchParams.get('sort_by');
-  const orderRaw = searchParams.get('order');
-  const sortBy = sortByRaw && validSortBy.has(sortByRaw) ? sortByRaw : 'size';
-  const order = orderRaw && validOrder.has(orderRaw) ? orderRaw : 'desc';
-  const minSize = parsePositiveInt(searchParams.get('min_size'));
-  const activeSearch = searchParams.get('search')?.trim() || '';
+  const sortByRaw = searchParams.get("sort_by");
+  const orderRaw = searchParams.get("order");
+  const sortBy = sortByRaw && validSortBy.has(sortByRaw) ? sortByRaw : "size";
+  const order = orderRaw && validOrder.has(orderRaw) ? orderRaw : "desc";
+  const minSize = parsePositiveInt(searchParams.get("min_size"));
+  const activeSearch = searchParams.get("search")?.trim() || "";
   const limit = 20;
-  const offset = parseNonNegativeInt(searchParams.get('offset'));
+  const offset = parseNonNegativeInt(searchParams.get("offset"));
 
   const handleRefresh = async () => {
-    setIsRefreshing(true)
-    await queryClient.invalidateQueries({ queryKey: ['clusters'] })
-    setTimeout(() => setIsRefreshing(false), 1000)
-  }
+    setIsRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ["clusters"] });
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
 
   const updateParam = (
     key: string,
     value: string | undefined,
-    options: { resetOffset?: boolean } = {}
+    options: { resetOffset?: boolean } = {},
   ) => {
-    const { resetOffset = true } = options
+    const { resetOffset = true } = options;
     const newParams = new URLSearchParams(searchParams);
     if (value) {
       newParams.set(key, value);
@@ -65,7 +86,7 @@ export default function ClusterExplorer() {
       newParams.delete(key);
     }
     if (resetOffset) {
-      newParams.set('offset', '0');
+      newParams.set("offset", "0");
     }
     setSearchParams(newParams);
   };
@@ -79,11 +100,11 @@ export default function ClusterExplorer() {
     dataUpdatedAt,
     isRefetching,
   } = useQuery({
-    queryKey: ['clusters', sortBy, order, minSize, activeSearch, offset],
+    queryKey: ["clusters", sortBy, order, minSize, activeSearch, offset],
     queryFn: async () => {
       const res = await apiClient.getClusters({
         sort_by: sortBy,
-        order: order as 'asc' | 'desc',
+        order: order as "asc" | "desc",
         min_size: minSize,
         q: activeSearch || undefined,
         limit,
@@ -97,15 +118,17 @@ export default function ClusterExplorer() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    updateParam('search', searchQuery || undefined);
+    updateParam("search", searchQuery || undefined);
   };
 
   const handleNextPage = () => {
-    updateParam('offset', (offset + limit).toString(), { resetOffset: false });
+    updateParam("offset", (offset + limit).toString(), { resetOffset: false });
   };
 
   const handlePrevPage = () => {
-    updateParam('offset', Math.max(0, offset - limit).toString(), { resetOffset: false });
+    updateParam("offset", Math.max(0, offset - limit).toString(), {
+      resetOffset: false,
+    });
   };
 
   const hasPrevPage = offset > 0;
@@ -119,29 +142,29 @@ export default function ClusterExplorer() {
     setSearchQuery(activeSearch);
   }, [activeSearch]);
 
-  const { buildChips } = useFilterChips()
+  const { buildChips } = useFilterChips();
   const activeFilters: FilterChip[] = buildChips(
     {
-      sort_by: sortBy === 'size' ? undefined : sortBy,
-      order: order === 'desc' ? undefined : order,
+      sort_by: sortBy === "size" ? undefined : sortBy,
+      order: order === "desc" ? undefined : order,
       min_size: minSize,
-      search: searchParams.get('search'),
+      search: searchParams.get("search"),
     },
     {
-      sort_by: () => updateParam('sort_by', undefined),
-      order: () => updateParam('order', undefined),
-      min_size: () => updateParam('min_size', undefined),
+      sort_by: () => updateParam("sort_by", undefined),
+      order: () => updateParam("order", undefined),
+      min_size: () => updateParam("min_size", undefined),
       search: () => {
-        setSearchQuery('')
-        updateParam('search', undefined)
+        setSearchQuery("");
+        updateParam("search", undefined);
       },
-    }
-  )
+    },
+  );
 
   const clearAllFilters = () => {
-    setSearchParams({})
-    setSearchQuery('')
-  }
+    setSearchParams({});
+    setSearchQuery("");
+  };
 
   return (
     <div className="app-page">
@@ -149,7 +172,9 @@ export default function ClusterExplorer() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="section-kicker">Clusters</p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-bold">Explore Clusters</h1>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-bold">
+            Explore Clusters
+          </h1>
           <p className="mt-1 text-muted-foreground">
             Browse all opportunity clusters with advanced filtering and search
           </p>
@@ -166,7 +191,9 @@ export default function ClusterExplorer() {
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            <RotateCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RotateCw
+              className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
           <ExportButton type="clusters" data={clusters} />
@@ -189,8 +216,8 @@ export default function ClusterExplorer() {
             type="button"
             className="focus-ring absolute right-16 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
             onClick={() => {
-              setSearchQuery('')
-              updateParam('search', undefined)
+              setSearchQuery("");
+              updateParam("search", undefined);
             }}
           >
             Clear
@@ -211,10 +238,12 @@ export default function ClusterExplorer() {
           <FilterSidebar
             sortBy={sortBy}
             order={order}
-            onSortChange={(value: string) => updateParam('sort_by', value)}
-            onOrderChange={(value: string) => updateParam('order', value)}
+            onSortChange={(value: string) => updateParam("sort_by", value)}
+            onOrderChange={(value: string) => updateParam("order", value)}
             minSize={minSize}
-            onMinSizeChange={(value: number | undefined) => updateParam('min_size', value?.toString())}
+            onMinSizeChange={(value: number | undefined) =>
+              updateParam("min_size", value?.toString())
+            }
           />
         </aside>
 
@@ -223,7 +252,10 @@ export default function ClusterExplorer() {
           <FilterChips chips={activeFilters} onClearAll={clearAllFilters} />
 
           {showUpdating && (
-            <output aria-live="polite" className="inline-flex items-center rounded-xl border border-border/70 bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+            <output
+              aria-live="polite"
+              className="inline-flex items-center rounded-xl border border-border/70 bg-card px-3 py-1 text-xs font-medium text-muted-foreground"
+            >
               Updating clusters…
             </output>
           )}
@@ -231,15 +263,19 @@ export default function ClusterExplorer() {
           {showInitialLoading && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={`skeleton-cluster-${i}`} className="card h-64 animate-pulse bg-muted/45" />
+                <div
+                  key={`skeleton-cluster-${i}`}
+                  className="card h-64 animate-pulse bg-muted/45"
+                />
               ))}
             </div>
           )}
 
           {error && (
-            <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-destructive">
-              Failed to load clusters. Please try again.
-            </div>
+            <ErrorState
+              error="Failed to load clusters. Please try again."
+              onRetry={handleRefresh}
+            />
           )}
 
           {clusters.length > 0 && (
@@ -276,18 +312,17 @@ export default function ClusterExplorer() {
           )}
 
           {/* Empty State */}
-          {clusters.length === 0 && (
-            activeSearch || minSize ? (
+          {clusters.length === 0 &&
+            (activeSearch || minSize ? (
               <EmptySearchResults
                 onClearSearch={() => {
                   setSearchParams({});
-                  setSearchQuery('');
+                  setSearchQuery("");
                 }}
               />
             ) : (
               <EmptyClusterList />
-            )
-          )}
+            ))}
         </div>
       </div>
     </div>

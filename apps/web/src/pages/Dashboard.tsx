@@ -1,92 +1,116 @@
-import { useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Link } from "react-router-dom"
-import { motion } from "framer-motion"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import {
-  RefreshCw,
-  Play,
-  Sparkles,
+  ArrowRight,
+  Clock,
   Download,
   LightbulbIcon,
-  Clock,
-  ArrowRight,
-} from "lucide-react"
+  Play,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
-import { apiClient } from "@/services/api"
-import { Cluster, Opportunity } from "@/types"
-import StatCard from "@/components/StatCard"
-import ClusterCard from "@/components/ClusterCard"
-import DataFreshness from "@/components/DataFreshness"
-import { useRefreshSettings } from "./Settings"
-import { EmptyClusterList } from "@/components/EmptyStates"
-import { Button } from "@/components/ui/button"
-import { useGlobalToast } from "@/contexts/ToastContext"
+import ClusterCard from "@/components/ClusterCard";
+import DataFreshness from "@/components/DataFreshness";
+import { EmptyClusterList, ErrorState } from "@/components/EmptyStates";
+import StatCard from "@/components/StatCard";
+import { Button } from "@/components/ui/button";
+import { useGlobalToast } from "@/contexts/ToastContext";
+import { apiClient } from "@/services/api";
+import { Cluster, Opportunity } from "@/types";
+import { useRefreshSettings } from "./Settings";
 
 function getGradeColor(grade: string): string {
   switch (grade) {
-    case "A": return "text-grade-a"
-    case "B": return "text-grade-b"
-    case "C": return "text-grade-c"
-    case "D": return "text-grade-d"
-    case "F": return "text-grade-f"
-    default: return "text-muted-foreground"
+    case "A":
+      return "text-grade-a";
+    case "B":
+      return "text-grade-b";
+    case "C":
+      return "text-grade-c";
+    case "D":
+      return "text-grade-d";
+    case "F":
+      return "text-grade-f";
+    default:
+      return "text-muted-foreground";
   }
 }
 
 function getGradeBg(grade: string): string {
   switch (grade) {
-    case "A": return "bg-grade-a/10 border-grade-a/20"
-    case "B": return "bg-grade-b/10 border-grade-b/20"
-    case "C": return "bg-grade-c/10 border-grade-c/20"
-    case "D": return "bg-grade-d/10 border-grade-d/20"
-    case "F": return "bg-grade-f/10 border-grade-f/20"
-    default: return "bg-muted/10"
+    case "A":
+      return "bg-grade-a/10 border-grade-a/20";
+    case "B":
+      return "bg-grade-b/10 border-grade-b/20";
+    case "C":
+      return "bg-grade-c/10 border-grade-c/20";
+    case "D":
+      return "bg-grade-d/10 border-grade-d/20";
+    case "F":
+      return "bg-grade-f/10 border-grade-f/20";
+    default:
+      return "bg-muted/10";
   }
 }
 
 function timeAgo(dateString: string | null | undefined): string {
-  if (!dateString) return ""
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  if (diffMins < 1) return "just now"
-  if (diffMins < 60) return `${diffMins}m ago`
-  const diffHours = Math.floor(diffMins / 60)
-  if (diffHours < 24) return `${diffHours}h ago`
-  const diffDays = Math.floor(diffHours / 24)
-  if (diffDays < 7) return `${diffDays}d ago`
-  return date.toLocaleDateString()
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
 }
 
 function getSentimentTrend(value: number): "up" | "down" | "neutral" {
-  if (value > 0) return "up"
-  if (value < 0) return "down"
-  return "neutral"
+  if (value > 0) return "up";
+  if (value < 0) return "down";
+  return "neutral";
 }
 
 interface StatItem {
-  name: string
-  value: string
-  trend?: "up" | "down" | "neutral"
-  trendValue?: string
-  change?: string
+  name: string;
+  value: string;
+  trend?: "up" | "down" | "neutral";
+  trendValue?: string;
+  change?: string;
 }
 
-function buildStats(summary: ReturnType<typeof apiClient.getAnalyticsSummary> extends Promise<infer T> ? T : never): StatItem[] {
+function buildStats(
+  summary: ReturnType<typeof apiClient.getAnalyticsSummary> extends Promise<
+    infer T
+  >
+    ? T
+    : never,
+): StatItem[] {
   return [
     {
       name: "Total Clusters",
       value: summary.overview.total_clusters.toString(),
       trend: summary.trending.new_clusters_this_week > 0 ? "up" : "neutral",
-      trendValue: summary.trending.new_clusters_this_week > 0 ? `+${summary.trending.new_clusters_this_week}` : undefined,
+      trendValue:
+        summary.trending.new_clusters_this_week > 0
+          ? `+${summary.trending.new_clusters_this_week}`
+          : undefined,
       change: "this week",
     },
     {
       name: "Ideas Analyzed",
       value: summary.overview.total_ideas.toString(),
       trend: summary.trending.new_ideas_today > 0 ? "up" : "neutral",
-      trendValue: summary.trending.new_ideas_today > 0 ? `+${summary.trending.new_ideas_today}` : undefined,
+      trendValue:
+        summary.trending.new_ideas_today > 0
+          ? `+${summary.trending.new_ideas_today}`
+          : undefined,
       change: "today",
     },
     {
@@ -100,10 +124,24 @@ function buildStats(summary: ReturnType<typeof apiClient.getAnalyticsSummary> ex
       trend: getSentimentTrend(summary.overview.avg_sentiment),
       change: `${summary.sentiment_distribution.positive} positive`,
     },
-  ]
+  ];
 }
 
-function StatsGrid({ summary, isLoading }: Readonly<{ summary: (ReturnType<typeof apiClient.getAnalyticsSummary> extends Promise<infer T> ? T : never) | undefined; isLoading: boolean }>) {
+function StatsGrid({
+  summary,
+  isLoading,
+  error,
+  onRetry,
+}: Readonly<{
+  summary:
+    | (ReturnType<typeof apiClient.getAnalyticsSummary> extends Promise<infer T>
+        ? T
+        : never)
+    | undefined;
+  isLoading: boolean;
+  error: Error | null;
+  onRetry?: () => void;
+}>) {
   if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -111,10 +149,19 @@ function StatsGrid({ summary, isLoading }: Readonly<{ summary: (ReturnType<typeo
           <div key={id} className="card h-32 animate-pulse bg-muted/45" />
         ))}
       </div>
-    )
+    );
   }
 
-  const stats = summary ? buildStats(summary) : []
+  if (error) {
+    return (
+      <ErrorState
+        error="Failed to load dashboard stats. Please try again."
+        onRetry={onRetry}
+      />
+    );
+  }
+
+  const stats = summary ? buildStats(summary) : [];
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -122,10 +169,13 @@ function StatsGrid({ summary, isLoading }: Readonly<{ summary: (ReturnType<typeo
         <StatCard key={stat.name} {...stat} />
       ))}
     </div>
-  )
+  );
 }
 
-function TrendingClusters({ clusters, isLoading }: Readonly<{ clusters: Cluster[] | undefined; isLoading: boolean }>) {
+function TrendingClusters({
+  clusters,
+  isLoading,
+}: Readonly<{ clusters: Cluster[] | undefined; isLoading: boolean }>) {
   if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -133,7 +183,7 @@ function TrendingClusters({ clusters, isLoading }: Readonly<{ clusters: Cluster[
           <div key={id} className="card h-48 animate-pulse bg-muted/45" />
         ))}
       </div>
-    )
+    );
   }
 
   if (!clusters || clusters.length === 0) {
@@ -143,7 +193,7 @@ function TrendingClusters({ clusters, isLoading }: Readonly<{ clusters: Cluster[
           <EmptyClusterList />
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -152,80 +202,92 @@ function TrendingClusters({ clusters, isLoading }: Readonly<{ clusters: Cluster[
         <ClusterCard key={cluster.id} cluster={cluster} />
       ))}
     </div>
-  )
+  );
 }
 
 export default function Dashboard() {
-  const queryClient = useQueryClient()
-  const toast = useGlobalToast()
-  const { enabled: autoRefresh, interval: refreshInterval } = useRefreshSettings()
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const queryClient = useQueryClient();
+  const toast = useGlobalToast();
+  const { enabled: autoRefresh, interval: refreshInterval } =
+    useRefreshSettings();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
-    setIsRefreshing(true)
+    setIsRefreshing(true);
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["analytics", "summary"] }),
       queryClient.invalidateQueries({ queryKey: ["clusters"] }),
       queryClient.invalidateQueries({ queryKey: ["opportunities"] }),
       queryClient.invalidateQueries({ queryKey: ["ideas", "recent"] }),
-    ])
-    setTimeout(() => setIsRefreshing(false), 1000)
-  }
+    ]);
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
 
   // Queries with auto-refresh polling
-  const { data: summary, isLoading: summaryLoading, dataUpdatedAt: summaryUpdatedAt, isRefetching: summaryRefetching } = useQuery({
+  const {
+    data: summary,
+    isLoading: summaryLoading,
+    error: summaryError,
+    dataUpdatedAt: summaryUpdatedAt,
+    isRefetching: summaryRefetching,
+  } = useQuery({
     queryKey: ["analytics", "summary"],
     queryFn: () => apiClient.getAnalyticsSummary(),
     refetchInterval: autoRefresh ? refreshInterval : false,
-  })
+  });
 
   const { data: clustersData, isLoading: clustersLoading } = useQuery({
     queryKey: ["clusters", { sort_by: "trend", limit: 6 }],
     queryFn: async () => {
-      const res = await apiClient.getClusters({ sort_by: "trend", order: "desc", limit: 6 })
-      return res.clusters
+      const res = await apiClient.getClusters({
+        sort_by: "trend",
+        order: "desc",
+        limit: 6,
+      });
+      return res.clusters;
     },
     refetchInterval: autoRefresh ? refreshInterval * 2 : false,
-  })
+  });
 
   const { data: opportunitiesData } = useQuery({
     queryKey: ["opportunities", { sort_by: "score", limit: 3 }],
     queryFn: () => apiClient.getOpportunities({ sort_by: "score", limit: 3 }),
     refetchInterval: autoRefresh ? refreshInterval * 2 : false,
-  })
+  });
 
   const { data: recentIdeasData } = useQuery({
     queryKey: ["ideas", "recent"],
-    queryFn: () => apiClient.getIdeas({ sort_by: "date", order: "desc", limit: 5 }),
+    queryFn: () =>
+      apiClient.getIdeas({ sort_by: "date", order: "desc", limit: 5 }),
     refetchInterval: autoRefresh ? refreshInterval * 2 : false,
-  })
+  });
 
   // Mutations for quick actions
   const ingestMutation = useMutation({
     mutationFn: () => apiClient.triggerIngestion(),
     onSuccess: () => {
-      toast.success("Ingestion job started successfully!")
-      queryClient.invalidateQueries({ queryKey: ["analytics"] })
+      toast.success("Ingestion job started successfully!");
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
     },
     onError: () => {
-      toast.error("Failed to start ingestion. Check server status.")
+      toast.error("Failed to start ingestion. Check server status.");
     },
-  })
+  });
 
   const clusterMutation = useMutation({
     mutationFn: () => apiClient.triggerClustering(),
     onSuccess: () => {
-      toast.success("Clustering job started successfully!")
-      queryClient.invalidateQueries({ queryKey: ["clusters"] })
-      queryClient.invalidateQueries({ queryKey: ["opportunities"] })
+      toast.success("Clustering job started successfully!");
+      queryClient.invalidateQueries({ queryKey: ["clusters"] });
+      queryClient.invalidateQueries({ queryKey: ["opportunities"] });
     },
     onError: () => {
-      toast.error("Failed to start clustering. Check server status.")
+      toast.error("Failed to start clustering. Check server status.");
     },
-  })
+  });
 
-  const topOpportunities = opportunitiesData?.opportunities || []
-  const recentIdeas = recentIdeasData?.ideas || []
+  const topOpportunities = opportunitiesData?.opportunities || [];
+  const recentIdeas = recentIdeasData?.ideas || [];
 
   return (
     <div className="app-page">
@@ -252,14 +314,21 @@ export default function Dashboard() {
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <StatsGrid summary={summary} isLoading={summaryLoading} />
+      <StatsGrid
+        summary={summary}
+        isLoading={summaryLoading}
+        error={summaryError}
+        onRetry={handleRefresh}
+      />
 
       {/* Quick Actions */}
       <div className="card p-4">
@@ -271,7 +340,9 @@ export default function Dashboard() {
             onClick={() => ingestMutation.mutate()}
             disabled={ingestMutation.isPending}
           >
-            <Play className={`mr-2 h-4 w-4 ${ingestMutation.isPending ? "animate-pulse" : ""}`} />
+            <Play
+              className={`mr-2 h-4 w-4 ${ingestMutation.isPending ? "animate-pulse" : ""}`}
+            />
             {ingestMutation.isPending ? "Ingesting…" : "Run Ingestion"}
           </Button>
           <Button
@@ -280,7 +351,9 @@ export default function Dashboard() {
             onClick={() => clusterMutation.mutate()}
             disabled={clusterMutation.isPending}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${clusterMutation.isPending ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${clusterMutation.isPending ? "animate-spin" : ""}`}
+            />
             {clusterMutation.isPending ? "Clustering…" : "Re-cluster"}
           </Button>
           <Button asChild variant="outline" size="sm">
@@ -339,17 +412,24 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <div className="text-center flex-shrink-0">
-                    <div className={`text-xl font-bold ${getGradeColor(opp.opportunity_score.grade)}`}>
+                    <div
+                      className={`text-xl font-bold ${getGradeColor(opp.opportunity_score.grade)}`}
+                    >
                       {opp.opportunity_score.total}
                     </div>
-                    <div className={`text-xs font-semibold ${getGradeColor(opp.opportunity_score.grade)}`}>
+                    <div
+                      className={`text-xs font-semibold ${getGradeColor(opp.opportunity_score.grade)}`}
+                    >
                       Grade {opp.opportunity_score.grade}
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-1 mt-3">
                   {opp.keywords.slice(0, 3).map((kw) => (
-                    <span key={kw} className="rounded-md bg-background/70 px-1.5 py-0.5 text-xs text-muted-foreground">
+                    <span
+                      key={kw}
+                      className="rounded-md bg-background/70 px-1.5 py-0.5 text-xs text-muted-foreground"
+                    >
                       {kw}
                     </span>
                   ))}
@@ -380,7 +460,10 @@ export default function Dashboard() {
                   <LightbulbIcon className="h-3.5 w-3.5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <Link to={`/ideas/${idea.id}`} className="text-sm line-clamp-1 hover:text-primary transition-colors">
+                  <Link
+                    to={`/ideas/${idea.id}`}
+                    className="text-sm line-clamp-1 hover:text-primary transition-colors"
+                  >
                     {idea.problem_statement.length > 80
                       ? `${idea.problem_statement.slice(0, 80)}…`
                       : idea.problem_statement}
@@ -422,5 +505,5 @@ export default function Dashboard() {
         <TrendingClusters clusters={clustersData} isLoading={clustersLoading} />
       </div>
     </div>
-  )
+  );
 }

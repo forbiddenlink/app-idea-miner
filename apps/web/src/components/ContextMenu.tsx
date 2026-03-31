@@ -55,15 +55,6 @@ export function ContextMenu({ items, children, disabled = false }: Readonly<Cont
     openAtPosition(e.clientX, e.clientY)
   }
 
-  const handleContextMenuKeyDown = (e: React.KeyboardEvent) => {
-    if (disabled) return
-    if (e.shiftKey && e.key === 'F10') {
-      e.preventDefault()
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-      openAtPosition(rect.left + rect.width / 2, rect.top + rect.height / 2)
-    }
-  }
-
   const handleClose = () => {
     setIsOpen(false)
     setPosition(null)
@@ -101,8 +92,7 @@ export function ContextMenu({ items, children, disabled = false }: Readonly<Cont
   }, [isOpen])
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-    <div role="region" onContextMenu={handleContextMenu} onKeyDown={handleContextMenuKeyDown} className="relative">
+    <div onContextMenu={handleContextMenu} className="relative">
       {children}
 
       {isOpen && position && (
@@ -127,11 +117,12 @@ export function ContextMenu({ items, children, disabled = false }: Readonly<Cont
 
                 return (
                   <button
+                    type="button"
                     key={item.label}
                     onClick={() => handleItemClick(item.onClick)}
                     disabled={item.disabled}
                     className={cn(
-                      "flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-all duration-150",
+                      "flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-[padding,background-color,color] duration-150",
                       item.disabled && "cursor-not-allowed opacity-50",
                       !item.disabled && item.danger && "text-destructive hover:bg-destructive/10",
                       !item.disabled && !item.danger && "text-foreground hover:bg-muted",
@@ -156,6 +147,11 @@ export function ContextMenu({ items, children, disabled = false }: Readonly<Cont
 
 // Helper hook for common context menu actions
 export function useContextMenuActions() {
+  const toCsvCell = (value: unknown): string => {
+    const text = value == null ? '' : String(value)
+    return `"${text.replaceAll('"', '""')}"`
+  }
+
   const copyToClipboard = async (text: string, label: string = 'Text') => {
     try {
       await navigator.clipboard.writeText(text)
@@ -192,8 +188,8 @@ export function useContextMenuActions() {
 
   const exportAsCsv = (headers: string[], rows: unknown[][], filename: string) => {
     const csv = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      headers.map(toCsvCell).join(','),
+      ...rows.map(row => row.map(toCsvCell).join(','))
     ].join('\n')
 
     const blob = new Blob([csv], { type: 'text/csv' })
@@ -251,14 +247,16 @@ export function useClusterContextMenu(
     {
       label: 'Open in New Tab',
       icon: Copy,
-      onClick: () => window.open(url, '_blank'),
+      onClick: () => window.open(url, '_blank', 'noopener,noreferrer'),
       shortcut: '⌘⏎',
     },
   ]
 }
 
 export function useIdeaContextMenu(
-  idea: { id: string; problem_statement: string; source?: { url?: string } }
+  idea: { id: string; problem_statement: string; source?: { url?: string } },
+  onFavorite?: () => void,
+  isFavorited?: boolean
 ): ContextMenuItem[] {
   const { copyToClipboard, shareUrl } = useContextMenuActions()
   const url = `${globalThis.location.origin}/ideas/${idea.id}`
@@ -280,7 +278,7 @@ export function useIdeaContextMenu(
         {
           label: 'View Original Source',
           icon: Link,
-          onClick: () => window.open(sourceUrl, '_blank'),
+          onClick: () => window.open(sourceUrl, '_blank', 'noopener,noreferrer'),
         },
       ]
       : []),
@@ -289,6 +287,15 @@ export function useIdeaContextMenu(
       icon: Share2,
       onClick: () => void shareUrl(url, idea.problem_statement),
     },
+    ...(onFavorite
+      ? [
+        {
+          label: isFavorited ? 'Remove from Favorites' : 'Add to Favorites',
+          icon: Heart,
+          onClick: onFavorite,
+        },
+      ]
+      : []),
   ]
 }
 

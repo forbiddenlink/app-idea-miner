@@ -1,29 +1,30 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Download, Filter, Search, Sparkles, X } from 'lucide-react';
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { Download, Filter, Search, Sparkles, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
-import { Idea, IdeaQueryParams } from '@/types';
-import { apiClient as api } from '../services/api';
-import { IdeaCard } from '../components/IdeaCard';
-import { IdeaCardSkeleton as LoadingSkeleton } from '../components/LoadingSkeleton';
-import { useDebounce } from '@/hooks/useDebounce';
-import { Button } from '@/components/ui/button';
+import { ErrorState } from "@/components/EmptyStates";
+import { Button } from "@/components/ui/button";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Idea, IdeaQueryParams } from "@/types";
+import { IdeaCard } from "../components/IdeaCard";
+import { IdeaCardSkeleton as LoadingSkeleton } from "../components/LoadingSkeleton";
+import { apiClient as api } from "../services/api";
 
-const sentimentOptions = ['positive', 'neutral', 'negative'];
+const sentimentOptions = ["positive", "neutral", "negative"];
 const domainOptions = [
-  'productivity',
-  'health',
-  'finance',
-  'social',
-  'education',
-  'entertainment',
-  'other',
+  "productivity",
+  "health",
+  "finance",
+  "social",
+  "education",
+  "entertainment",
+  "other",
 ];
 
-type SortBy = 'quality' | 'date' | 'sentiment';
-type SortOrder = 'asc' | 'desc';
+type SortBy = "quality" | "date" | "sentiment";
+type SortOrder = "asc" | "desc";
 
 interface ResultsViewProps {
   showInitialLoading: boolean;
@@ -37,10 +38,20 @@ interface ResultsViewProps {
   isPlaceholderData: boolean;
   isFetching: boolean;
   clearAllFilters: () => void;
-  updateParam: (key: string, value: string | undefined, options?: { resetOffset?: boolean }) => void;
+  updateParam: (
+    key: string,
+    value: string | undefined,
+    options?: { resetOffset?: boolean },
+  ) => void;
+  onRetry?: () => void;
 }
 
-const parseBoundedNumber = (value: string | null, min: number, max: number, fallback: number): number => {
+const parseBoundedNumber = (
+  value: string | null,
+  min: number,
+  max: number,
+  fallback: number,
+): number => {
   if (value == null) return fallback;
   const parsed = Number.parseFloat(value);
   if (!Number.isFinite(parsed)) return fallback;
@@ -48,7 +59,7 @@ const parseBoundedNumber = (value: string | null, min: number, max: number, fall
 };
 
 const parseNonNegativeInt = (value: string | null, fallback = 0): number => {
-  const parsed = Number.parseInt(value || '', 10);
+  const parsed = Number.parseInt(value || "", 10);
   if (!Number.isFinite(parsed) || parsed < 0) return fallback;
   return parsed;
 };
@@ -71,13 +82,23 @@ function IdeasResultsView(props: Readonly<ResultsViewProps>) {
     isFetching,
     clearAllFilters,
     updateParam,
+    onRetry,
   } = props;
 
   if (showInitialLoading) {
+    const skeletonKeys = [
+      "idea-skeleton-1",
+      "idea-skeleton-2",
+      "idea-skeleton-3",
+      "idea-skeleton-4",
+      "idea-skeleton-5",
+      "idea-skeleton-6",
+    ];
+
     return (
       <div className="grid grid-cols-1 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <LoadingSkeleton key={`skeleton-idea-${i}`} />
+        {skeletonKeys.map((key) => (
+          <LoadingSkeleton key={key} />
         ))}
       </div>
     );
@@ -85,10 +106,10 @@ function IdeasResultsView(props: Readonly<ResultsViewProps>) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-8 text-center text-destructive">
-        <p className="font-medium mb-1">Failed to load ideas</p>
-        <p className="text-sm opacity-90">{error instanceof Error ? error.message : 'Unknown error'}</p>
-      </div>
+      <ErrorState
+        error="Failed to load ideas. Please try again."
+        onRetry={onRetry}
+      />
     );
   }
 
@@ -104,7 +125,8 @@ function IdeasResultsView(props: Readonly<ResultsViewProps>) {
         </div>
         <h3 className="mt-4 text-lg font-semibold">No ideas found</h3>
         <p className="mt-2 text-muted-foreground">
-          Try adjusting your filters or search query to find what you are looking for.
+          Try adjusting your filters or search query to find what you are
+          looking for.
         </p>
         <Button variant="outline" className="mt-4" onClick={clearAllFilters}>
           Clear Filters
@@ -124,7 +146,11 @@ function IdeasResultsView(props: Readonly<ResultsViewProps>) {
       <div className="flex items-center justify-between border-t pt-4">
         <Button
           variant="outline"
-          onClick={() => updateParam('offset', Math.max(0, offset - limit).toString(), { resetOffset: false })}
+          onClick={() =>
+            updateParam("offset", Math.max(0, offset - limit).toString(), {
+              resetOffset: false,
+            })
+          }
           disabled={!hasPrevPage || isFetching}
         >
           Previous
@@ -136,7 +162,11 @@ function IdeasResultsView(props: Readonly<ResultsViewProps>) {
 
         <Button
           variant="outline"
-          onClick={() => updateParam('offset', (offset + limit).toString(), { resetOffset: false })}
+          onClick={() =>
+            updateParam("offset", (offset + limit).toString(), {
+              resetOffset: false,
+            })
+          }
           disabled={!hasNextPage || isPlaceholderData || isFetching}
         >
           Next
@@ -153,43 +183,52 @@ export default function Ideas() {
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
   const limit = 20;
-  const activeSearch = searchParams.get('search')?.trim() || '';
-  const selectedSentiment = searchParams.get('sentiment') || '';
-  const selectedDomain = searchParams.get('domain') || '';
-  const minQuality = parseBoundedNumber(searchParams.get('min_quality'), 0, 1, 0);
-  const sortByRaw = searchParams.get('sort_by');
-  const sortOrderRaw = searchParams.get('order');
+  const activeSearch = searchParams.get("search")?.trim() || "";
+  const selectedSentiment = searchParams.get("sentiment") || "";
+  const selectedDomain = searchParams.get("domain") || "";
+  const minQuality = parseBoundedNumber(
+    searchParams.get("min_quality"),
+    0,
+    1,
+    0,
+  );
+  const sortByRaw = searchParams.get("sort_by");
+  const sortOrderRaw = searchParams.get("order");
   const sortBy: SortBy =
-    sortByRaw === 'date' || sortByRaw === 'sentiment' || sortByRaw === 'quality'
+    sortByRaw === "date" || sortByRaw === "sentiment" || sortByRaw === "quality"
       ? sortByRaw
-      : 'quality';
-  const sortOrder: SortOrder = sortOrderRaw === 'asc' || sortOrderRaw === 'desc' ? sortOrderRaw : 'desc';
-  const offset = parseNonNegativeInt(searchParams.get('offset'));
+      : "quality";
+  const sortOrder: SortOrder =
+    sortOrderRaw === "asc" || sortOrderRaw === "desc" ? sortOrderRaw : "desc";
+  const offset = parseNonNegativeInt(searchParams.get("offset"));
 
   const [searchQuery, setSearchQuery] = useState(activeSearch);
   const debouncedSearch = useDebounce(searchQuery, 350);
 
-  const updateParam = useCallback((
-    key: string,
-    value: string | undefined,
-    options: { resetOffset?: boolean } = {}
-  ) => {
-    const { resetOffset = true } = options;
-    const next = new URLSearchParams(searchParams);
-    if (value?.trim()) {
-      next.set(key, value.trim());
-    } else {
-      next.delete(key);
-    }
-    if (resetOffset) {
-      next.set('offset', '0');
-    }
-    setSearchParams(next);
-  }, [searchParams, setSearchParams]);
+  const updateParam = useCallback(
+    (
+      key: string,
+      value: string | undefined,
+      options: { resetOffset?: boolean } = {},
+    ) => {
+      const { resetOffset = true } = options;
+      const next = new URLSearchParams(searchParams);
+      if (value?.trim()) {
+        next.set(key, value.trim());
+      } else {
+        next.delete(key);
+      }
+      if (resetOffset) {
+        next.set("offset", "0");
+      }
+      setSearchParams(next);
+    },
+    [searchParams, setSearchParams],
+  );
 
   const clearAllFilters = () => {
     setSearchParams({});
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
   useEffect(() => {
@@ -198,7 +237,7 @@ export default function Ideas() {
 
   useEffect(() => {
     if (debouncedSearch === activeSearch) return;
-    updateParam('search', debouncedSearch || undefined);
+    updateParam("search", debouncedSearch || undefined);
   }, [debouncedSearch, activeSearch, updateParam]);
 
   useEffect(() => {
@@ -209,16 +248,16 @@ export default function Ideas() {
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setExportMenuOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleOutsideClick);
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
     return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, []);
 
@@ -228,9 +267,10 @@ export default function Ideas() {
     isFetching,
     isPlaceholderData,
     error,
+    refetch,
   } = useQuery({
     queryKey: [
-      'ideas',
+      "ideas",
       activeSearch,
       selectedSentiment,
       selectedDomain,
@@ -270,47 +310,53 @@ export default function Ideas() {
     !!selectedSentiment ||
     !!selectedDomain ||
     minQuality > 0 ||
-    sortBy !== 'quality' ||
-    sortOrder !== 'desc';
+    sortBy !== "quality" ||
+    sortOrder !== "desc";
   const showInitialLoading = isLoading && !ideasResponse;
   const showUpdating = isFetching && !showInitialLoading;
 
-  const handleExport = (format: 'json' | 'csv') => {
+  const handleExport = (format: "json" | "csv") => {
     if (!ideas.length) return;
     setExportMenuOpen(false);
 
-    if (format === 'json') {
+    if (format === "json") {
       const blob = new Blob([JSON.stringify(ideas, null, 2)], {
-        type: 'application/json',
+        type: "application/json",
       });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `ideas-page-${Math.floor(offset / limit) + 1}-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `ideas-page-${Math.floor(offset / limit) + 1}-${new Date().toISOString().split("T")[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
       return;
     }
 
-    const headers = ['Problem Statement', 'Sentiment', 'Quality Score', 'Domain', 'Date'];
+    const headers = [
+      "Problem Statement",
+      "Sentiment",
+      "Quality Score",
+      "Domain",
+      "Date",
+    ];
     const rows = ideas.map((idea: Idea) => [
-      idea.problem_statement || '',
-      idea.sentiment || '',
+      idea.problem_statement || "",
+      idea.sentiment || "",
       idea.quality_score || 0,
-      idea.domain || '',
+      idea.domain || "",
       new Date(idea.extracted_at).toLocaleDateString(),
     ]);
 
     const csv = [
-      headers.map(toCsvCell).join(','),
-      ...rows.map((row: (string | number)[]) => row.map(toCsvCell).join(',')),
-    ].join('\n');
+      headers.map(toCsvCell).join(","),
+      ...rows.map((row: (string | number)[]) => row.map(toCsvCell).join(",")),
+    ].join("\n");
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `ideas-page-${Math.floor(offset / limit) + 1}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `ideas-page-${Math.floor(offset / limit) + 1}-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -321,12 +367,17 @@ export default function Ideas() {
         <div>
           <p className="section-kicker">Ideas</p>
           <h1 className="mt-1 text-2xl sm:text-3xl font-bold">Ideas Browser</h1>
-          <p className="mt-1 text-muted-foreground">Explore extracted app ideas with server-side search and filters</p>
+          <p className="mt-1 text-muted-foreground">
+            Explore extracted app ideas with server-side search and filters
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setShowFilters((prev) => !prev)}>
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters((prev) => !prev)}
+          >
             <Filter className="mr-2 h-4 w-4" />
-            {showFilters ? 'Hide' : 'Show'} Filters
+            {showFilters ? "Hide" : "Show"} Filters
           </Button>
 
           <div ref={exportMenuRef} className="relative">
@@ -346,12 +397,14 @@ export default function Ideas() {
               aria-label="Export format options"
               aria-hidden={!exportMenuOpen}
               className={`absolute right-0 z-20 mt-2 w-40 rounded-md border bg-popover text-popover-foreground shadow-md transition-opacity duration-150 ${
-                exportMenuOpen ? 'visible opacity-100' : 'invisible opacity-0 pointer-events-none'
+                exportMenuOpen
+                  ? "visible opacity-100"
+                  : "invisible opacity-0 pointer-events-none"
               }`}
             >
               <button
                 type="button"
-                onClick={() => handleExport('json')}
+                onClick={() => handleExport("json")}
                 aria-label="Export page as JSON"
                 className="focus-ring w-full rounded-t-xl px-4 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
               >
@@ -359,7 +412,7 @@ export default function Ideas() {
               </button>
               <button
                 type="button"
-                onClick={() => handleExport('csv')}
+                onClick={() => handleExport("csv")}
                 aria-label="Export page as CSV"
                 className="focus-ring w-full rounded-b-xl px-4 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
               >
@@ -380,7 +433,12 @@ export default function Ideas() {
             <div className="card p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold">Filters</h2>
-                <Button variant="ghost" size="sm" className="h-auto p-0" onClick={clearAllFilters}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto p-0"
+                  onClick={clearAllFilters}
+                >
                   Clear
                 </Button>
               </div>
@@ -406,8 +464,8 @@ export default function Ideas() {
                     <button
                       type="button"
                       onClick={() => {
-                        setSearchQuery('');
-                        updateParam('search', undefined);
+                        setSearchQuery("");
+                        updateParam("search", undefined);
                       }}
                       className="focus-ring absolute right-2 top-1.5 rounded-lg p-1 text-muted-foreground hover:text-foreground"
                       aria-label="Clear search"
@@ -419,13 +477,21 @@ export default function Ideas() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="sentiment-select" className="text-sm font-medium leading-none">
+                <label
+                  htmlFor="sentiment-select"
+                  className="text-sm font-medium leading-none"
+                >
                   Sentiment
                 </label>
                 <select
                   id="sentiment-select"
                   value={selectedSentiment}
-                  onChange={(e) => updateParam('sentiment', e.target.value || undefined)}
+                  onChange={(e) =>
+                    updateParam("sentiment", e.target.value || undefined)
+                  }
+                  onBlur={(e) =>
+                    updateParam("sentiment", e.target.value || undefined)
+                  }
                   className="field-control h-9"
                 >
                   <option value="">All Sentiments</option>
@@ -438,13 +504,21 @@ export default function Ideas() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="domain-select" className="text-sm font-medium leading-none">
+                <label
+                  htmlFor="domain-select"
+                  className="text-sm font-medium leading-none"
+                >
                   Domain
                 </label>
                 <select
                   id="domain-select"
                   value={selectedDomain}
-                  onChange={(e) => updateParam('domain', e.target.value || undefined)}
+                  onChange={(e) =>
+                    updateParam("domain", e.target.value || undefined)
+                  }
+                  onBlur={(e) =>
+                    updateParam("domain", e.target.value || undefined)
+                  }
                   className="field-control h-9"
                 >
                   <option value="">All Domains</option>
@@ -458,10 +532,15 @@ export default function Ideas() {
 
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <label htmlFor="quality-range" className="text-sm font-medium leading-none">
+                  <label
+                    htmlFor="quality-range"
+                    className="text-sm font-medium leading-none"
+                  >
                     Min Quality
                   </label>
-                  <span className="text-xs text-muted-foreground">{minQuality.toFixed(1)}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {minQuality.toFixed(1)}
+                  </span>
                 </div>
                 <input
                   id="quality-range"
@@ -472,7 +551,10 @@ export default function Ideas() {
                   value={minQuality}
                   onChange={(e) => {
                     const value = Number.parseFloat(e.target.value);
-                    updateParam('min_quality', value > 0 ? value.toString() : undefined);
+                    updateParam(
+                      "min_quality",
+                      value > 0 ? value.toString() : undefined,
+                    );
                   }}
                   className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
                 />
@@ -483,13 +565,17 @@ export default function Ideas() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="sort-select" className="text-sm font-medium leading-none">
+                <label
+                  htmlFor="sort-select"
+                  className="text-sm font-medium leading-none"
+                >
                   Sort By
                 </label>
                 <select
                   id="sort-select"
                   value={sortBy}
-                  onChange={(e) => updateParam('sort_by', e.target.value)}
+                  onChange={(e) => updateParam("sort_by", e.target.value)}
+                  onBlur={(e) => updateParam("sort_by", e.target.value)}
                   className="field-control h-9"
                 >
                   <option value="quality">Quality Score</option>
@@ -499,13 +585,21 @@ export default function Ideas() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="order-select" className="text-sm font-medium leading-none">
+                <label
+                  htmlFor="order-select"
+                  className="text-sm font-medium leading-none"
+                >
                   Sort Order
                 </label>
                 <select
                   id="order-select"
                   value={sortOrder}
-                  onChange={(e) => updateParam('order', e.target.value as SortOrder)}
+                  onChange={(e) =>
+                    updateParam("order", e.target.value as SortOrder)
+                  }
+                  onBlur={(e) =>
+                    updateParam("order", e.target.value as SortOrder)
+                  }
                   className="field-control h-9"
                 >
                   <option value="desc">Descending</option>
@@ -526,7 +620,12 @@ export default function Ideas() {
               <span>of {totalIdeas} ideas</span>
             </div>
             {hasActiveFilters && (
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={clearAllFilters}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={clearAllFilters}
+              >
                 <X className="mr-1 h-3 w-3" />
                 Clear Filters
               </Button>
@@ -556,6 +655,7 @@ export default function Ideas() {
             isFetching={isFetching}
             clearAllFilters={clearAllFilters}
             updateParam={updateParam}
+            onRetry={refetch}
           />
         </div>
       </div>

@@ -176,6 +176,7 @@ export interface AnalyticsTrendsParams {
   interval?: string;
   start_date?: string;
   end_date?: string;
+  days?: number;
 }
 
 export interface ReclusterParams {
@@ -220,79 +221,116 @@ export interface OpportunityQueryParams {
 
 export type BookmarkItemType = "cluster" | "idea";
 
-export interface BookmarkClusterRef {
+export interface BookmarkCluster {
   id: string;
   label: string;
-  description?: string;
-  keywords?: string[];
-  idea_count?: number;
-  avg_sentiment?: number;
-  quality_score?: number;
-  trend_score?: number;
-  created_at?: string;
-  updated_at?: string;
+  description?: string | null;
+  keywords: string[];
+  idea_count: number;
+  avg_sentiment?: number | null;
+  quality_score?: number | null;
+  trend_score?: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
-export interface BookmarkIdeaRef {
+export interface BookmarkIdea {
   id: string;
   problem_statement: string;
-  context?: string;
+  context?: string | null;
+  domain?: string | null;
   sentiment: "positive" | "neutral" | "negative";
   sentiment_score: number;
   emotions?: {
     frustration?: number;
     hope?: number;
     urgency?: number;
-  };
-  domain?: string;
-  features_mentioned?: string[];
+  } | null;
   quality_score: number;
-  extracted_at?: string;
+  features_mentioned?: string[] | null;
+  extracted_at?: string | null;
   raw_post?: {
     id?: string;
     url?: string;
     title?: string;
     source?: string;
     published_at?: string;
-  };
+  } | null;
 }
 
 export interface BookmarkItem {
-  id: string;
   item_type: BookmarkItemType;
   item_id: string;
   scope_key: string;
   created_at: string;
-  cluster?: BookmarkClusterRef;
-  idea?: BookmarkIdeaRef;
+  cluster?: BookmarkCluster | null;
+  idea?: BookmarkIdea | null;
 }
 
-export interface BookmarkQueryParams {
-  scope_key?: string;
-  item_type?: BookmarkItemType;
-  limit?: number;
-  offset?: number;
+export interface BookmarkListResponse {
+  bookmarks: BookmarkItem[];
+  pagination: Pagination;
 }
 
 export interface BookmarkCreateRequest {
   item_type: BookmarkItemType;
   item_id: string;
-  scope_key?: string;
 }
 
-export interface BookmarkListResponse {
-  bookmarks: BookmarkItem[];
-  pagination?: Pagination;
+export interface BookmarkQueryParams {
+  item_type?: BookmarkItemType;
+  limit?: number;
+  offset?: number;
 }
 
 export interface BookmarkMutationResponse {
   success: boolean;
-  bookmark?: BookmarkItem;
-  message?: string;
+  message: string;
 }
 
 export interface BookmarkClearResponse {
   success: boolean;
-  cleared_count?: number;
-  message?: string;
+  deleted: number;
+}
+
+export type SavedSearchAlertFrequency = "daily" | "weekly";
+
+export interface SavedSearchItem {
+  id: string;
+  name: string;
+  query_params: Record<string, unknown>;
+  alert_enabled: boolean;
+  alert_frequency: SavedSearchAlertFrequency;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SavedSearchListResponse {
+  saved_searches: SavedSearchItem[];
+  pagination: Pagination;
+}
+
+export interface SavedSearchCreateRequest {
+  name: string;
+  query_params?: Record<string, unknown>;
+  alert_enabled?: boolean;
+  alert_frequency?: SavedSearchAlertFrequency;
+}
+
+export interface SavedSearchUpdateRequest {
+  name?: string;
+  query_params?: Record<string, unknown>;
+  alert_enabled?: boolean;
+  alert_frequency?: SavedSearchAlertFrequency;
+}
+
+export interface SavedSearchQueryParams {
+  limit?: number;
+  offset?: number;
+}
+
+export interface SavedSearchMutationResponse {
+  success: boolean;
+  message: string;
+  saved_search?: SavedSearchItem | null;
 }

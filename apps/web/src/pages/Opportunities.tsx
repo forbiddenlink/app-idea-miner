@@ -1,56 +1,57 @@
-import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { Link } from "react-router-dom"
-import { motion } from "framer-motion"
+import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import {
-  Sparkles,
-  TrendingUp,
-  Target,
-  Heart,
-  Award,
-  Globe,
-  ChevronDown,
   ArrowUpRight,
+  Award,
+  ChevronDown,
   Filter,
-} from "lucide-react"
+  Globe,
+  Heart,
+  Sparkles,
+  Target,
+  TrendingUp,
+} from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
-import { apiClient } from "@/services/api"
-import { Opportunity, OpportunityScoreBreakdown } from "@/types"
-import DataFreshness from "@/components/DataFreshness"
-import { useRefreshSettings } from "./Settings"
-import { Button } from "@/components/ui/button"
+import DataFreshness from "@/components/DataFreshness";
+import { ErrorState } from "@/components/EmptyStates";
+import { Button } from "@/components/ui/button";
+import { apiClient } from "@/services/api";
+import { Opportunity, OpportunityScoreBreakdown } from "@/types";
+import { useRefreshSettings } from "./Settings";
 
 function getGradeColor(grade: string): string {
   switch (grade) {
     case "A":
-      return "text-grade-a"
+      return "text-grade-a";
     case "B":
-      return "text-grade-b"
+      return "text-grade-b";
     case "C":
-      return "text-grade-c"
+      return "text-grade-c";
     case "D":
-      return "text-grade-d"
+      return "text-grade-d";
     case "F":
-      return "text-grade-f"
+      return "text-grade-f";
     default:
-      return "text-muted-foreground"
+      return "text-muted-foreground";
   }
 }
 
 function getGradeBg(grade: string): string {
   switch (grade) {
     case "A":
-      return "bg-grade-a/10 border-grade-a/20"
+      return "bg-grade-a/10 border-grade-a/20";
     case "B":
-      return "bg-grade-b/10 border-grade-b/20"
+      return "bg-grade-b/10 border-grade-b/20";
     case "C":
-      return "bg-grade-c/10 border-grade-c/20"
+      return "bg-grade-c/10 border-grade-c/20";
     case "D":
-      return "bg-grade-d/10 border-grade-d/20"
+      return "bg-grade-d/10 border-grade-d/20";
     case "F":
-      return "bg-grade-f/10 border-grade-f/20"
+      return "bg-grade-f/10 border-grade-f/20";
     default:
-      return "bg-muted/10 border-muted/20"
+      return "bg-muted/10 border-muted/20";
   }
 }
 
@@ -59,11 +60,11 @@ function ScoreBar({
   icon: Icon,
   data,
 }: Readonly<{
-  label: string
-  icon: React.ElementType
-  data: OpportunityScoreBreakdown
+  label: string;
+  icon: React.ElementType;
+  data: OpportunityScoreBreakdown;
 }>) {
-  const pct = (data.score / data.max) * 100
+  const pct = (data.score / data.max) * 100;
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-sm">
@@ -85,12 +86,14 @@ function ScoreBar({
       </div>
       <p className="text-xs text-muted-foreground">{data.description}</p>
     </div>
-  )
+  );
 }
 
-function OpportunityCard({ opportunity }: Readonly<{ opportunity: Opportunity }>) {
-  const { opportunity_score: score } = opportunity
-  const [expanded, setExpanded] = useState(false)
+function OpportunityCard({
+  opportunity,
+}: Readonly<{ opportunity: Opportunity }>) {
+  const { opportunity_score: score } = opportunity;
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <motion.div
@@ -118,7 +121,9 @@ function OpportunityCard({ opportunity }: Readonly<{ opportunity: Opportunity }>
           <div
             className={`flex flex-col items-center rounded-xl border px-4 py-2 ${getGradeBg(score.grade)}`}
           >
-            <span className={`text-2xl font-bold ${getGradeColor(score.grade)}`}>
+            <span
+              className={`text-2xl font-bold ${getGradeColor(score.grade)}`}
+            >
               {score.total}
             </span>
             <span
@@ -167,7 +172,11 @@ function OpportunityCard({ opportunity }: Readonly<{ opportunity: Opportunity }>
             exit={{ height: 0, opacity: 0 }}
             className="px-6 pb-6 space-y-4"
           >
-            <ScoreBar label="Demand" icon={Target} data={score.breakdown.demand} />
+            <ScoreBar
+              label="Demand"
+              icon={Target}
+              data={score.breakdown.demand}
+            />
             <ScoreBar
               label="Quality"
               icon={Award}
@@ -192,36 +201,38 @@ function OpportunityCard({ opportunity }: Readonly<{ opportunity: Opportunity }>
         )}
       </div>
     </motion.div>
-  )
+  );
 }
 
 export default function Opportunities() {
-  const { enabled: autoRefresh, interval: refreshInterval } = useRefreshSettings()
-  const [sortBy, setSortBy] = useState<"score" | "demand" | "trend">("score")
-  const [minScore, setMinScore] = useState(0)
+  const { enabled: autoRefresh, interval: refreshInterval } =
+    useRefreshSettings();
+  const [sortBy, setSortBy] = useState<"score" | "demand" | "trend">("score");
+  const [minScore, setMinScore] = useState(0);
 
-  const { data, isLoading, error, dataUpdatedAt, isRefetching } = useQuery({
-    queryKey: ["opportunities", { sort_by: sortBy, min_score: minScore }],
-    queryFn: () =>
-      apiClient.getOpportunities({
-        sort_by: sortBy,
-        min_score: minScore,
-        limit: 50,
-      }),
-    refetchInterval: autoRefresh ? refreshInterval * 2 : false,
-  })
+  const { data, isLoading, error, refetch, dataUpdatedAt, isRefetching } =
+    useQuery({
+      queryKey: ["opportunities", { sort_by: sortBy, min_score: minScore }],
+      queryFn: () =>
+        apiClient.getOpportunities({
+          sort_by: sortBy,
+          min_score: minScore,
+          limit: 50,
+        }),
+      refetchInterval: autoRefresh ? refreshInterval * 2 : false,
+    });
 
-  const opportunities = data?.opportunities || []
+  const opportunities = data?.opportunities || [];
 
   // Summary stats
   const gradeDistribution = opportunities.reduce(
     (acc, opp) => {
-      const grade = opp.opportunity_score.grade
-      acc[grade] = (acc[grade] || 0) + 1
-      return acc
+      const grade = opp.opportunity_score.grade;
+      acc[grade] = (acc[grade] || 0) + 1;
+      return acc;
     },
-    {} as Record<string, number>
-  )
+    {} as Record<string, number>,
+  );
 
   return (
     <div className="app-page">
@@ -318,21 +329,19 @@ export default function Opportunities() {
       {/* Opportunity Cards */}
       {isLoading && (
         <div className="grid gap-4 md:grid-cols-2">
-          {["skel-1", "skel-2", "skel-3", "skel-4", "skel-5", "skel-6"].map((id) => (
-            <div
-              key={id}
-              className="card h-48 animate-pulse bg-muted/45"
-            />
-          ))}
+          {["skel-1", "skel-2", "skel-3", "skel-4", "skel-5", "skel-6"].map(
+            (id) => (
+              <div key={id} className="card h-48 animate-pulse bg-muted/45" />
+            ),
+          )}
         </div>
       )}
 
       {!isLoading && error && (
-        <div className="py-12 text-center">
-          <p className="text-destructive">
-            Failed to load opportunities. Please try again.
-          </p>
-        </div>
+        <ErrorState
+          error="Failed to load opportunities. Please try again."
+          onRetry={() => void refetch()}
+        />
       )}
 
       {!isLoading && !error && opportunities.length === 0 && (
@@ -355,5 +364,5 @@ export default function Opportunities() {
         </div>
       )}
     </div>
-  )
+  );
 }

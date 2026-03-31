@@ -1,109 +1,46 @@
-import { Bookmark, BookmarkX, FolderOpen, Lightbulb } from "lucide-react";
-import { Link } from "react-router-dom";
 import ClusterCard from "@/components/ClusterCard";
+import { ErrorState } from "@/components/EmptyStates";
 import { IdeaCard } from "@/components/IdeaCard";
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/useFavorites";
-import type { Cluster, Idea } from "@/types";
+import type { BookmarkItem, Cluster, Idea } from "@/types";
+import { Bookmark, BookmarkX, FolderOpen, Lightbulb } from "lucide-react";
+import { Link } from "react-router-dom";
 
-type SavedItem = {
-  id?: string;
-  type?: "cluster" | "idea";
-  timestamp?: number;
-  item_type?: "cluster" | "idea";
-  item_id?: string;
-  created_at?: string;
-  cluster?: Cluster;
-  idea?: Idea;
-};
-
-const toCluster = (bookmark: SavedItem): Cluster | null => {
-  const itemType = bookmark.item_type ?? bookmark.type;
-  if (itemType !== "cluster") return null;
+const toCluster = (bookmark: BookmarkItem): Cluster | null => {
+  if (bookmark.item_type !== "cluster" || !bookmark.cluster) return null;
   const cluster = bookmark.cluster;
-
-  if (cluster) {
-    return {
-      id: cluster.id,
-      label: cluster.label,
-      description: cluster.description ?? "",
-      keywords: cluster.keywords ?? [],
-      idea_count: cluster.idea_count ?? 0,
-      avg_sentiment: cluster.avg_sentiment ?? 0,
-      quality_score: cluster.quality_score ?? 0,
-      trend_score: cluster.trend_score ?? 0,
-      created_at:
-        cluster.created_at ??
-        bookmark.created_at ??
-        new Date(bookmark.timestamp ?? Date.now()).toISOString(),
-      updated_at:
-        cluster.updated_at ??
-        bookmark.created_at ??
-        new Date(bookmark.timestamp ?? Date.now()).toISOString(),
-    };
-  }
-
-  const id = bookmark.item_id ?? bookmark.id;
-  if (!id) return null;
-
   return {
-    id,
-    label: `Cluster ${id}`,
-    description: "",
-    keywords: [],
-    idea_count: 0,
-    avg_sentiment: 0,
-    quality_score: 0,
-    trend_score: 0,
-    created_at:
-      bookmark.created_at ??
-      new Date(bookmark.timestamp ?? Date.now()).toISOString(),
-    updated_at:
-      bookmark.created_at ??
-      new Date(bookmark.timestamp ?? Date.now()).toISOString(),
+    id: cluster.id,
+    label: cluster.label,
+    description: cluster.description ?? "",
+    keywords: cluster.keywords ?? [],
+    idea_count: cluster.idea_count ?? 0,
+    avg_sentiment: cluster.avg_sentiment ?? 0,
+    quality_score: cluster.quality_score ?? 0,
+    trend_score: cluster.trend_score ?? 0,
+    created_at: cluster.created_at ?? bookmark.created_at,
+    updated_at: cluster.updated_at ?? bookmark.created_at,
   };
 };
 
-const toIdea = (bookmark: SavedItem): Idea | null => {
-  const itemType = bookmark.item_type ?? bookmark.type;
-  if (itemType !== "idea") return null;
+const toIdea = (bookmark: BookmarkItem): Idea | null => {
+  if (bookmark.item_type !== "idea" || !bookmark.idea) return null;
   const idea = bookmark.idea;
-
-  if (idea) {
-    return {
-      id: idea.id,
-      raw_post_id:
-        idea.raw_post?.id ?? bookmark.item_id ?? bookmark.id ?? "unknown",
-      problem_statement: idea.problem_statement,
-      context: idea.context ?? undefined,
-      sentiment: idea.sentiment,
-      sentiment_score: idea.sentiment_score,
-      emotions: idea.emotions ?? undefined,
-      domain: idea.domain ?? undefined,
-      features_mentioned: idea.features_mentioned ?? undefined,
-      quality_score: idea.quality_score,
-      source_url: idea.raw_post?.url,
-      raw_post: idea.raw_post ?? undefined,
-      extracted_at:
-        idea.extracted_at ??
-        bookmark.created_at ??
-        new Date(bookmark.timestamp ?? Date.now()).toISOString(),
-    };
-  }
-
-  const id = bookmark.item_id ?? bookmark.id;
-  if (!id) return null;
-
   return {
-    id,
-    raw_post_id: id,
-    problem_statement: `Saved idea ${id}`,
-    sentiment: "neutral",
-    sentiment_score: 0,
-    quality_score: 0,
-    extracted_at:
-      bookmark.created_at ??
-      new Date(bookmark.timestamp ?? Date.now()).toISOString(),
+    id: idea.id,
+    raw_post_id: idea.raw_post?.id ?? bookmark.item_id,
+    problem_statement: idea.problem_statement,
+    context: idea.context ?? undefined,
+    sentiment: idea.sentiment,
+    sentiment_score: idea.sentiment_score,
+    emotions: idea.emotions ?? undefined,
+    domain: idea.domain ?? undefined,
+    features_mentioned: idea.features_mentioned ?? undefined,
+    quality_score: idea.quality_score,
+    source_url: idea.raw_post?.url,
+    raw_post: idea.raw_post ?? undefined,
+    extracted_at: idea.extracted_at ?? bookmark.created_at,
   };
 };
 
@@ -116,10 +53,11 @@ export default function Saved() {
     error,
     itemCounts,
     isMutating,
+    refetch,
   } = useFavorites();
 
-  const clusterBookmarks = getFavorites("cluster") as SavedItem[];
-  const ideaBookmarks = getFavorites("idea") as SavedItem[];
+  const clusterBookmarks = getFavorites("cluster");
+  const ideaBookmarks = getFavorites("idea");
   const savedClusters = clusterBookmarks
     .map(toCluster)
     .filter((item): item is Cluster => Boolean(item));
@@ -150,9 +88,10 @@ export default function Saved() {
     return (
       <div className="app-page">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Saved</h1>
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-5 text-destructive">
-          Failed to load saved items. Try refreshing the page.
-        </div>
+        <ErrorState
+          error="Failed to load saved items. Try refreshing the page."
+          onRetry={refetch}
+        />
       </div>
     );
   }
