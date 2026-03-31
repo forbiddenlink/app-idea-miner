@@ -52,7 +52,17 @@ jobs:
           psql -h 127.0.0.1 -U postgres -d postgres -c "CREATE DATABASE appideas_migration"
           psql -h 127.0.0.1 -U postgres -d appideas_migration -c "CREATE EXTENSION IF NOT EXISTS vector"
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/appideas_migration
-          uv run alembic -c "$GITHUB_WORKSPACE/alembic.ini" upgrade head
+          uv run python - <<'PY'
+          import os
+          from alembic import command
+          from alembic.config import Config
+
+          workspace = os.environ["GITHUB_WORKSPACE"]
+          cfg = Config(os.path.join(workspace, "alembic.ini"))
+          cfg.set_main_option("script_location", os.path.join(workspace, "migrations"))
+          cfg.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+          command.upgrade(cfg, "head")
+          PY
 
       - name: Run Unit Tests (No DB)
         env:
