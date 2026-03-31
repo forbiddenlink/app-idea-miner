@@ -30,9 +30,9 @@ router = APIRouter(
 @router.get("", response_model=SavedSearchListResponse)
 async def list_saved_searches(
     user_id: Annotated[str, Depends(get_current_user_id)],
-    limit: Annotated[int, Query(DEFAULT_PAGE_LIMIT, ge=1, le=MAX_PAGE_LIMIT)],
-    offset: Annotated[int, Query(0, ge=0)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    limit: Annotated[int, Query(ge=1, le=MAX_PAGE_LIMIT)] = DEFAULT_PAGE_LIMIT,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ):
     service = SavedSearchService(db)
     return await service.list_saved_searches(

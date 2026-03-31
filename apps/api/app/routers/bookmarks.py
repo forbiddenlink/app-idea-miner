@@ -30,10 +30,10 @@ router = APIRouter(
 @router.get("", response_model=BookmarkListResponse)
 async def list_bookmarks(
     user_id: Annotated[str, Depends(get_current_user_id)],
-    item_type: Annotated[str | None, Query(None, pattern="^(cluster|idea)$")],
-    limit: Annotated[int, Query(DEFAULT_PAGE_LIMIT, ge=1, le=MAX_PAGE_LIMIT)],
-    offset: Annotated[int, Query(0, ge=0)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    item_type: Annotated[str | None, Query(pattern="^(cluster|idea)$")] = None,
+    limit: Annotated[int, Query(ge=1, le=MAX_PAGE_LIMIT)] = DEFAULT_PAGE_LIMIT,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ):
     service = BookmarkService(db)
     return await service.list_bookmarks(
@@ -103,8 +103,8 @@ async def delete_bookmark(
 @router.delete("", response_model=BookmarkClearResponse)
 async def clear_bookmarks(
     user_id: Annotated[str, Depends(get_current_user_id)],
-    item_type: Annotated[str | None, Query(None, pattern="^(cluster|idea)$")],
     db: Annotated[AsyncSession, Depends(get_db)],
+    item_type: Annotated[str | None, Query(pattern="^(cluster|idea)$")] = None,
 ):
     service = BookmarkService(db)
     deleted = await service.clear_bookmarks(user_id=user_id, item_type=item_type)
