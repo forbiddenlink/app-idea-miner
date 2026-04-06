@@ -98,57 +98,6 @@ async def list_clusters(
     }
 
 
-@router.get("/{cluster_id}", response_model=ClusterDetailResponse)
-async def get_cluster(
-    cluster_id: UUID,
-    include_evidence: bool = Query(True, description="Include representative ideas"),
-    evidence_limit: int = Query(5, ge=1, le=20, description="Number of evidence items"),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Get detailed information about a specific cluster.
-
-    Returns cluster metadata plus representative ideas (evidence).
-    """
-    service = ClusterService(db)
-    result = await service.get_cluster_by_id(
-        cluster_id=cluster_id,
-        include_evidence=include_evidence,
-        evidence_limit=evidence_limit,
-    )
-
-    if not result:
-        raise HTTPException(status_code=404, detail=f"Cluster {cluster_id} not found")
-
-    logger.info(f"Retrieved cluster {cluster_id}: {result['label']}")
-
-    return result
-
-
-@router.get("/{cluster_id}/similar", response_model=SimilarClustersResponse)
-async def get_similar_clusters(
-    cluster_id: UUID,
-    limit: int = Query(5, ge=1, le=20, description="Number of similar clusters"),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Find clusters similar to the given cluster.
-
-    Uses keyword overlap to determine similarity.
-    """
-    service = ClusterService(db)
-    result = await service.find_similar_clusters(cluster_id=cluster_id, limit=limit)
-
-    if not result:
-        raise HTTPException(status_code=404, detail=f"Cluster {cluster_id} not found")
-
-    logger.info(
-        f"Found {len(result['similar_clusters'])} similar clusters to {cluster_id}"
-    )
-
-    return result
-
-
 @router.get("/trending/list", response_model=TrendingClustersResponse)
 async def get_trending_clusters(
     limit: int = Query(10, ge=1, le=50, description="Number of clusters"),
@@ -199,6 +148,57 @@ async def get_topic_tree(
     result = await service.get_topic_tree()
 
     logger.info(f"Retrieved topic tree with {result.get('total_topics', 0)} topics")
+
+    return result
+
+
+@router.get("/{cluster_id}", response_model=ClusterDetailResponse)
+async def get_cluster(
+    cluster_id: UUID,
+    include_evidence: bool = Query(True, description="Include representative ideas"),
+    evidence_limit: int = Query(5, ge=1, le=20, description="Number of evidence items"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get detailed information about a specific cluster.
+
+    Returns cluster metadata plus representative ideas (evidence).
+    """
+    service = ClusterService(db)
+    result = await service.get_cluster_by_id(
+        cluster_id=cluster_id,
+        include_evidence=include_evidence,
+        evidence_limit=evidence_limit,
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail=f"Cluster {cluster_id} not found")
+
+    logger.info(f"Retrieved cluster {cluster_id}: {result['label']}")
+
+    return result
+
+
+@router.get("/{cluster_id}/similar", response_model=SimilarClustersResponse)
+async def get_similar_clusters(
+    cluster_id: UUID,
+    limit: int = Query(5, ge=1, le=20, description="Number of similar clusters"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Find clusters similar to the given cluster.
+
+    Uses keyword overlap to determine similarity.
+    """
+    service = ClusterService(db)
+    result = await service.find_similar_clusters(cluster_id=cluster_id, limit=limit)
+
+    if not result:
+        raise HTTPException(status_code=404, detail=f"Cluster {cluster_id} not found")
+
+    logger.info(
+        f"Found {len(result['similar_clusters'])} similar clusters to {cluster_id}"
+    )
 
     return result
 
