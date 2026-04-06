@@ -1,12 +1,303 @@
 """
 Natural Language Processing utilities for App-Idea Miner.
-Handles text extraction, sentiment analysis, and quality scoring.
+Handles text extraction, sentiment analysis, quality scoring, and embedding generation.
 """
 
+import logging
+import os
 import re
 from typing import Any
 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+logger = logging.getLogger(__name__)
+
+# Embedding model singleton
+_embedding_model = None
+
+# Embedding dimension for all-MiniLM-L6-v2
+EMBEDDING_DIM = 384
+
+
+def get_embedding_model():
+    """
+    Get or create singleton embedding model.
+
+    Returns:
+        SentenceTransformer model instance, or None if unavailable
+    """
+    global _embedding_model
+    if _embedding_model is None:
+        try:
+            from sentence_transformers import SentenceTransformer
+
+            _embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+            logger.info("Loaded embedding model: all-MiniLM-L6-v2")
+        except ImportError:
+            logger.warning(
+                "sentence-transformers not installed. Embeddings disabled. "
+                "Install with: pip install sentence-transformers"
+            )
+            return None
+    return _embedding_model
+
+
+def generate_embedding(text: str) -> list[float] | None:
+    """
+    Generate 384-dimensional embedding for text.
+
+    Uses all-MiniLM-L6-v2 model which produces normalized embeddings
+    suitable for cosine similarity comparisons.
+
+    Args:
+        text: Text to embed
+
+    Returns:
+        List of 384 floats (normalized embedding), or None if model unavailable
+    """
+    if os.getenv("GENERATE_EMBEDDINGS", "").lower() not in ("1", "true", "yes"):
+        return None
+
+    model = get_embedding_model()
+    if model is None:
+        return None
+
+    try:
+        embedding = model.encode(text, normalize_embeddings=True)
+        return embedding.tolist()
+    except Exception as e:
+        logger.error(f"Error generating embedding: {e}")
+        return None
+
+
+def generate_embeddings_batch(texts: list[str]) -> list[list[float] | None]:
+    """
+    Generate embeddings for multiple texts efficiently.
+
+    Uses batch encoding for better performance.
+
+    Args:
+        texts: List of texts to embed
+
+    Returns:
+        List of embeddings (384 floats each), None entries for failures
+    """
+    if os.getenv("GENERATE_EMBEDDINGS", "").lower() not in ("1", "true", "yes"):
+        return [None] * len(texts)
+
+    model = get_embedding_model()
+    if model is None:
+        return [None] * len(texts)
+
+    try:
+        embeddings = model.encode(
+            texts, normalize_embeddings=True, show_progress_bar=False
+        )
+        return [emb.tolist() for emb in embeddings]
+    except Exception as e:
+        logger.error(f"Error generating batch embeddings: {e}")
+        return [None] * len(texts)
+
+
+# LLM extraction state
+_llm_call_count = 0
+_LLM_MAX_CALLS_PER_CYCLE = 100  # Cost control: max LLM calls per ingestion cycle
+
+
+def reset_llm_call_count():
+    """Reset LLM call counter (call at start of ingestion cycle)."""
+    global _llm_call_count
+    _llm_call_count = 0
+
+
+def extract_ideas_llm(text: str) -> list[dict]:
+    """
+    Extract ideas using Claude Haiku for better recall.
+
+    Uses LLM to identify app ideas and pain points that regex patterns miss.
+    Includes cost controls: skips if text too short/long or quota exceeded.
+
+    Args:
+        text: Text content to analyze
+
+    Returns:
+        List of dicts with problem_statement, target_user, urgency, confidence
+    """
+    global _llm_call_count
+
+    # Check if LLM extraction is enabled
+    if os.getenv("USE_LLM_EXTRACTION", "").lower() not in ("1", "true", "yes"):
+        return []
+
+    # Cost control: skip if quota exceeded
+    if _llm_call_count >= _LLM_MAX_CALLS_PER_CYCLE:
+        logger.debug("LLM call quota exceeded for this cycle")
+        return []
+
+    # Cost control: skip if text too short or too long
+    text_len = len(text)
+    if text_len < 50:
+        logger.debug("Text too short for LLM extraction")
+        return []
+    if text_len > 5000:
+        logger.debug("Text too long for LLM extraction, truncating")
+        text = text[:5000]
+
+    # Check for API key
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        logger.warning("ANTHROPIC_API_KEY not set, LLM extraction disabled")
+        return []
+
+    try:
+        from anthropic import Anthropic
+
+        client = Anthropic(api_key=api_key)
+
+        response = client.messages.create(
+            model="claude-3-haiku-20240307",
+            max_tokens=1024,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"""Analyze this post and extract any app/software ideas or user pain points.
+Look for:
+- Explicit wishes for apps or tools
+- Frustrations that could be solved by software
+- Feature requests or improvements to existing tools
+- Unmet needs that suggest opportunities
+
+Post:
+{text}
+
+Return a JSON array (no markdown, just raw JSON):
+[{{
+  "problem_statement": "clear description of the problem or need",
+  "target_user": "who has this problem",
+  "urgency": "low|medium|high",
+  "confidence": 0.0-1.0
+}}]
+
+Return empty array [] if no clear app ideas or pain points found.
+Only include items where confidence >= 0.5.""",
+                }
+            ],
+        )
+
+        _llm_call_count += 1
+
+        # Parse JSON response
+        import json
+
+        response_text = response.content[0].text.strip()
+
+        # Handle potential markdown code blocks
+        if response_text.startswith("```"):
+            # Extract JSON from code block
+            lines = response_text.split("\n")
+            json_lines = []
+            in_json = False
+            for line in lines:
+                if line.startswith("```") and not in_json:
+                    in_json = True
+                    continue
+                elif line.startswith("```") and in_json:
+                    break
+                elif in_json:
+                    json_lines.append(line)
+            response_text = "\n".join(json_lines)
+
+        ideas = json.loads(response_text)
+
+        # Validate and filter
+        valid_ideas = []
+        for idea in ideas:
+            if isinstance(idea, dict) and "problem_statement" in idea:
+                confidence = idea.get("confidence", 0.5)
+                if confidence >= 0.5:
+                    valid_ideas.append(
+                        {
+                            "problem_statement": idea["problem_statement"],
+                            "target_user": idea.get("target_user", ""),
+                            "urgency": idea.get("urgency", "medium"),
+                            "confidence": confidence,
+                            "source": "llm",
+                        }
+                    )
+
+        logger.debug(f"LLM extracted {len(valid_ideas)} ideas from text")
+        return valid_ideas
+
+    except ImportError:
+        logger.warning(
+            "anthropic package not installed. LLM extraction disabled. "
+            "Install with: pip install anthropic"
+        )
+        return []
+    except Exception as e:
+        logger.error(f"LLM extraction failed: {e}")
+        return []
+
+
+def _merge_ideas(regex_ideas: list[dict], llm_ideas: list[dict]) -> list[dict]:
+    """
+    Merge ideas from regex and LLM extraction, removing duplicates.
+
+    Uses text similarity to detect duplicates between sources.
+
+    Args:
+        regex_ideas: Ideas from regex extraction
+        llm_ideas: Ideas from LLM extraction
+
+    Returns:
+        Merged list of unique ideas
+    """
+    if not llm_ideas:
+        return regex_ideas
+    if not regex_ideas:
+        return [
+            {"statement": idea["problem_statement"], "context": "", **idea}
+            for idea in llm_ideas
+        ]
+
+    merged = list(regex_ideas)
+    seen_statements = {idea["statement"].lower() for idea in regex_ideas}
+
+    for llm_idea in llm_ideas:
+        statement = llm_idea["problem_statement"]
+        statement_lower = statement.lower()
+
+        # Check for duplicates using substring matching
+        is_duplicate = False
+        for seen in seen_statements:
+            # If one is substring of other (>50% overlap), consider duplicate
+            if statement_lower in seen or seen in statement_lower:
+                is_duplicate = True
+                break
+            # Simple word overlap check
+            seen_words = set(seen.split())
+            new_words = set(statement_lower.split())
+            if (
+                len(seen_words & new_words) / max(len(seen_words), len(new_words), 1)
+                > 0.6
+            ):
+                is_duplicate = True
+                break
+
+        if not is_duplicate:
+            merged.append(
+                {
+                    "statement": statement,
+                    "context": "",
+                    "source": "llm",
+                    "confidence": llm_idea.get("confidence", 0.5),
+                    "target_user": llm_idea.get("target_user", ""),
+                    "urgency": llm_idea.get("urgency", "medium"),
+                }
+            )
+            seen_statements.add(statement_lower)
+
+    return merged
 
 
 class TextProcessor:
@@ -653,9 +944,24 @@ text_processor = TextProcessor()
 
 
 # Convenience functions
-def extract_need_statements(text: str) -> list[dict[str, str]]:
-    """Extract need statements using singleton processor."""
-    return text_processor.extract_need_statements(text)
+def extract_need_statements(text: str, use_llm: bool = False) -> list[dict[str, str]]:
+    """
+    Extract need statements using regex, optionally enhanced with LLM.
+
+    Args:
+        text: Text to analyze
+        use_llm: If True and USE_LLM_EXTRACTION env var is set, also use LLM
+
+    Returns:
+        List of dicts with 'statement' and 'context' keys
+    """
+    regex_ideas = text_processor.extract_need_statements(text)
+
+    if use_llm and os.getenv("USE_LLM_EXTRACTION", "").lower() in ("1", "true", "yes"):
+        llm_ideas = extract_ideas_llm(text)
+        return _merge_ideas(regex_ideas, llm_ideas)
+
+    return regex_ideas
 
 
 def analyze_sentiment(text: str) -> dict[str, Any]:
@@ -681,3 +987,129 @@ def extract_features(text: str) -> list[str]:
 def extract_keywords(text: str, top_n: int = 5) -> list[str]:
     """Extract keywords using singleton processor."""
     return text_processor.extract_keywords(text, top_n)
+
+
+# Default aspects for aspect-based sentiment analysis
+DEFAULT_ASPECTS = [
+    "usability",
+    "price",
+    "features",
+    "support",
+    "performance",
+    "design",
+    "reliability",
+]
+
+
+def analyze_aspect_sentiment(
+    text: str, aspects: list[str] | None = None
+) -> dict[str, float]:
+    """
+    Analyze sentiment per aspect mentioned in text.
+
+    Uses sentence-level VADER sentiment on sentences containing each aspect.
+
+    Args:
+        text: Text to analyze
+        aspects: List of aspects to check (defaults to DEFAULT_ASPECTS)
+
+    Returns:
+        Dict mapping aspect name to average sentiment score (-1 to 1)
+    """
+    if aspects is None:
+        aspects = DEFAULT_ASPECTS
+
+    results: dict[str, float] = {}
+
+    # Split into sentences
+    try:
+        import nltk
+
+        sentences = nltk.sent_tokenize(text)
+    except (ImportError, LookupError):
+        # Fallback to simple splitting
+        sentences = re.split(r"[.!?]+", text)
+        sentences = [s.strip() for s in sentences if s.strip()]
+
+    if not sentences:
+        return results
+
+    for aspect in aspects:
+        aspect_lower = aspect.lower()
+
+        # Find sentences containing this aspect
+        aspect_sentences = [s for s in sentences if aspect_lower in s.lower()]
+
+        if aspect_sentences:
+            # Analyze sentiment of each sentence
+            sentiments = [analyze_sentiment(s)["score"] for s in aspect_sentences]
+            # Average sentiment for this aspect
+            results[aspect] = sum(sentiments) / len(sentiments)
+
+    return results
+
+
+def extract_aspect_sentiments_batch(
+    texts: list[str], aspects: list[str] | None = None
+) -> list[dict[str, float]]:
+    """
+    Extract aspect sentiments for multiple texts.
+
+    Args:
+        texts: List of texts to analyze
+        aspects: List of aspects to check
+
+    Returns:
+        List of dicts with aspect sentiments for each text
+    """
+    return [analyze_aspect_sentiment(text, aspects) for text in texts]
+
+
+def detect_urgency_level(text: str) -> str:
+    """
+    Detect urgency level from text content.
+
+    Args:
+        text: Text to analyze
+
+    Returns:
+        'low', 'medium', or 'high'
+    """
+    text_lower = text.lower()
+
+    # High urgency indicators
+    high_urgency_words = [
+        "urgent",
+        "asap",
+        "immediately",
+        "critical",
+        "emergency",
+        "desperately",
+        "right now",
+        "today",
+        "can't wait",
+        "must have",
+        "essential",
+    ]
+
+    # Medium urgency indicators
+    medium_urgency_words = [
+        "need",
+        "should",
+        "important",
+        "soon",
+        "would help",
+        "want",
+        "looking for",
+        "searching for",
+    ]
+
+    high_count = sum(1 for word in high_urgency_words if word in text_lower)
+    medium_count = sum(1 for word in medium_urgency_words if word in text_lower)
+
+    if high_count >= 2 or (high_count >= 1 and medium_count >= 2):
+        return "high"
+    elif medium_count >= 2 or high_count >= 1:
+        return "medium"
+    else:
+        return "low"

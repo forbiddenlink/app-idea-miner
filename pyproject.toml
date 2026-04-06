@@ -10,8 +10,14 @@ authors = [
 license = { text = "MIT" }
 dependencies = [
     "alembic>=1.18.0",
+    "asyncpraw>=7.8.1",
+    "beautifulsoup4>=4.14.3",
+    "email-validator>=2.3.0",
     "httpx>=0.28.1",
+    "passlib>=1.7.4",
     "pgvector>=0.4.2",
+    "pyjwt>=2.12.1",
+    "sentence-transformers>=5.3.0",
 ]
 
 [tool.uv.workspace]

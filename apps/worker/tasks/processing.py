@@ -4,6 +4,7 @@ Processing tasks for extracting and analyzing ideas from raw posts.
 
 import asyncio
 import logging
+import os
 import re
 from datetime import datetime
 from typing import Any
@@ -12,14 +13,19 @@ from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.worker.celery_app import celery_app
+from packages.core.competitors import extract_competitors
 from packages.core.database import AsyncSessionLocal
 from packages.core.models import IdeaCandidate, RawPost
 from packages.core.nlp import (
+    analyze_aspect_sentiment,
     analyze_sentiment,
     calculate_quality_score,
+    detect_urgency_level,
     extract_domain,
     extract_features,
     extract_need_statements,
+    generate_embedding,
+    reset_llm_call_count,
 )
 
 logger = logging.getLogger(__name__)
@@ -85,10 +91,17 @@ async def _process_posts_async(batch_size: int, min_quality: float) -> dict[str,
     stats = {
         "processed": 0,
         "ideas_created": 0,
+        "ideas_from_llm": 0,
         "low_quality_skipped": 0,
         "errors": 0,
         "error_details": [],
     }
+
+    # Reset LLM call counter at start of processing cycle
+    reset_llm_call_count()
+
+    # Check if LLM extraction is enabled
+    use_llm = os.getenv("USE_LLM_EXTRACTION", "").lower() in ("1", "true", "yes")
 
     async with AsyncSessionLocal() as session:
         # Fetch unprocessed posts
@@ -98,14 +111,16 @@ async def _process_posts_async(batch_size: int, min_quality: float) -> dict[str,
             logger.info("No unprocessed posts found")
             return stats
 
-        logger.info(f"Found {len(posts)} unprocessed posts")
+        logger.info(f"Found {len(posts)} unprocessed posts (LLM={use_llm})")
 
         # Process each post with savepoint for atomic per-post commits
         for post in posts:
             try:
                 # Use savepoint to ensure partial failures don't corrupt data
                 async with session.begin_nested():
-                    ideas_count = await _process_single_post(session, post, min_quality)
+                    ideas_count, llm_count = await _process_single_post(
+                        session, post, min_quality, use_llm=use_llm
+                    )
 
                     if ideas_count == 0:
                         stats["low_quality_skipped"] += 1
@@ -114,6 +129,7 @@ async def _process_posts_async(batch_size: int, min_quality: float) -> dict[str,
                     post.is_processed = True
                     stats["processed"] += 1
                     stats["ideas_created"] += ideas_count
+                    stats["ideas_from_llm"] += llm_count
 
             except Exception as e:
                 logger.error(f"Error processing post {post.id}: {e}", exc_info=True)
@@ -163,8 +179,8 @@ async def _fetch_unprocessed_posts(session: AsyncSession, limit: int) -> list[Ra
 
 
 async def _process_single_post(
-    session: AsyncSession, post: RawPost, min_quality: float
-) -> int:
+    session: AsyncSession, post: RawPost, min_quality: float, use_llm: bool = False
+) -> tuple[int, int]:
     """
     Process a single post to extract ideas.
 
@@ -172,28 +188,31 @@ async def _process_single_post(
         session: Database session
         post: RawPost to process
         min_quality: Minimum quality threshold
+        use_llm: Whether to use LLM for enhanced extraction
 
     Returns:
-        Number of ideas created
+        Tuple of (total ideas created, ideas from LLM)
     """
     # Combine title and content for analysis
     full_text = f"{post.title}\n\n{post.content or ''}"
 
-    # Extract need statements
-    need_statements = extract_need_statements(full_text)
+    # Extract need statements (optionally using LLM)
+    need_statements = extract_need_statements(full_text, use_llm=use_llm)
 
     if not need_statements:
         logger.debug(f"No need statements found in post {post.id}")
-        return 0
+        return 0, 0
 
     logger.debug(f"Found {len(need_statements)} need statements in post {post.id}")
 
     ideas_created = 0
+    llm_ideas_created = 0
 
     # Process each need statement
     for statement_data in need_statements:
         problem_statement = statement_data["statement"]
-        context = statement_data["context"]
+        context = statement_data.get("context", "")
+        is_from_llm = statement_data.get("source") == "llm"
 
         # Analyze sentiment
         sentiment_data = analyze_sentiment(context or problem_statement)
@@ -212,6 +231,19 @@ async def _process_single_post(
         domain = extract_domain(problem_statement)
         features = extract_features(problem_statement)
 
+        # Extract competitor mentions from problem statement and context
+        combined_text = f"{problem_statement} {context}"
+        competitors = extract_competitors(combined_text, domain=domain)
+
+        # Analyze aspect-based sentiment
+        aspect_sentiments = analyze_aspect_sentiment(combined_text)
+
+        # Detect urgency level
+        urgency = detect_urgency_level(combined_text)
+
+        # Generate embedding for similarity search
+        embedding = generate_embedding(problem_statement)
+
         # Create IdeaCandidate
         idea = IdeaCandidate(
             raw_post_id=post.id,
@@ -223,18 +255,25 @@ async def _process_single_post(
             emotions=sentiment_data.get("emotions", {}),
             quality_score=quality_score,
             features_mentioned=features,
+            competitors_mentioned=competitors if competitors else None,
+            aspect_sentiments=aspect_sentiments if aspect_sentiments else {},
+            urgency_level=urgency,
+            idea_vector=embedding,
             extracted_at=datetime.utcnow(),
         )
 
         session.add(idea)
         ideas_created += 1
+        if is_from_llm:
+            llm_ideas_created += 1
 
         logger.debug(
             f"Created idea: domain={domain}, sentiment={sentiment_data['label']}, "
-            f"quality={quality_score:.2f}, statement={problem_statement[:50]}..."
+            f"quality={quality_score:.2f}, source={'llm' if is_from_llm else 'regex'}, "
+            f"statement={problem_statement[:50]}..."
         )
 
-    return ideas_created
+    return ideas_created, llm_ideas_created
 
 
 def _extract_solution_hint(problem_statement: str, context: str) -> str:

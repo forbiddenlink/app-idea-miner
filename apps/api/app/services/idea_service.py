@@ -35,6 +35,7 @@ class IdeaService:
         sentiment: str | None = None,
         min_quality: float | None = None,
         q: str | None = None,
+        competitor: str | None = None,
         sort_by: str = "quality",
         order: str = "desc",
     ) -> dict[str, Any]:
@@ -48,6 +49,7 @@ class IdeaService:
             sentiment: Filter by sentiment
             min_quality: Minimum quality score
             q: Optional keyword search
+            competitor: Filter by competitor mentioned
             sort_by: quality, date, or sentiment
             order: asc or desc
 
@@ -64,6 +66,11 @@ class IdeaService:
             stmt = stmt.where(IdeaCandidate.sentiment == sentiment)
         if min_quality is not None:
             stmt = stmt.where(IdeaCandidate.quality_score >= min_quality)
+        if competitor:
+            # PostgreSQL array contains operator
+            stmt = stmt.where(
+                IdeaCandidate.competitors_mentioned.contains([competitor.lower()])
+            )
         if q and q.strip():
             escaped_q = escape_like_pattern(q.strip())
             pattern = f"%{escaped_q}%"
@@ -100,6 +107,10 @@ class IdeaService:
             count_stmt = count_stmt.where(IdeaCandidate.sentiment == sentiment)
         if min_quality is not None:
             count_stmt = count_stmt.where(IdeaCandidate.quality_score >= min_quality)
+        if competitor:
+            count_stmt = count_stmt.where(
+                IdeaCandidate.competitors_mentioned.contains([competitor.lower()])
+            )
         if q and q.strip():
             escaped_q = escape_like_pattern(q.strip())
             pattern = f"%{escaped_q}%"

@@ -27,6 +27,11 @@ class SavedSearchService:
             "query_params": saved_search.query_params or {},
             "alert_enabled": bool(saved_search.alert_enabled),
             "alert_frequency": saved_search.alert_frequency,
+            "webhook_url": saved_search.webhook_url,
+            "webhook_type": saved_search.webhook_type,
+            "last_alert_at": saved_search.last_alert_at.isoformat()
+            if saved_search.last_alert_at
+            else None,
             "created_at": saved_search.created_at.isoformat(),
             "updated_at": saved_search.updated_at.isoformat(),
         }
@@ -72,6 +77,8 @@ class SavedSearchService:
         query_params: dict[str, Any] | None,
         alert_enabled: bool,
         alert_frequency: str,
+        webhook_url: str | None = None,
+        webhook_type: str | None = None,
     ) -> dict[str, Any]:
         user_uuid = self._user_uuid(user_id)
 
@@ -81,6 +88,8 @@ class SavedSearchService:
             query_params=query_params or {},
             alert_enabled=alert_enabled,
             alert_frequency=alert_frequency,
+            webhook_url=webhook_url,
+            webhook_type=webhook_type,
         )
         self.db.add(saved_search)
         await self.db.flush()
@@ -95,6 +104,8 @@ class SavedSearchService:
         query_params: dict[str, Any] | None,
         alert_enabled: bool | None,
         alert_frequency: str | None,
+        webhook_url: str | None = None,
+        webhook_type: str | None = None,
     ) -> dict[str, Any] | None:
         user_uuid = self._user_uuid(user_id)
 
@@ -116,6 +127,10 @@ class SavedSearchService:
             saved_search_any.alert_enabled = alert_enabled
         if alert_frequency is not None:
             saved_search_any.alert_frequency = alert_frequency
+        if webhook_url is not None:
+            saved_search_any.webhook_url = webhook_url if webhook_url else None
+        if webhook_type is not None:
+            saved_search_any.webhook_type = webhook_type if webhook_type else None
 
         await self.db.flush()
         await self.db.refresh(saved_search)

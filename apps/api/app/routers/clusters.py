@@ -16,8 +16,10 @@ from apps.api.app.core.security import get_api_key
 from apps.api.app.database import get_db
 from apps.api.app.schemas.clusters import (
     ClusterDetailResponse,
+    ClusterHierarchyResponse,
     ClusterListResponse,
     SimilarClustersResponse,
+    TopicTreeResponse,
     TrendingClustersResponse,
 )
 from apps.api.app.services.cluster_service import ClusterService
@@ -181,3 +183,43 @@ async def get_trending_clusters(
             for cluster in trending_clusters
         ]
     }
+
+
+@router.get("/tree", response_model=TopicTreeResponse)
+async def get_topic_tree(
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get full hierarchical topic tree.
+
+    Only available when BERTopic clustering is enabled. Returns the complete
+    topic hierarchy with parent-child relationships.
+    """
+    service = ClusterService(db)
+    result = await service.get_topic_tree()
+
+    logger.info(f"Retrieved topic tree with {result.get('total_topics', 0)} topics")
+
+    return result
+
+
+@router.get("/{cluster_id}/hierarchy", response_model=ClusterHierarchyResponse)
+async def get_cluster_hierarchy(
+    cluster_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get hierarchical subtopics for a cluster.
+
+    Only available when BERTopic clustering is enabled. Returns subtopics
+    that are children of the given cluster/topic.
+    """
+    service = ClusterService(db)
+    result = await service.get_cluster_hierarchy(cluster_id=cluster_id)
+
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Cluster {cluster_id} not found")
+
+    logger.info(f"Retrieved hierarchy for cluster {cluster_id}")
+
+    return result

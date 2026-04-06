@@ -334,3 +334,146 @@ class ClusterService:
             },
             "similar_clusters": similar_clusters,
         }
+
+    async def get_topic_tree(self) -> dict[str, Any]:
+        """
+        Get full hierarchical topic tree.
+
+        This returns the BERTopic hierarchy if available from the last clustering run.
+        The hierarchy is stored in the clustering engine, not in the database.
+
+        Returns:
+            Dict with 'topics' list and metadata
+        """
+        from packages.core.clustering import get_cluster_engine
+
+        engine = get_cluster_engine()
+
+        if not engine.use_bertopic or engine.bertopic_model is None:
+            return {
+                "topics": [],
+                "total_topics": 0,
+                "message": "BERTopic clustering is not enabled or no clustering has been run yet. "
+                "Set USE_BERTOPIC=true and run clustering to enable hierarchical topics.",
+            }
+
+        hierarchy = engine.get_topic_hierarchy()
+
+        if hierarchy is None:
+            return {
+                "topics": [],
+                "total_topics": 0,
+                "message": "No topic hierarchy available. Run clustering first.",
+            }
+
+        # Convert HierarchicalTopic objects to dicts
+        def topic_to_dict(topic):
+            result = {
+                "topic_id": topic.topic_id,
+                "parent_id": topic.parent_id,
+                "keywords": topic.keywords,
+                "idea_count": topic.idea_count,
+            }
+            if topic.children:
+                result["children"] = [topic_to_dict(child) for child in topic.children]
+            return result
+
+        topics_list = [topic_to_dict(t) for t in hierarchy]
+
+        return {
+            "topics": topics_list,
+            "total_topics": len(topics_list),
+            "message": None,
+        }
+
+    async def get_cluster_hierarchy(self, cluster_id: UUID) -> dict[str, Any] | None:
+        """
+        Get hierarchical subtopics for a specific cluster.
+
+        Maps the cluster to its BERTopic topic and returns any subtopics.
+
+        Args:
+            cluster_id: Cluster UUID
+
+        Returns:
+            Dict with cluster info and subtopics, or None if cluster not found
+        """
+        # First, get the cluster from DB
+        query = select(Cluster).where(Cluster.id == cluster_id)
+        result = await self.db.execute(query)
+        cluster = result.scalar_one_or_none()
+
+        if not cluster:
+            return None
+
+        from packages.core.clustering import get_cluster_engine
+
+        engine = get_cluster_engine()
+
+        if not engine.use_bertopic or engine.bertopic_model is None:
+            return {
+                "cluster_id": str(cluster.id),
+                "label": cluster.label,
+                "subtopics": None,
+                "message": "BERTopic clustering is not enabled. "
+                "Set USE_BERTOPIC=true and run clustering to enable hierarchical topics.",
+            }
+
+        hierarchy = engine.get_topic_hierarchy()
+
+        if hierarchy is None:
+            return {
+                "cluster_id": str(cluster.id),
+                "label": cluster.label,
+                "subtopics": None,
+                "message": "No topic hierarchy available. Run clustering first.",
+            }
+
+        # Find subtopics that match this cluster's keywords or label
+        # This is a heuristic since we don't have direct cluster->topic mapping in DB
+        def find_matching_topic(topics, cluster_label, cluster_keywords):
+            """Find topic that best matches cluster by keyword overlap."""
+            best_match = None
+            best_score = 0
+
+            def check_topic(topic):
+                nonlocal best_match, best_score
+                # Calculate keyword overlap
+                topic_kw_set = set(kw.lower() for kw in topic.keywords)
+                cluster_kw_set = set(kw.lower() for kw in (cluster_keywords or []))
+
+                overlap = len(topic_kw_set & cluster_kw_set)
+                if overlap > best_score:
+                    best_score = overlap
+                    best_match = topic
+
+                if topic.children:
+                    for child in topic.children:
+                        check_topic(child)
+
+            for t in topics:
+                check_topic(t)
+
+            return best_match
+
+        matching_topic = find_matching_topic(hierarchy, cluster.label, cluster.keywords)
+
+        subtopics = None
+        if matching_topic and matching_topic.children:
+            subtopics = [
+                {
+                    "topic_id": child.topic_id,
+                    "parent_id": child.parent_id,
+                    "keywords": child.keywords,
+                    "idea_count": child.idea_count,
+                    "children": None,  # Don't recurse further for this endpoint
+                }
+                for child in matching_topic.children
+            ]
+
+        return {
+            "cluster_id": str(cluster.id),
+            "label": cluster.label,
+            "subtopics": subtopics,
+            "message": None if subtopics else "No subtopics found for this cluster.",
+        }

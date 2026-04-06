@@ -18,8 +18,11 @@ from apps.api.app.schemas.saved_searches import (
     SavedSearchListResponse,
     SavedSearchMutationResponse,
     SavedSearchUpdateRequest,
+    WebhookTestRequest,
+    WebhookTestResponse,
 )
 from apps.api.app.services.saved_search_service import SavedSearchService
+from packages.core.services.notification_service import NotificationService
 
 router = APIRouter(
     tags=["saved-searches"],
@@ -57,6 +60,8 @@ async def create_saved_search(
         query_params=payload.query_params,
         alert_enabled=payload.alert_enabled,
         alert_frequency=payload.alert_frequency,
+        webhook_url=payload.webhook_url,
+        webhook_type=payload.webhook_type,
     )
     return {
         "success": True,
@@ -84,6 +89,8 @@ async def update_saved_search(
         query_params=payload.query_params,
         alert_enabled=payload.alert_enabled,
         alert_frequency=payload.alert_frequency,
+        webhook_url=payload.webhook_url,
+        webhook_type=payload.webhook_type,
     )
     if not saved_search:
         raise HTTPException(status_code=404, detail="Saved search not found")
@@ -111,3 +118,21 @@ async def delete_saved_search(
     if not removed:
         raise HTTPException(status_code=404, detail="Saved search not found")
     return {"success": True, "message": "Saved search deleted"}
+
+
+@router.post("/test-webhook", response_model=WebhookTestResponse)
+async def test_webhook(
+    payload: WebhookTestRequest,
+    _user_id: Annotated[str, Depends(get_current_user_id)],
+):
+    """
+    Send a test notification to verify webhook configuration.
+
+    Sends a sample notification to the provided webhook URL.
+    """
+    notification_service = NotificationService()
+    result = await notification_service.test_webhook(
+        webhook_url=payload.webhook_url,
+        webhook_type=payload.webhook_type,
+    )
+    return result

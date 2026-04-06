@@ -10,6 +10,7 @@ import logging
 from datetime import UTC, datetime
 from typing import Any
 
+import numpy as np
 from sqlalchemy import delete, select
 
 from apps.worker.celery_app import celery_app
@@ -340,5 +341,246 @@ async def _update_cluster_trends_async() -> dict[str, Any]:
 
         except Exception as e:
             logger.error(f"Trend update failed: {e}", exc_info=True)
+            await session.rollback()
+            raise
+
+
+@celery_app.task(
+    bind=True,
+    name="apps.worker.tasks.clustering.assign_new_ideas_to_clusters",
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    max_retries=3,
+)
+def assign_new_ideas_to_clusters(
+    self,
+    idea_ids: list[str] | None = None,
+    similarity_threshold: float = 0.7,
+    min_unassigned_for_recluster: int = 100,
+) -> dict[str, Any]:
+    """
+    Incrementally assign new ideas to existing clusters.
+
+    This is faster than a full re-cluster and is suitable for:
+    - Real-time assignment after processing new posts
+    - Keeping clusters updated between full re-cluster runs
+
+    If more than `min_unassigned_for_recluster` ideas cannot be assigned,
+    a full re-cluster will be scheduled instead.
+
+    Args:
+        idea_ids: List of idea UUIDs to assign (None = all unassigned ideas)
+        similarity_threshold: Minimum similarity to assign to a cluster
+        min_unassigned_for_recluster: Trigger full re-cluster if this many remain unassigned
+
+    Returns:
+        Assignment statistics
+    """
+    logger.info(
+        f"Starting incremental clustering: threshold={similarity_threshold}, "
+        f"recluster_threshold={min_unassigned_for_recluster}"
+    )
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        result = loop.run_until_complete(
+            _assign_new_ideas_async(
+                idea_ids, similarity_threshold, min_unassigned_for_recluster
+            )
+        )
+    finally:
+        loop.close()
+
+    logger.info(f"Incremental clustering complete: {result}")
+    return result
+
+
+async def _assign_new_ideas_async(
+    idea_ids: list[str] | None,
+    similarity_threshold: float,
+    min_unassigned_for_recluster: int,
+) -> dict[str, Any]:
+    """Async implementation of incremental assignment."""
+
+    async with AsyncSessionLocal() as session:
+        try:
+            # Step 1: Find ideas to assign
+            if idea_ids:
+                from uuid import UUID
+
+                stmt = select(IdeaCandidate).where(
+                    IdeaCandidate.id.in_([UUID(id_str) for id_str in idea_ids]),
+                    IdeaCandidate.is_valid == True,
+                )
+            else:
+                # Find all valid ideas without cluster membership
+                subquery = select(ClusterMembership.idea_id)
+                stmt = (
+                    select(IdeaCandidate)
+                    .where(
+                        IdeaCandidate.is_valid == True,
+                        IdeaCandidate.id.notin_(subquery),
+                    )
+                    .order_by(IdeaCandidate.extracted_at.desc())
+                )
+
+            result = await session.execute(stmt)
+            ideas = result.scalars().all()
+
+            if not ideas:
+                logger.info("No unassigned ideas found")
+                return {
+                    "ideas_checked": 0,
+                    "ideas_assigned": 0,
+                    "ideas_unassigned": 0,
+                    "triggered_recluster": False,
+                }
+
+            logger.info(f"Found {len(ideas)} ideas to potentially assign")
+
+            # Step 2: Get existing cluster centroids
+            # We'll compute centroids from cluster embeddings if available,
+            # or fall back to averaging member idea embeddings
+            cluster_stmt = select(Cluster)
+            cluster_result = await session.execute(cluster_stmt)
+            clusters = cluster_result.scalars().all()
+
+            if not clusters:
+                logger.info("No existing clusters - need full clustering run")
+                return {
+                    "ideas_checked": len(ideas),
+                    "ideas_assigned": 0,
+                    "ideas_unassigned": len(ideas),
+                    "triggered_recluster": True,
+                    "message": "No existing clusters found",
+                }
+
+            # Build centroids dict
+            cluster_centroids: dict[str, np.ndarray] = {}
+
+            for cluster in clusters:
+                if cluster.cluster_vector is not None:
+                    # Use stored cluster centroid
+                    cluster_centroids[str(cluster.id)] = np.array(
+                        cluster.cluster_vector
+                    )
+                else:
+                    # Compute centroid from member ideas
+                    member_stmt = (
+                        select(IdeaCandidate)
+                        .join(
+                            ClusterMembership,
+                            ClusterMembership.idea_id == IdeaCandidate.id,
+                        )
+                        .where(ClusterMembership.cluster_id == cluster.id)
+                        .where(IdeaCandidate.idea_vector.isnot(None))
+                    )
+                    member_result = await session.execute(member_stmt)
+                    members = member_result.scalars().all()
+
+                    if members:
+                        vectors = [np.array(m.idea_vector) for m in members]
+                        centroid = np.mean(vectors, axis=0)
+                        # Normalize
+                        norm = np.linalg.norm(centroid)
+                        if norm > 0:
+                            centroid = centroid / norm
+                        cluster_centroids[str(cluster.id)] = centroid
+
+            if not cluster_centroids:
+                logger.warning("No cluster centroids available - need full clustering")
+                return {
+                    "ideas_checked": len(ideas),
+                    "ideas_assigned": 0,
+                    "ideas_unassigned": len(ideas),
+                    "triggered_recluster": True,
+                    "message": "No cluster centroids available",
+                }
+
+            logger.info(f"Loaded {len(cluster_centroids)} cluster centroids")
+
+            # Step 3: Run incremental assignment
+            engine = get_cluster_engine()
+            texts = [idea.problem_statement for idea in ideas]
+
+            assignments = engine.assign_to_existing_clusters(
+                new_texts=texts,
+                cluster_centroids=cluster_centroids,
+                similarity_threshold=similarity_threshold,
+            )
+
+            # Step 4: Create memberships for assigned ideas
+            assigned_count = 0
+            unassigned_count = 0
+            from uuid import UUID
+
+            for idx, cluster_id_str in assignments.items():
+                idea = ideas[idx]
+
+                if cluster_id_str is not None:
+                    cluster_id = UUID(cluster_id_str)
+
+                    # Calculate similarity score from embedding
+                    if (
+                        idea.idea_vector is not None
+                        and cluster_id_str in cluster_centroids
+                    ):
+                        similarity = float(
+                            np.dot(
+                                np.array(idea.idea_vector),
+                                cluster_centroids[cluster_id_str],
+                            )
+                        )
+                    else:
+                        similarity = similarity_threshold
+
+                    membership = ClusterMembership(
+                        cluster_id=cluster_id,
+                        idea_id=idea.id,
+                        similarity_score=similarity,
+                        is_representative=False,
+                    )
+                    session.add(membership)
+
+                    # Update cluster count
+                    cluster_stmt = select(Cluster).where(Cluster.id == cluster_id)
+                    cluster_res = await session.execute(cluster_stmt)
+                    cluster = cluster_res.scalar_one()
+                    cluster.idea_count = cluster.idea_count + 1
+                    cluster.updated_at = datetime.now(UTC)
+
+                    assigned_count += 1
+                else:
+                    unassigned_count += 1
+
+            await session.commit()
+
+            # Step 5: Check if we need a full re-cluster
+            triggered_recluster = False
+            if unassigned_count >= min_unassigned_for_recluster:
+                logger.info(
+                    f"{unassigned_count} ideas unassigned - triggering full re-cluster"
+                )
+                # Schedule full re-cluster (don't await - let it run async)
+                run_clustering.delay(recreate_clusters=True)
+                triggered_recluster = True
+
+            # Invalidate caches
+            try:
+                await invalidate_clusters_cache()
+                await invalidate_analytics_cache()
+            except Exception as cache_error:
+                logger.warning(f"Cache invalidation failed: {cache_error}")
+
+            return {
+                "ideas_checked": len(ideas),
+                "ideas_assigned": assigned_count,
+                "ideas_unassigned": unassigned_count,
+                "triggered_recluster": triggered_recluster,
+            }
+
+        except Exception as e:
+            logger.error(f"Incremental assignment failed: {e}", exc_info=True)
             await session.rollback()
             raise

@@ -130,6 +130,9 @@ class IdeaCandidate(Base):
     # Classification
     domain = Column(String(100), index=True)  # e.g., 'productivity', 'health'
     features_mentioned = Column(ARRAY(Text))  # ['AI', 'calendar', 'notifications']
+    competitors_mentioned = Column(ARRAY(Text))  # ['notion', 'todoist', 'slack']
+    aspect_sentiments = Column(JSONB, default={})  # {'usability': 0.5, 'price': -0.2}
+    urgency_level = Column(String(20))  # 'low', 'medium', 'high'
 
     # Quality metrics
     quality_score = Column(
@@ -139,8 +142,8 @@ class IdeaCandidate(Base):
         Boolean, default=True, index=True
     )  # False if flagged as spam/noise
 
-    # Vector embedding (1536 dim for OpenAI text-embedding-ada-002)
-    idea_vector = Column(Vector(1536))
+    # Vector embedding (384 dim for all-MiniLM-L6-v2)
+    idea_vector = Column(Vector(384))
 
     # Timestamps
     extracted_at = Column(DateTime(timezone=True), default=func.now())
@@ -197,8 +200,8 @@ class Cluster(Base):
     quality_score = Column(Float, index=True)  # Average quality of ideas
     trend_score = Column(Float, default=0.0, index=True)  # Temporal growth metric
 
-    # Vector embedding (1536 dim for OpenAI text-embedding-ada-002)
-    cluster_vector = Column(Vector(1536))
+    # Vector embedding (384 dim for all-MiniLM-L6-v2)
+    cluster_vector = Column(Vector(384))
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), default=func.now(), index=True)
@@ -340,7 +343,7 @@ class Bookmark(Base):
 
 
 class SavedSearch(Base):
-    """Persisted user-defined query presets with optional alert settings."""
+    """Persisted user-defined query presets with optional alert and webhook settings."""
 
     __tablename__ = "saved_searches"
 
@@ -355,6 +358,12 @@ class SavedSearch(Base):
     query_params = Column(JSONB, nullable=False, default={})
     alert_enabled = Column(Boolean, nullable=False, default=False)
     alert_frequency = Column(String(16), nullable=False, default="weekly")
+
+    # Webhook configuration
+    webhook_url = Column(String(500), nullable=True)
+    webhook_type = Column(String(20), nullable=True)  # 'slack' | 'discord' | 'generic'
+    last_alert_at = Column(DateTime(timezone=True), nullable=True)
+
     created_at = Column(DateTime(timezone=True), default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False
@@ -365,6 +374,10 @@ class SavedSearch(Base):
             "alert_frequency IN ('daily', 'weekly')",
             name="ck_saved_searches_alert_frequency",
         ),
+        CheckConstraint(
+            "webhook_type IN ('slack', 'discord', 'generic') OR webhook_type IS NULL",
+            name="ck_saved_searches_webhook_type",
+        ),
         Index("idx_saved_searches_user_created_desc", "user_id", created_at.desc()),
     )
 
@@ -373,5 +386,5 @@ class SavedSearch(Base):
     def __repr__(self):
         return (
             f"<SavedSearch(user_id={self.user_id}, name='{self.name}', "
-            f"alert_enabled={self.alert_enabled})>"
+            f"alert_enabled={self.alert_enabled}, webhook_type={self.webhook_type})>"
         )

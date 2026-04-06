@@ -25,6 +25,17 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
+class HierarchicalTopic:
+    """Represents a topic in the hierarchy."""
+
+    topic_id: int
+    parent_id: int | None
+    keywords: list[str]
+    idea_count: int
+    children: list["HierarchicalTopic"] | None = None
+
+
+@dataclass
 class ClusterResult:
     """Result of clustering operation."""
 
@@ -33,6 +44,8 @@ class ClusterResult:
     probabilities: np.ndarray | None = None  # Cluster membership probabilities
     n_clusters: int = 0  # Number of clusters found
     n_noise: int = 0  # Number of noise points
+    hierarchical_topics: list[HierarchicalTopic] | None = None  # BERTopic hierarchy
+    topic_info: dict | None = None  # BERTopic topic metadata
 
 
 class ClusterEngine:
@@ -56,6 +69,7 @@ class ClusterEngine:
         min_cluster_size: int = 3,
         min_samples: int = 2,
         use_embeddings: bool = False,
+        use_bertopic: bool = False,
     ):
         """
         Initialize clustering engine.
@@ -68,6 +82,7 @@ class ClusterEngine:
             min_cluster_size: Minimum number of points to form a cluster
             min_samples: Number of neighbors for a point to be considered a core point
             use_embeddings: If True, use sentence-transformers for vectorization instead of TF-IDF
+            use_bertopic: If True, use BERTopic for clustering with hierarchical topics
         """
         self.max_features = max_features
         self.ngram_range = ngram_range
@@ -76,17 +91,20 @@ class ClusterEngine:
         self.min_cluster_size = min_cluster_size
         self.min_samples = min_samples
         self.use_embeddings = use_embeddings
+        self.use_bertopic = use_bertopic
 
         # Initialize components (will be fit during clustering)
         self.vectorizer: TfidfVectorizer | None = None
         self.clusterer: hdbscan.HDBSCAN | None = None
         self.tfidf_matrix = None
         self.embedding_matrix: np.ndarray | None = None
+        self.bertopic_model = None
+        self._last_texts: list[str] | None = None  # For hierarchy extraction
 
         logger.info(
             f"ClusterEngine initialized: max_features={max_features}, "
             f"ngram_range={ngram_range}, min_cluster_size={min_cluster_size}, "
-            f"use_embeddings={use_embeddings}"
+            f"use_embeddings={use_embeddings}, use_bertopic={use_bertopic}"
         )
 
     def cluster_ideas(self, texts: list[str]) -> ClusterResult:
@@ -116,6 +134,10 @@ class ClusterEngine:
                 n_clusters=0,
                 n_noise=len(texts),
             )
+
+        # Use BERTopic if enabled
+        if self.use_bertopic:
+            return self._cluster_with_bertopic(texts)
 
         logger.info(f"Clustering {len(texts)} idea texts...")
 
@@ -211,6 +233,198 @@ class ClusterEngine:
             n_clusters=n_clusters,
             n_noise=n_noise,
         )
+
+    def _cluster_with_bertopic(self, texts: list[str]) -> ClusterResult:
+        """
+        Cluster using BERTopic for better topic coherence and hierarchical topics.
+
+        Args:
+            texts: List of problem statements or idea descriptions
+
+        Returns:
+            ClusterResult with labels, keywords, hierarchy, and metadata
+        """
+        try:
+            from bertopic import BERTopic
+            from sentence_transformers import SentenceTransformer
+            from umap import UMAP
+        except ImportError as e:
+            logger.warning(
+                f"BERTopic dependencies not installed: {e}. "
+                "Falling back to HDBSCAN clustering."
+            )
+            self.use_bertopic = False
+            return self.cluster_ideas(texts)
+
+        logger.info(f"Clustering {len(texts)} texts with BERTopic...")
+        self._last_texts = texts
+
+        # Initialize embedding model
+        embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+        # Configure UMAP for dimensionality reduction
+        umap_model = UMAP(
+            n_components=5,
+            n_neighbors=15,
+            min_dist=0.0,
+            metric="cosine",
+            random_state=42,
+        )
+
+        # Configure HDBSCAN for BERTopic
+        hdbscan_model = hdbscan.HDBSCAN(
+            min_cluster_size=self.min_cluster_size,
+            min_samples=self.min_samples,
+            metric="euclidean",
+            cluster_selection_method="eom",
+            prediction_data=True,
+        )
+
+        # Initialize BERTopic
+        self.bertopic_model = BERTopic(
+            embedding_model=embedding_model,
+            umap_model=umap_model,
+            hdbscan_model=hdbscan_model,
+            nr_topics="auto",
+            calculate_probabilities=True,
+            verbose=False,
+        )
+
+        try:
+            # Fit and transform
+            topics, probs = self.bertopic_model.fit_transform(texts)
+            topics = np.array(topics)
+            probs = np.array(probs) if probs is not None else None
+
+            # Get topic info
+            topic_info = self.bertopic_model.get_topic_info()
+
+            # Extract keywords for each topic
+            keywords = {}
+            for topic_id in set(topics):
+                if topic_id == -1:
+                    continue
+                topic_words = self.bertopic_model.get_topic(topic_id)
+                if topic_words:
+                    keywords[topic_id] = [
+                        (word, float(score)) for word, score in topic_words[:10]
+                    ]
+
+            # Count clusters and noise
+            unique_topics = set(topics)
+            n_clusters = len([t for t in unique_topics if t != -1])
+            n_noise = int(np.sum(topics == -1))
+
+            # Build hierarchical topics
+            hierarchical_topics = self._extract_bertopic_hierarchy(texts)
+
+            logger.info(
+                f"BERTopic clustering complete: {n_clusters} topics, {n_noise} outliers"
+            )
+
+            return ClusterResult(
+                labels=topics,
+                keywords=keywords,
+                probabilities=probs,
+                n_clusters=n_clusters,
+                n_noise=n_noise,
+                hierarchical_topics=hierarchical_topics,
+                topic_info=topic_info.to_dict() if topic_info is not None else None,
+            )
+
+        except Exception as e:
+            logger.error(f"BERTopic clustering failed: {e}", exc_info=True)
+            return ClusterResult(
+                labels=np.array([-1] * len(texts)),
+                keywords={},
+                n_clusters=0,
+                n_noise=len(texts),
+            )
+
+    def _extract_bertopic_hierarchy(
+        self, texts: list[str]
+    ) -> list[HierarchicalTopic] | None:
+        """
+        Extract hierarchical topic structure from BERTopic model.
+
+        Returns:
+            List of HierarchicalTopic objects representing the topic tree
+        """
+        if self.bertopic_model is None:
+            return None
+
+        try:
+            # Get hierarchical topics DataFrame
+            hierarchical_df = self.bertopic_model.hierarchical_topics(texts)
+
+            if hierarchical_df is None or hierarchical_df.empty:
+                return None
+
+            # Build topic hierarchy
+            topics_dict: dict[int, HierarchicalTopic] = {}
+            topic_info = self.bertopic_model.get_topic_info()
+
+            # Create nodes for each topic
+            for topic_id in topic_info["Topic"].values:
+                if topic_id == -1:
+                    continue
+
+                topic_words = self.bertopic_model.get_topic(topic_id)
+                keywords = [word for word, _ in topic_words[:5]] if topic_words else []
+
+                # Count docs in this topic
+                topic_count = int(
+                    topic_info[topic_info["Topic"] == topic_id]["Count"].iloc[0]
+                )
+
+                topics_dict[topic_id] = HierarchicalTopic(
+                    topic_id=topic_id,
+                    parent_id=None,
+                    keywords=keywords,
+                    idea_count=topic_count,
+                    children=[],
+                )
+
+            # Parse hierarchy to establish parent-child relationships
+            # The hierarchical_df has columns like Parent_ID, Parent_Name, Topics, etc.
+            if "Parent_ID" in hierarchical_df.columns:
+                for _, row in hierarchical_df.iterrows():
+                    parent_id = row.get("Parent_ID")
+                    child_topics = row.get("Topics", [])
+
+                    if isinstance(child_topics, list):
+                        for child_id in child_topics:
+                            if child_id in topics_dict and parent_id != child_id:
+                                topics_dict[child_id].parent_id = parent_id
+
+            # Return root topics (those without parents) with their children populated
+            root_topics = [t for t in topics_dict.values() if t.parent_id is None]
+
+            # Populate children
+            for topic in topics_dict.values():
+                if topic.parent_id is not None and topic.parent_id in topics_dict:
+                    parent = topics_dict[topic.parent_id]
+                    if parent.children is None:
+                        parent.children = []
+                    parent.children.append(topic)
+
+            return root_topics if root_topics else list(topics_dict.values())
+
+        except Exception as e:
+            logger.warning(f"Failed to extract topic hierarchy: {e}")
+            return None
+
+    def get_topic_hierarchy(self) -> list[HierarchicalTopic] | None:
+        """
+        Get the hierarchical topic structure from the last clustering operation.
+
+        Returns:
+            List of root HierarchicalTopic objects, or None if not available
+        """
+        if self.bertopic_model is None or self._last_texts is None:
+            return None
+
+        return self._extract_bertopic_hierarchy(self._last_texts)
 
     def _extract_cluster_keywords(
         self, labels: np.ndarray, top_n: int = 10
@@ -460,6 +674,112 @@ class ClusterEngine:
 
         return float(trend_score)
 
+    def calculate_trend_velocity(
+        self, timestamps: list[datetime], window_days: int = 7
+    ) -> float:
+        """
+        Calculate week-over-week growth rate.
+
+        Args:
+            timestamps: List of creation timestamps
+            window_days: Time window for comparison
+
+        Returns:
+            Velocity score from 0 to 1 (capped at 5x growth = 1.0)
+        """
+        if not timestamps:
+            return 0.0
+
+        now = datetime.now(UTC)
+        this_week = len(
+            [t for t in timestamps if t > now - timedelta(days=window_days)]
+        )
+        last_week = len(
+            [
+                t
+                for t in timestamps
+                if now - timedelta(days=window_days * 2)
+                < t
+                <= now - timedelta(days=window_days)
+            ]
+        )
+
+        if last_week == 0:
+            return 1.0 if this_week > 0 else 0.0
+
+        velocity = this_week / last_week
+        return min(velocity, 5.0) / 5.0  # Normalize to 0-1
+
+    def assign_to_existing_clusters(
+        self,
+        new_texts: list[str],
+        cluster_centroids: dict[str, np.ndarray],
+        similarity_threshold: float = 0.7,
+    ) -> dict[int, str | None]:
+        """
+        Assign new ideas to existing clusters by embedding similarity.
+
+        This enables incremental clustering - assigning new ideas to existing clusters
+        without needing a full re-cluster operation.
+
+        Args:
+            new_texts: List of new idea texts to assign
+            cluster_centroids: Dict mapping cluster_id (str) to centroid embedding (np array)
+            similarity_threshold: Minimum cosine similarity to assign (default 0.7)
+
+        Returns:
+            Dict mapping text index to cluster_id (or None if no match)
+        """
+        if not new_texts or not cluster_centroids:
+            return dict.fromkeys(range(len(new_texts)))
+
+        try:
+            from sentence_transformers import SentenceTransformer
+        except ImportError:
+            logger.warning(
+                "sentence-transformers not installed. Cannot do incremental assignment."
+            )
+            return dict.fromkeys(range(len(new_texts)))
+
+        # Generate embeddings for new texts
+        logger.info(f"Generating embeddings for {len(new_texts)} new ideas...")
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+        new_embeddings = model.encode(new_texts, normalize_embeddings=True)
+
+        assignments: dict[int, str | None] = {}
+
+        for i, embedding in enumerate(new_embeddings):
+            best_cluster_id = None
+            best_similarity = 0.0
+
+            for cluster_id, centroid in cluster_centroids.items():
+                # Cosine similarity (embeddings are normalized, so dot product = cosine)
+                similarity = float(np.dot(embedding, centroid))
+
+                if similarity > best_similarity and similarity >= similarity_threshold:
+                    best_similarity = similarity
+                    best_cluster_id = cluster_id
+
+            assignments[i] = best_cluster_id
+
+            if best_cluster_id:
+                logger.debug(
+                    f"Assigned text {i} to cluster {best_cluster_id} "
+                    f"(similarity: {best_similarity:.3f})"
+                )
+            else:
+                logger.debug(
+                    f"Text {i} did not match any cluster (best: {best_similarity:.3f})"
+                )
+
+        assigned_count = sum(1 for v in assignments.values() if v is not None)
+        logger.info(
+            f"Incremental assignment complete: {assigned_count}/{len(new_texts)} "
+            f"assigned to existing clusters"
+        )
+
+        return assignments
+
 
 # Singleton instance for convenience
 _cluster_engine: ClusterEngine | None = None
@@ -469,9 +789,11 @@ def get_cluster_engine(**kwargs) -> ClusterEngine:
     """
     Get or create singleton cluster engine instance.
 
-    Reads ``USE_SENTENCE_EMBEDDINGS`` environment variable (``1`` / ``true`` /
-    ``yes``) to enable sentence-transformer embeddings.  An explicit
-    ``use_embeddings`` kwarg always takes precedence.
+    Reads environment variables to configure the engine:
+    - ``USE_SENTENCE_EMBEDDINGS``: Enable sentence-transformer embeddings
+    - ``USE_BERTOPIC``: Enable BERTopic for clustering with hierarchical topics
+
+    Explicit kwargs always take precedence over environment variables.
 
     Args:
         **kwargs: Optional configuration parameters for ClusterEngine
@@ -486,6 +808,12 @@ def get_cluster_engine(**kwargs) -> ClusterEngine:
             kwargs["use_embeddings"] = os.getenv(
                 "USE_SENTENCE_EMBEDDINGS", ""
             ).lower() in ("1", "true", "yes")
+        if "use_bertopic" not in kwargs:
+            kwargs["use_bertopic"] = os.getenv("USE_BERTOPIC", "").lower() in (
+                "1",
+                "true",
+                "yes",
+            )
         _cluster_engine = ClusterEngine(**kwargs)
 
     return _cluster_engine

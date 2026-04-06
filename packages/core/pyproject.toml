@@ -16,4 +16,8 @@ dependencies = [
     "redis>=7.2.0",
     "python-dotenv>=1.0.0",
     "pgvector>=0.4.0",
+    "sentence-transformers>=2.2.0",
+    "anthropic>=0.18.0",
+    "bertopic>=0.16.0",
+    "umap-learn>=0.5.0",
 ]

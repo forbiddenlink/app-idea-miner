@@ -100,3 +100,30 @@ class TrendingClustersResponse(BaseModel):
     """Response for GET /api/v1/clusters/trending/list."""
 
     trending: list[TrendingClusterItem]
+
+
+class HierarchicalTopicItem(BaseModel):
+    """A topic in the hierarchy."""
+
+    topic_id: int
+    parent_id: int | None = None
+    keywords: list[str]
+    idea_count: int
+    children: list[HierarchicalTopicItem] | None = None
+
+
+class ClusterHierarchyResponse(BaseModel):
+    """Response for GET /api/v1/clusters/{cluster_id}/hierarchy."""
+
+    cluster_id: str
+    label: str
+    subtopics: list[HierarchicalTopicItem] | None = None
+    message: str | None = None
+
+
+class TopicTreeResponse(BaseModel):
+    """Response for GET /api/v1/clusters/tree."""
+
+    topics: list[HierarchicalTopicItem]
+    total_topics: int
+    message: str | None = None

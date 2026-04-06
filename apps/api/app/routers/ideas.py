@@ -18,8 +18,10 @@ from apps.api.app.schemas.ideas import (
     IdeaListResponse,
     IdeaSearchResponse,
     IdeaStatsResponse,
+    SimilarIdeasResponse,
 )
 from apps.api.app.services.idea_service import IdeaService
+from packages.core.services.similarity_service import SimilarityService
 
 router = APIRouter(
     tags=["ideas"],
@@ -36,6 +38,9 @@ async def list_ideas(
     sentiment: str | None = None,
     min_quality: float | None = Query(None, ge=0.0, le=1.0),
     q: str | None = Query(None, min_length=2),
+    competitor: str | None = Query(
+        None, min_length=2, description="Filter by competitor mentioned"
+    ),
     sort_by: str = Query("quality", pattern="^(quality|date|sentiment)$"),
     order: str = Query("desc", pattern="^(asc|desc)$"),
     db: AsyncSession = Depends(get_db),
@@ -50,6 +55,7 @@ async def list_ideas(
         sentiment: Filter by sentiment (positive, neutral, negative)
         min_quality: Minimum quality score (0-1)
         q: Optional keyword search query
+        competitor: Filter by competitor mentioned (e.g., notion, slack, todoist)
         sort_by: Sort field (quality, date, sentiment)
         order: Sort direction (asc, desc)
         db: Database session
@@ -66,6 +72,7 @@ async def list_ideas(
             sentiment=sentiment,
             min_quality=min_quality,
             q=q,
+            competitor=competitor,
             sort_by=sort_by,
             order=order,
         )
@@ -84,6 +91,9 @@ async def list_ideas(
                 "emotions": idea.emotions,
                 "quality_score": idea.quality_score,
                 "features_mentioned": idea.features_mentioned,
+                "competitors_mentioned": idea.competitors_mentioned,
+                "aspect_sentiments": idea.aspect_sentiments,
+                "urgency_level": idea.urgency_level,
                 "extracted_at": idea.extracted_at.isoformat()
                 if idea.extracted_at
                 else None,
@@ -147,6 +157,9 @@ async def get_idea(
             "emotions": idea.emotions,
             "quality_score": idea.quality_score,
             "features_mentioned": idea.features_mentioned,
+            "competitors_mentioned": idea.competitors_mentioned,
+            "aspect_sentiments": idea.aspect_sentiments,
+            "urgency_level": idea.urgency_level,
             "extracted_at": idea.extracted_at.isoformat()
             if idea.extracted_at
             else None,
@@ -181,6 +194,83 @@ async def get_idea(
     except IntegrityError as e:
         logger.error(
             f"Database integrity error fetching idea {idea_id}: {e}", exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/{idea_id}/similar", response_model=SimilarIdeasResponse)
+async def get_similar_ideas(
+    idea_id: UUID,
+    limit: int = Query(10, ge=1, le=50),
+    min_similarity: float = Query(0.7, ge=0.0, le=1.0),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Find ideas similar to the given idea using vector similarity.
+
+    Uses cosine similarity on embeddings to find semantically similar ideas.
+
+    Args:
+        idea_id: UUID of the source idea
+        limit: Maximum number of similar ideas (max 50)
+        min_similarity: Minimum similarity score (0-1)
+        db: Database session
+
+    Returns:
+        List of similar ideas with similarity scores
+    """
+    try:
+        service = SimilarityService(db)
+        similar = await service.find_similar_ideas(
+            idea_id=idea_id,
+            limit=limit,
+            min_similarity=min_similarity,
+        )
+
+        # Format response
+        similar_data = [
+            {
+                "id": str(item["idea"].id),
+                "problem_statement": item["idea"].problem_statement,
+                "context": item["idea"].context,
+                "domain": item["idea"].domain,
+                "sentiment": item["idea"].sentiment,
+                "sentiment_score": item["idea"].sentiment_score,
+                "quality_score": item["idea"].quality_score,
+                "features_mentioned": item["idea"].features_mentioned,
+                "extracted_at": item["idea"].extracted_at.isoformat()
+                if item["idea"].extracted_at
+                else None,
+                "similarity": item["similarity"],
+                "raw_post": {
+                    "id": str(item["idea"].raw_post.id),
+                    "url": item["idea"].raw_post.url,
+                    "title": item["idea"].raw_post.title,
+                    "source": item["idea"].raw_post.source,
+                    "published_at": item["idea"].raw_post.published_at.isoformat()
+                    if item["idea"].raw_post.published_at
+                    else None,
+                }
+                if item["idea"].raw_post
+                else None,
+            }
+            for item in similar
+        ]
+
+        return {
+            "source_idea_id": str(idea_id),
+            "similar_ideas": similar_data,
+            "total": len(similar_data),
+        }
+
+    except OperationalError as e:
+        logger.error(
+            f"Database connection error finding similar ideas: {e}", exc_info=True
+        )
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    except IntegrityError as e:
+        logger.error(
+            f"Database integrity error finding similar ideas: {e}", exc_info=True
         )
         raise HTTPException(status_code=500, detail="Internal server error")
 
