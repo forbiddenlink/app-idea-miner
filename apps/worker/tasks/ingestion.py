@@ -152,4 +152,11 @@ def fetch_rss_feeds(self):
     logger.warning(
         "fetch_rss_feeds is deprecated. Please update Celery Beat schedule to use run_ingestion_cycle."
     )
-    return run_ingestion_cycle(self)
+    # Run the same async implementation directly
+    total_stats = {"fetched": 0, "new": 0, "duplicates": 0, "errors": 0}
+    try:
+        asyncio.run(_run_ingestion_async(total_stats))
+    except Exception as e:
+        logger.error(f"Ingestion cycle failed: {e}", exc_info=True)
+    logger.info(f"Ingestion cycle complete: {total_stats}")
+    return total_stats
