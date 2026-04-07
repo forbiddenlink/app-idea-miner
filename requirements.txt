@@ -172,7 +172,7 @@ multidict==6.7.1
     #   yarl
 networkx==3.6.1
     # via torch
-nltk==3.9.2
+nltk==3.9.4
     # via core
 nodeenv==1.10.0
     # via pre-commit
