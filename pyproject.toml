@@ -9,6 +9,7 @@ authors = [
 ]
 license = { text = "MIT" }
 dependencies = [
+    "aiohttp>=3.13.4",
     "alembic>=1.18.0",
     "asyncpraw>=7.8.1",
     "beautifulsoup4>=4.14.3",
@@ -19,6 +20,7 @@ dependencies = [
     "psycopg2-binary>=2.9.11",
     "pyjwt>=2.12.1",
     "sentence-transformers>=5.3.0",
+    "tornado>=6.5.5",
 ]
 
 [tool.uv.workspace]
