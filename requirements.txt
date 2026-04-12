@@ -213,7 +213,7 @@ narwhals==2.19.0
     # via plotly
 networkx==3.6.1
     # via torch
-nltk==3.9.2
+nltk>=3.9.4
     # via core
 nodeenv==1.10.0
     # via pre-commit
@@ -323,7 +323,7 @@ pydantic-core==2.41.5
     # via pydantic
 pydantic-settings==2.13.0
     # via api
-pygments==2.19.2
+Pygments>=2.20.0
     # via
     #   pytest
     #   rich
@@ -369,7 +369,7 @@ regex==2026.1.15
     # via
     #   nltk
     #   transformers
-requests==2.32.5
+requests>=2.33.0
     # via
     #   update-checker
     #   vadersentiment
