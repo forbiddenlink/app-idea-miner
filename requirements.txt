@@ -332,7 +332,7 @@ pyjwt==2.12.1
     #   app-idea-miner
 pynndescent==0.6.0
     # via umap-learn
-pytest==9.0.2
+pytest==9.0.3
     # via
     #   pytest-asyncio
     #   pytest-cov
