@@ -349,7 +349,7 @@ python-dotenv==1.2.1
     #   pydantic-settings
     #   uvicorn
     #   worker
-python-multipart==0.0.22
+python-multipart==0.0.26
     # via api
 pytz==2025.2
     # via flower
