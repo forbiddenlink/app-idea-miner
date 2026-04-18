@@ -8,7 +8,16 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import Any
+from typing import Any, TypedDict
+
+
+class CacheStats(TypedDict):
+    hits: int
+    misses: int
+    errors: int
+    hit_rate: float
+    by_prefix: dict[str, dict[str, int]]
+
 
 import redis.asyncio as aioredis
 
@@ -53,7 +62,7 @@ class CacheMetrics:
         total = self.hits + self.misses
         return self.hits / total if total > 0 else 0.0
 
-    def get_stats(self) -> dict[str, Any]:
+    def get_stats(self) -> CacheStats:
         """Get metrics summary."""
         return {
             "hits": self.hits,
@@ -211,44 +220,6 @@ async def invalidate_cache(pattern: str):
             await client.close()
 
 
-def cached(prefix: str, ttl: int = 300):
-    """
-    Decorator to cache async function results.
-
-    Usage:
-        @cached("analytics:summary", ttl=300)
-        async def get_summary():
-            return expensive_query()
-
-    Args:
-        prefix: Cache key prefix
-        ttl: Time to live in seconds (default: 5 minutes)
-    """
-
-    def decorator(func: Callable):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            # Generate cache key from function arguments
-            cache_key = generate_cache_key(prefix, *args, **kwargs)
-
-            # Try to get from cache
-            cached_result = await get_cached(cache_key)
-            if cached_result is not None:
-                return cached_result
-
-            # Execute function
-            result = await func(*args, **kwargs)
-
-            # Cache result
-            await set_cached(cache_key, result, ttl)
-
-            return result
-
-        return wrapper
-
-    return decorator
-
-
 def cached_route(prefix: str, ttl: int = 300, key_params: list | None = None):
     """
     Decorator to cache FastAPI route responses.
@@ -305,18 +276,3 @@ async def invalidate_analytics_cache():
 async def invalidate_clusters_cache():
     """Invalidate cluster list cache."""
     await invalidate_cache("clusters:list:*")
-
-
-async def invalidate_ideas_cache():
-    """Invalidate ideas list cache."""
-    await invalidate_cache("ideas:list:*")
-
-
-def get_cache_stats() -> dict[str, Any]:
-    """
-    Get current cache metrics.
-
-    Returns:
-        Dict with hits, misses, hit_rate, and per-prefix breakdowns
-    """
-    return cache_metrics.get_stats()

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
-import { Cluster, Idea } from '@/types';
+import { AnalyticsSummary, Cluster, Idea } from '@/types';
 import { apiClient } from '@/services/api';
 import { useGlobalToast } from '@/contexts/ToastContext';
 
@@ -9,7 +9,7 @@ type ExportType = 'clusters' | 'ideas' | 'analytics';
 
 interface ExportButtonProps {
   type: ExportType;
-  data?: unknown;
+  data?: Cluster[] | Idea[] | AnalyticsSummary | Record<string, string | number>[];
   className?: string;
 }
 
@@ -120,7 +120,6 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
         exportData = data;
         filename = `app-idea-miner-${type}-${new Date().toISOString().split('T')[0]}.${format}`;
       } else {
-        // Fetch data from API
         switch (type) {
           case 'clusters': {
             const clusters = await fetchAllClusters()
@@ -170,8 +169,7 @@ export const ExportButton = ({ type, data, className = '' }: ExportButtonProps) 
         if (Array.isArray(exportData)) {
           exportToCSV(exportData as Record<string, unknown>[], filename);
         } else {
-          // Convert object to array for CSV
-          const flattenedData = [exportData as Record<string, unknown>];
+            const flattenedData = [exportData as Record<string, unknown>];
           exportToCSV(flattenedData, filename);
         }
       } else {

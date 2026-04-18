@@ -19,7 +19,6 @@ DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/appideas"
 )
 
-# Check if we're in a serverless environment without a database
 IS_SERVERLESS = os.getenv("VERCEL", "") == "1"
 HAS_DATABASE = bool(os.getenv("DATABASE_URL"))
 
@@ -69,21 +68,6 @@ def get_session_local():
             autoflush=False,
         )
     return _session_local
-
-
-# For backwards compatibility with existing imports
-class _EngineProxy:
-    """Proxy that lazily initializes the engine on first use."""
-
-    async def dispose(self):
-        if _engine is not None:
-            await _engine.dispose()
-
-    def __getattr__(self, name):
-        return getattr(get_engine(), name)
-
-
-engine = _EngineProxy()
 
 
 def AsyncSessionLocal():

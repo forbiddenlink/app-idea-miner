@@ -54,21 +54,6 @@ export interface Idea {
   extracted_at: string;
 }
 
-export interface Post {
-  id: string;
-  url: string;
-  url_hash: string;
-  title: string;
-  content?: string;
-  source: string;
-  author?: string;
-  published_at?: string;
-  fetched_at: string;
-  source_metadata?: Record<string, unknown>;
-  language: string;
-  is_processed: boolean;
-}
-
 export interface AnalyticsSummary {
   overview: {
     total_posts: number;
@@ -142,14 +127,6 @@ export interface Pagination {
   has_more: boolean;
 }
 
-export interface APIResponse<T> {
-  data: T;
-  meta?: {
-    page: number;
-    limit: number;
-    total: number;
-  };
-}
 export interface ClusterQueryParams {
   sort_by?: string;
   order?: string;

@@ -8,11 +8,9 @@ import os
 from celery import Celery
 from kombu import Exchange, Queue
 
-# Load configuration from environment
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/1")
 
-# Create Celery application
 celery_app = Celery(
     "app_idea_miner",
     broker=CELERY_BROKER_URL,

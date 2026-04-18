@@ -65,13 +65,11 @@ class RSSSource(BaseSource):
                         if not url or not title:
                             continue
 
-                        # Generate hash
                         url_hash = generate_url_hash(url)
 
                         # Determine source
                         source = self._extract_source_from_feed_url(feed_url)
 
-                        # Parse date
                         published_at = None
                         if (
                             hasattr(entry, "published_parsed")
@@ -79,7 +77,6 @@ class RSSSource(BaseSource):
                         ):
                             published_at = datetime(*entry.published_parsed[:6])
 
-                        # Create RawPost (transient)
                         post = RawPost(
                             url=url,
                             url_hash=url_hash,

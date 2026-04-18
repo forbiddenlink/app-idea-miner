@@ -42,7 +42,7 @@ class IdeaSummary(BaseModel):
     domain: str | None = None
     sentiment: str
     sentiment_score: float
-    emotions: dict[str, Any] | None = None
+    emotions: dict[str, float] | None = None
     quality_score: float
     features_mentioned: list[str] | None = None
     competitors_mentioned: list[str] | None = None
@@ -68,7 +68,7 @@ class IdeaDetailResponse(BaseModel):
     domain: str | None = None
     sentiment: str
     sentiment_score: float
-    emotions: dict[str, Any] | None = None
+    emotions: dict[str, float] | None = None
     quality_score: float
     features_mentioned: list[str] | None = None
     competitors_mentioned: list[str] | None = None

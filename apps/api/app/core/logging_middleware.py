@@ -28,13 +28,11 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        # Generate or accept incoming request ID
         request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())[:8]
 
         # Record start time
         start_time = time.perf_counter()
 
-        # Get client info
         client_ip = request.client.host if request.client else "unknown"
         method = request.method
         path = request.url.path
@@ -43,10 +41,8 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         try:
             response = await call_next(request)
 
-            # Calculate duration
             duration_ms = round((time.perf_counter() - start_time) * 1000, 2)
 
-            # Add request ID to response headers
             response.headers["X-Request-ID"] = request_id
 
             # Determine log level based on status code

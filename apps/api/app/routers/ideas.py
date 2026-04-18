@@ -6,7 +6,7 @@ import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.api.app.core.constants import DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT
@@ -120,9 +120,6 @@ async def list_ideas(
     except OperationalError as e:
         logger.error(f"Database connection error listing ideas: {e}", exc_info=True)
         raise HTTPException(status_code=503, detail="Database unavailable")
-    except IntegrityError as e:
-        logger.error(f"Database integrity error listing ideas: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{idea_id}", response_model=IdeaDetailResponse)
@@ -191,11 +188,6 @@ async def get_idea(
             f"Database connection error fetching idea {idea_id}: {e}", exc_info=True
         )
         raise HTTPException(status_code=503, detail="Database unavailable")
-    except IntegrityError as e:
-        logger.error(
-            f"Database integrity error fetching idea {idea_id}: {e}", exc_info=True
-        )
-        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{idea_id}/similar", response_model=SimilarIdeasResponse)
@@ -268,11 +260,6 @@ async def get_similar_ideas(
             f"Database connection error finding similar ideas: {e}", exc_info=True
         )
         raise HTTPException(status_code=503, detail="Database unavailable")
-    except IntegrityError as e:
-        logger.error(
-            f"Database integrity error finding similar ideas: {e}", exc_info=True
-        )
-        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/search/query", response_model=IdeaSearchResponse)
@@ -331,9 +318,6 @@ async def search_ideas(
     except OperationalError as e:
         logger.error(f"Database connection error searching ideas: {e}", exc_info=True)
         raise HTTPException(status_code=503, detail="Database unavailable")
-    except IntegrityError as e:
-        logger.error(f"Database integrity error searching ideas: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/stats/summary", response_model=IdeaStatsResponse)
@@ -358,8 +342,3 @@ async def get_ideas_stats(
             f"Database connection error fetching ideas stats: {e}", exc_info=True
         )
         raise HTTPException(status_code=503, detail="Database unavailable")
-    except IntegrityError as e:
-        logger.error(
-            f"Database integrity error fetching ideas stats: {e}", exc_info=True
-        )
-        raise HTTPException(status_code=500, detail="Internal server error")

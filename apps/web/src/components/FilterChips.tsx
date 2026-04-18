@@ -1,6 +1,3 @@
-// Filter Chips Component
-// Shows active filters as removable chips
-
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 

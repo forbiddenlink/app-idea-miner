@@ -64,7 +64,6 @@ class IndieHackersSource(BaseSource):
             headers={"User-Agent": USER_AGENT},
             follow_redirects=True,
         ) as client:
-            # Fetch from each target category
             tasks = [
                 self._fetch_category(client, category, semaphore)
                 for category in TARGET_CATEGORIES
@@ -135,7 +134,6 @@ class IndieHackersSource(BaseSource):
     def _parse_post_element(self, element, category: str) -> RawPost | None:
         """Parse a single post element into a RawPost."""
         try:
-            # Extract title
             title_el = (
                 element.select_one("h2")
                 or element.select_one("h3")
@@ -157,24 +155,19 @@ class IndieHackersSource(BaseSource):
                 if not IDEA_KEYWORDS.search(content_preview):
                     return None
 
-            # Extract URL
             link_el = element.select_one("a[href*='/post/']") or element.find("a")
             if link_el and link_el.get("href"):
                 href = link_el["href"]
                 url = href if href.startswith("http") else f"{IH_BASE_URL}{href}"
             else:
-                # Generate a pseudo-URL from title hash
                 url = f"{IH_BASE_URL}/group/{category}#post-{hash(title)}"
 
-            # Extract content
             content_el = element.select_one(".post-content, .post-body, .content, p")
             content = content_el.get_text(strip=True) if content_el else title
 
-            # Extract author
             author_el = element.select_one(".author, .username, [data-author]")
             author = author_el.get_text(strip=True) if author_el else "unknown"
 
-            # Extract engagement metrics
             likes = 0
             comments = 0
 

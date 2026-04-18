@@ -23,30 +23,12 @@ class PostService:
         """
         logger.info("Starting sample data seeding...")
 
-        # Load sample data file
-        # Assuming the service is called from within the app structure,
-        # but we need to find the absolute path relative to the project root.
-        # Original router used: Path(__file__).parents[4] / "data" / "sample_posts.json"
-        # We need to be careful with paths here.
-        # Let's try to locate it relative to this file: packages/core/services/post_service.py
-        # Project root is ../../../
-
+        # Locate sample data relative to this file (packages/core/services/post_service.py)
+        # Project root is three levels up
         data_path = Path(__file__).parents[3] / "data" / "sample_posts.json"
 
-        if not data_path.exists():
-            # Fallback for different execution contexts or try absolute path if known
-            # Reverting to the logic that worked in router but adjusted for new depth
-            # Router was in apps/api/app/routers (depth 4 from root?)
-            # This file is packages/core/services (depth 3 from root)
-            pass
-
-        try:
-            with open(data_path) as f:
-                sample_posts = json.load(f)
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Sample data file not found: {data_path}")
-        except Exception as e:
-            raise Exception(f"Failed to load sample data: {str(e)}")
+        with open(data_path) as f:
+            sample_posts = json.load(f)
 
         logger.info(f"Loaded {len(sample_posts)} posts from sample data")
 
@@ -54,12 +36,6 @@ class PostService:
         duplicates = 0
         errors = 0
 
-        # Pre-process queries for bulk checking
-        # But for max speed we rely on DB constraints (ON CONFLICT DO NOTHING)
-        # However, we also want to deduplicate by title which is harder in SQL if not unique constraint
-        # Let's assume URL hash is the primary dedup key for "fast path"
-
-        # 1. Prepare all objects
         raw_values = []
         for post_data in sample_posts:
             url = post_data.get("url")
@@ -71,17 +47,16 @@ class PostService:
 
             url_hash = generate_url_hash(url)
 
-            # Basic client-side dedup for the batch itself
-            # (Skipping here for brevity, assuming standard ON CONFLICT handles DB side)
-
             published_at = None
             if post_data.get("published_at"):
                 try:
                     published_at = datetime.fromisoformat(
                         post_data["published_at"].replace("Z", "+00:00")
                     )
-                except Exception:
-                    pass
+                except (ValueError, TypeError) as e:
+                    logger.warning(
+                        f"Invalid published_at date: {post_data['published_at']}: {e}"
+                    )
 
             raw_values.append(
                 {
@@ -107,28 +82,20 @@ class PostService:
                 "errors": errors,
             }
 
-        # 2. Bulk Insert with ON CONFLICT DO NOTHING
         from sqlalchemy.dialects.postgresql import insert
 
         stmt = insert(RawPost).values(raw_values)
         stmt = stmt.on_conflict_do_nothing(index_elements=["url"])
 
-        # We want to know how many were inserted.
-        # RETURNING id allows us to count; if it returns None (row), it was duplicate
-        # Note: on_conflict_do_nothing returns ONLY inserted rows if we ask for RETURNING
         result = await self.db.execute(stmt.returning(RawPost.id))
         inserted_ids = result.scalars().all()
         inserted = len(inserted_ids)
         duplicates = len(raw_values) - inserted
 
-        try:
-            await self.db.commit()
-            logger.info(
-                f"Sample data seeding complete: {inserted} inserted, {duplicates} duplicates (skipped)"
-            )
-        except Exception as e:
-            await self.db.rollback()
-            raise Exception(f"Database commit failed: {str(e)}")
+        await self.db.commit()
+        logger.info(
+            f"Sample data seeding complete: {inserted} inserted, {duplicates} duplicates (skipped)"
+        )
 
         return {
             "status": "success",

@@ -146,7 +146,7 @@ export function ContextMenu({ items, children, disabled = false }: Readonly<Cont
 }
 
 // Helper hook for common context menu actions
-export function useContextMenuActions() {
+function useContextMenuActions() {
   const toCsvCell = (value: unknown): string => {
     const text = value == null ? '' : String(value)
     return `"${text.replaceAll('"', '""')}"`
@@ -186,7 +186,7 @@ export function useContextMenuActions() {
     URL.revokeObjectURL(url)
   }
 
-  const exportAsCsv = (headers: string[], rows: unknown[][], filename: string) => {
+  const exportAsCsv = (headers: string[], rows: (string | number | boolean | null)[][], filename: string) => {
     const csv = [
       headers.map(toCsvCell).join(','),
       ...rows.map(row => row.map(toCsvCell).join(','))

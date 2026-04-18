@@ -4,17 +4,16 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import Settings, { useRefreshSettings } from "./Settings";
 
-beforeEach(() => {
-  localStorage.clear();
-});
-
 // ---------------------------------------------------------------------------
 // Settings page
 // ---------------------------------------------------------------------------
 describe("Settings", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
   it("renders the page heading", () => {
     render(<Settings />);
-    // Use level:1 to target h1 only, not the h2 "Data Refresh Settings"
     expect(
       screen.getByRole("heading", { name: /^settings$/i, level: 1 }),
     ).toBeInTheDocument();
@@ -52,11 +51,11 @@ describe("Settings", () => {
     render(<Settings />);
     const toggle = screen.getByRole("checkbox", { name: /auto-refresh/i });
     await userEvent.click(toggle);
-    expect(localStorage.getItem("aim_auto_refresh")).toBe("false");
+    expect(window.localStorage.getItem("aim_auto_refresh")).toBe("false");
   });
 
   it("toggle reflects false when localStorage is pre-set to false", () => {
-    localStorage.setItem("aim_auto_refresh", "false");
+    window.localStorage.setItem("aim_auto_refresh", "false");
     render(<Settings />);
     const toggle = screen.getByRole("checkbox", { name: /auto-refresh/i });
     expect(toggle).not.toBeChecked();
@@ -67,6 +66,10 @@ describe("Settings", () => {
 // useRefreshSettings hook
 // ---------------------------------------------------------------------------
 describe("useRefreshSettings", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
   it("returns enabled:true and interval:60000 when localStorage is empty", () => {
     const { enabled, interval } = useRefreshSettings();
     expect(enabled).toBe(true);
@@ -74,13 +77,13 @@ describe("useRefreshSettings", () => {
   });
 
   it("reads aim_auto_refresh=false from localStorage", () => {
-    localStorage.setItem("aim_auto_refresh", "false");
+    window.localStorage.setItem("aim_auto_refresh", "false");
     const { enabled } = useRefreshSettings();
     expect(enabled).toBe(false);
   });
 
   it("reads a custom interval from localStorage", () => {
-    localStorage.setItem("aim_refresh_interval", "30000");
+    window.localStorage.setItem("aim_refresh_interval", "30000");
     const { interval } = useRefreshSettings();
     expect(interval).toBe(30000);
   });

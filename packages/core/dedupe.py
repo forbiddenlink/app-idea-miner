@@ -189,18 +189,6 @@ class Deduplicator:
 deduplicator = Deduplicator()
 
 
-# Convenience functions
-def canonicalize_url(url: str) -> str:
-    """Canonicalize URL using singleton deduplicator."""
-    return deduplicator.canonicalize_url(url)
-
-
 def generate_url_hash(url: str) -> str:
     """Generate URL hash using singleton deduplicator."""
     return deduplicator.generate_url_hash(url)
-
-
-def is_duplicate_title(title1: str, title2: str, threshold: float = 0.85) -> bool:
-    """Check if titles are duplicates using singleton deduplicator."""
-    temp_dedup = Deduplicator(title_similarity_threshold=threshold)
-    return temp_dedup.is_duplicate_title(title1, title2)

@@ -25,7 +25,15 @@ import {
   SavedSearchQueryParams,
   SavedSearchUpdateRequest,
 } from "@/types";
-import axios, { AxiosError, AxiosInstance } from "axios";
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  InternalAxiosRequestConfig,
+} from "axios";
+
+interface RetryableAxiosRequestConfig extends InternalAxiosRequestConfig {
+  __retryCount?: number;
+}
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 const API_KEY = import.meta.env.VITE_API_KEY || "dev-api-key";
@@ -83,14 +91,12 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       async (error: AxiosError) => {
-        const config = error.config as Record<string, unknown> | undefined;
+        const config = error.config as RetryableAxiosRequestConfig | undefined;
         if (!config) throw error;
 
-        const retryCount = (config.__retryCount as number) || 0;
+        const retryCount = config.__retryCount ?? 0;
 
-        const method =
-          typeof config.method === "string" ? config.method : undefined;
-        if (isRetryable(error, method) && retryCount < MAX_RETRIES) {
+        if (isRetryable(error, config.method) && retryCount < MAX_RETRIES) {
           config.__retryCount = retryCount + 1;
           const delay = getRetryDelay(retryCount, error);
           await new Promise((resolve) => setTimeout(resolve, delay));
@@ -134,7 +140,7 @@ class ApiClient {
       }>;
     };
 
-    return (payload.domains || []).map((domain) => ({
+    return payload.domains.map((domain) => ({
       domain: domain.name,
       idea_count: domain.idea_count,
       avg_sentiment: domain.avg_sentiment,
@@ -313,50 +319,3 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
-export default apiClient;
-
-// Convenience functions
-export const getHealth = () => apiClient.getHealth();
-export const getAnalyticsSummary = () => apiClient.getAnalyticsSummary();
-export const getAnalyticsTrends = (params: AnalyticsTrendsParams) =>
-  apiClient.getAnalyticsTrends(params);
-export const getAnalyticsDomains = () => apiClient.getAnalyticsDomains();
-export const getClusters = (params?: ClusterQueryParams) =>
-  apiClient.getClusters(params);
-export const getCluster = (id: string, includeEvidence?: boolean) =>
-  apiClient.getCluster(id, includeEvidence);
-export const getSimilarClusters = (id: string, limit?: number) =>
-  apiClient.getSimilarClusters(id, limit);
-export const getTrendingClusters = (limit?: number, minTrendScore?: number) =>
-  apiClient.getTrendingClusters(limit, minTrendScore);
-export const getIdeas = (params?: IdeaQueryParams) =>
-  apiClient.getIdeas(params);
-export const getIdeaById = (id: string) => apiClient.getIdeaById(id);
-export const searchIdeas = (query: string, limit?: number) =>
-  apiClient.searchIdeas(query, limit);
-export const triggerIngestion = () => apiClient.triggerIngestion();
-export const triggerClustering = (params?: ReclusterParams) =>
-  apiClient.triggerClustering(params);
-export const getJobStatus = (jobId: string) => apiClient.getJobStatus(jobId);
-export const getOpportunities = (params?: OpportunityQueryParams) =>
-  apiClient.getOpportunities(params);
-export const getOpportunity = (clusterId: string) =>
-  apiClient.getOpportunity(clusterId);
-export const getBookmarks = (params?: BookmarkQueryParams) =>
-  apiClient.getBookmarks(params);
-export const addBookmark = (payload: BookmarkCreateRequest) =>
-  apiClient.addBookmark(payload);
-export const removeBookmark = (itemType: BookmarkItemType, itemId: string) =>
-  apiClient.removeBookmark(itemType, itemId);
-export const clearBookmarks = (itemType?: BookmarkItemType) =>
-  apiClient.clearBookmarks(itemType);
-export const getSavedSearches = (params?: SavedSearchQueryParams) =>
-  apiClient.getSavedSearches(params);
-export const createSavedSearch = (payload: SavedSearchCreateRequest) =>
-  apiClient.createSavedSearch(payload);
-export const updateSavedSearch = (
-  savedSearchId: string,
-  payload: SavedSearchUpdateRequest,
-) => apiClient.updateSavedSearch(savedSearchId, payload);
-export const deleteSavedSearch = (savedSearchId: string) =>
-  apiClient.deleteSavedSearch(savedSearchId);

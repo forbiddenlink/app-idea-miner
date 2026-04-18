@@ -5,17 +5,6 @@ interface SkipLink {
   label: string
 }
 
-/**
- * SkipNavigation Component
- *
- * Provides skip links for keyboard and screen reader users to jump to main content.
- * Implements WCAG 2.2 Level AA requirement for bypass blocks.
- *
- * Skip links appear on focus and allow users to:
- * - Skip to main content
- * - Skip to navigation
- * - Skip to search
- */
 export function SkipNavigation() {
   const skipLinks: SkipLink[] = [
     { id: 'main-content', label: 'Skip to main content' },
@@ -24,7 +13,6 @@ export function SkipNavigation() {
   ]
 
   useEffect(() => {
-    // Add IDs to target elements if they don't exist
     const main = document.querySelector('main')
     if (main && !main.id) {
       main.id = 'main-content'

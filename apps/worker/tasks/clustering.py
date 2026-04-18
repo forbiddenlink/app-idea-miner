@@ -130,7 +130,6 @@ async def _run_clustering_async(
             memberships_created = 0
 
             for cluster_id in range(cluster_result.n_clusters):
-                # Get ideas in this cluster
                 cluster_mask = cluster_result.labels == cluster_id
                 cluster_idea_indices = [
                     i for i, is_in_cluster in enumerate(cluster_mask) if is_in_cluster
@@ -140,7 +139,6 @@ async def _run_clustering_async(
                 if not cluster_ideas:
                     continue
 
-                # Calculate cluster metadata
                 idea_count = len(cluster_ideas)
                 avg_sentiment = (
                     sum(idea.sentiment_score for idea in cluster_ideas) / idea_count
@@ -149,12 +147,10 @@ async def _run_clustering_async(
                     sum(idea.quality_score for idea in cluster_ideas) / idea_count
                 )
 
-                # Calculate trend score
                 timestamps = [idea.extracted_at for idea in cluster_ideas]
                 engine = get_cluster_engine()
                 trend_score = engine.calculate_trend_score(timestamps, window_days=7)
 
-                # Calculate overall score
                 quality_score = engine.score_cluster(
                     size=idea_count,
                     avg_sentiment=avg_sentiment,
@@ -162,12 +158,9 @@ async def _run_clustering_async(
                     trend_score=trend_score,
                 )
 
-                # Get keywords for this cluster
                 keywords = cluster_result.keywords.get(cluster_id, [])
                 keyword_list = [kw[0] for kw in keywords]
 
-                # Generate label using the most representative idea text
-                # (falls back to keyword join if texts are too long or sparse)
                 cluster_texts = [idea.problem_statement for idea in cluster_ideas]
                 label = engine.generate_cluster_label(
                     keywords,
@@ -175,7 +168,6 @@ async def _run_clustering_async(
                     label_strategy="representative",
                 )
 
-                # Create Cluster record
                 cluster = Cluster(
                     label=label,
                     description=f"Cluster of {idea_count} related app ideas",
@@ -186,14 +178,13 @@ async def _run_clustering_async(
                     trend_score=trend_score,
                 )
                 session.add(cluster)
-                await session.flush()  # Get cluster ID
+                await session.flush()
 
                 clusters_created += 1
                 logger.debug(
                     f"Created cluster {cluster_id}: {label} ({idea_count} ideas)"
                 )
 
-                # Create ClusterMembership records
                 # Sort ideas by quality to identify representative ones
                 sorted_cluster_ideas = sorted(
                     zip(cluster_idea_indices, cluster_ideas),
@@ -202,7 +193,6 @@ async def _run_clustering_async(
                 )
 
                 for rank, (idx, idea) in enumerate(sorted_cluster_ideas):
-                    # Calculate similarity score (use HDBSCAN probability if available)
                     similarity_score = (
                         float(cluster_result.probabilities[idx])
                         if cluster_result.probabilities is not None
@@ -250,9 +240,7 @@ async def _run_clustering_async(
                 "ideas_fetched": len(ideas),
                 "clusters_created": clusters_created,
                 "memberships_created": memberships_created,
-                "noise_ideas": int(
-                    cluster_result.n_noise
-                ),  # Convert numpy int to Python int
+                "noise_ideas": int(cluster_result.n_noise),
             }
 
         except Exception as e:
@@ -301,7 +289,6 @@ async def _update_cluster_trends_async() -> dict[str, Any]:
 
     async with AsyncSessionLocal() as session:
         try:
-            # Fetch all clusters with their ideas
             stmt = select(Cluster)
             result = await session.execute(stmt)
             clusters = result.scalars().all()
@@ -310,14 +297,12 @@ async def _update_cluster_trends_async() -> dict[str, Any]:
             engine = get_cluster_engine()
 
             for cluster in clusters:
-                # Fetch cluster ideas with timestamps
                 membership_stmt = select(ClusterMembership).where(
                     ClusterMembership.cluster_id == cluster.id
                 )
                 membership_result = await session.execute(membership_stmt)
                 memberships = membership_result.scalars().all()
 
-                # Get idea timestamps
                 idea_ids = [m.idea_id for m in memberships]
                 idea_stmt = select(IdeaCandidate).where(IdeaCandidate.id.in_(idea_ids))
                 idea_result = await session.execute(idea_stmt)
@@ -325,12 +310,10 @@ async def _update_cluster_trends_async() -> dict[str, Any]:
 
                 timestamps = [idea.extracted_at for idea in ideas]
 
-                # Calculate new trend score
                 new_trend_score = engine.calculate_trend_score(
                     timestamps, window_days=7
                 )
 
-                # Update cluster
                 cluster.trend_score = new_trend_score
                 cluster.updated_at = datetime.now(UTC)
                 updated_count += 1
@@ -456,7 +439,6 @@ async def _assign_new_ideas_async(
                     "message": "No existing clusters found",
                 }
 
-            # Build centroids dict
             cluster_centroids: dict[str, np.ndarray] = {}
 
             for cluster in clusters:
@@ -466,7 +448,6 @@ async def _assign_new_ideas_async(
                         cluster.cluster_vector
                     )
                 else:
-                    # Compute centroid from member ideas
                     member_stmt = (
                         select(IdeaCandidate)
                         .join(
@@ -521,7 +502,6 @@ async def _assign_new_ideas_async(
                 if cluster_id_str is not None:
                     cluster_id = UUID(cluster_id_str)
 
-                    # Calculate similarity score from embedding
                     if (
                         idea.idea_vector is not None
                         and cluster_id_str in cluster_centroids
@@ -543,7 +523,6 @@ async def _assign_new_ideas_async(
                     )
                     session.add(membership)
 
-                    # Update cluster count
                     cluster_stmt = select(Cluster).where(Cluster.id == cluster_id)
                     cluster_res = await session.execute(cluster_stmt)
                     cluster = cluster_res.scalar_one()

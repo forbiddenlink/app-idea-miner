@@ -73,9 +73,9 @@ select = [
 ignore = [
     "E501",  # line too long (handled by formatter)
     "B008",  # do not perform function calls in argument defaults
-    "UP006", # use list/dict instead of List/Dict (legacy types)
+    "UP006", # use list/dict instead of List/Dict
     "E712",  # comparison to True/False (SQLAlchemy/Pandas)
-    "F403",  # star imports (legacy structure)
+    "F403",  # star imports
     "B904",  # raise from (exception chaining)
     "C416",  # unnecessary comprehension
     "E741",  # ambiguous variable name

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from pydantic import BaseModel
 
 
@@ -25,7 +23,7 @@ class JobStatusResponse(BaseModel):
     job_id: str
     status: str
     message: str
-    result: Any = None
+    result: dict[str, str | int | float | list[str]] | None = None
     error: str | None = None
 
 

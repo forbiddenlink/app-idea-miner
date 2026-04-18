@@ -77,9 +77,8 @@ async def trigger_ingestion(
             status_code=400, detail="Source-specific ingestion not yet implemented"
         )
     else:
-        # Trigger RSS feed fetching task by name
         task = celery_app.send_task(
-            "apps.worker.tasks.ingestion.fetch_rss_feeds", queue="ingestion"
+            "apps.worker.tasks.ingestion.run_ingestion_cycle", queue="ingestion"
         )
 
     logger.info(f"Ingestion job queued: {task.id}")

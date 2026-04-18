@@ -308,6 +308,13 @@ def get_all_competitors() -> set[str]:
     return competitors
 
 
+def _get_search_pool(domain: str | None) -> set[str]:
+    """Get competitor names to search for, filtered by domain if provided."""
+    if domain and domain in KNOWN_COMPETITORS:
+        return {c.lower() for c in KNOWN_COMPETITORS[domain]}
+    return get_all_competitors()
+
+
 def extract_competitors(text: str, domain: str | None = None) -> list[str]:
     """
     Extract competitor mentions from text.
@@ -322,15 +329,8 @@ def extract_competitors(text: str, domain: str | None = None) -> list[str]:
     text_lower = text.lower()
     found = []
 
-    # Determine which competitors to look for
-    if domain and domain in KNOWN_COMPETITORS:
-        # Search domain-specific competitors
-        search_pool = {c.lower() for c in KNOWN_COMPETITORS[domain]}
-    else:
-        # Search all competitors
-        search_pool = get_all_competitors()
+    search_pool = _get_search_pool(domain)
 
-    # Word boundary pattern for accurate matching
     for competitor in search_pool:
         # Use word boundaries to avoid false positives
         # e.g., "mint" shouldn't match "comment" or "minting"
@@ -339,145 +339,3 @@ def extract_competitors(text: str, domain: str | None = None) -> list[str]:
             found.append(competitor)
 
     return list(set(found))
-
-
-def extract_competitors_with_context(
-    text: str, domain: str | None = None
-) -> list[dict]:
-    """
-    Extract competitor mentions with surrounding context.
-
-    Useful for understanding how the competitor is being discussed
-    (positive, negative, comparison, etc.)
-
-    Args:
-        text: Text to analyze
-        domain: Optional domain filter
-
-    Returns:
-        List of dicts with 'competitor', 'context', 'sentiment_hint' keys
-    """
-    results = []
-    text_lower = text.lower()
-
-    # Determine search pool
-    if domain and domain in KNOWN_COMPETITORS:
-        search_pool = {c.lower() for c in KNOWN_COMPETITORS[domain]}
-    else:
-        search_pool = get_all_competitors()
-
-    # Sentiment indicators
-    negative_indicators = [
-        "hate",
-        "frustrated",
-        "annoying",
-        "wish",
-        "unlike",
-        "better than",
-        "instead of",
-        "switching from",
-        "leaving",
-        "left",
-        "quit",
-        "doesn't",
-        "can't",
-        "won't",
-        "missing",
-        "lacks",
-        "problem with",
-    ]
-    positive_indicators = [
-        "love",
-        "great",
-        "amazing",
-        "best",
-        "perfect",
-        "like",
-        "recommend",
-        "use",
-        "using",
-        "fan of",
-        "works well",
-    ]
-
-    for competitor in search_pool:
-        pattern = rf"\b{re.escape(competitor)}\b"
-        for match in re.finditer(pattern, text_lower):
-            # Extract context (100 chars before and after)
-            start = max(0, match.start() - 100)
-            end = min(len(text), match.end() + 100)
-            context = text[start:end].strip()
-
-            # Determine sentiment hint
-            context_lower = context.lower()
-            sentiment_hint = "neutral"
-
-            if any(neg in context_lower for neg in negative_indicators):
-                sentiment_hint = "negative"
-            elif any(pos in context_lower for pos in positive_indicators):
-                sentiment_hint = "positive"
-
-            results.append(
-                {
-                    "competitor": competitor,
-                    "context": context,
-                    "sentiment_hint": sentiment_hint,
-                }
-            )
-
-    # Deduplicate by competitor name
-    seen = set()
-    deduplicated = []
-    for result in results:
-        if result["competitor"] not in seen:
-            seen.add(result["competitor"])
-            deduplicated.append(result)
-
-    return deduplicated
-
-
-def get_domain_for_competitor(competitor: str) -> str | None:
-    """
-    Find the domain category for a given competitor.
-
-    Args:
-        competitor: Competitor name
-
-    Returns:
-        Domain name or None if not found
-    """
-    competitor_lower = competitor.lower()
-
-    for domain, competitors in KNOWN_COMPETITORS.items():
-        if competitor_lower in [c.lower() for c in competitors]:
-            return domain
-
-    return None
-
-
-def get_competitor_stats(competitors_list: list[str]) -> dict:
-    """
-    Get aggregate statistics about competitor mentions.
-
-    Args:
-        competitors_list: List of competitor names
-
-    Returns:
-        Dict with counts by domain and total
-    """
-    by_domain: dict[str, int] = {}
-    unknown_count = 0
-
-    for competitor in competitors_list:
-        domain = get_domain_for_competitor(competitor)
-        if domain:
-            by_domain[domain] = by_domain.get(domain, 0) + 1
-        else:
-            unknown_count += 1
-
-    return {
-        "total": len(competitors_list),
-        "by_domain": by_domain,
-        "unknown": unknown_count,
-        "unique": list(set(competitors_list)),
-    }

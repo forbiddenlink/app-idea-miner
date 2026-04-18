@@ -47,7 +47,7 @@ export const CommandPalette = () => {
     queryKey: ['ideas', { limit: 100, source: 'command-palette' }],
     queryFn: async () => {
       const response = await apiClient.getIdeas({ limit: 100 });
-      return response.ideas || [];
+      return response.ideas;
     },
     enabled: isOpen,
   });

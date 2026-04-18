@@ -15,11 +15,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from apps.api.app.config import get_settings
 from apps.api.app.core.logging_middleware import RequestLoggingMiddleware
-from apps.api.app.database import engine
+from apps.api.app.database import get_engine
 from apps.api.app.schemas.common import HealthResponse
 from packages.core.cache import set_redis_client
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -45,7 +44,6 @@ async def lifespan(app: FastAPI):
     redis_url = os.getenv("UPSTASH_REDIS_URL") or os.getenv("REDIS_URL")
     has_redis = bool(redis_url)
 
-    # Startup
     logger.info("Starting App-Idea Miner API...")
     logger.info(f"Environment: {'Vercel Serverless' if is_serverless else 'Standard'}")
 
@@ -60,7 +58,6 @@ async def lifespan(app: FastAPI):
 
     redis_client = None
 
-    # Initialize Redis client for caching (supports standard Redis and Upstash)
     if has_redis:
         try:
             is_upstash = redis_url.startswith("rediss://")
@@ -80,23 +77,20 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Shutdown
     logger.info("Shutting down App-Idea Miner API...")
 
     if has_database:
         try:
-            await engine.dispose()
+            await get_engine().dispose()
             logger.info("Database connections closed")
         except Exception as e:
             logger.warning(f"Error closing database connections: {e}")
 
-    # Close Redis connection
     if redis_client:
         await redis_client.close()
         logger.info("Redis connection closed")
 
 
-# Create FastAPI application
 app = FastAPI(
     title="App-Idea Miner API",
     description="Intelligent opportunity detection platform for discovering validated app ideas",
@@ -315,7 +309,6 @@ def _check_worker(has_redis: bool, is_serverless: bool) -> dict:
         return {"status": "unknown", "error": str(e)}
 
 
-# Health check endpoint
 @app.get("/health", tags=["System"], response_model=HealthResponse)
 async def health_check():
     """
@@ -429,7 +422,6 @@ async def root(request: Request):
     }
 
 
-# Import and include routers
 import os
 
 _is_serverless = os.getenv("VERCEL", "") == "1"

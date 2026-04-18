@@ -26,7 +26,7 @@ interface EmptyStateProps {
   }
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+const EmptyState: React.FC<EmptyStateProps> = ({
   icon: Icon = FileText,
   title,
   description,
@@ -136,20 +136,4 @@ export const ErrorState: React.FC<{ error: string; onRetry?: () => void }> = ({ 
       </Button>
     )}
   </div>
-)
-
-// Inline loading states for tables/lists
-export const LoadingRow: React.FC<{ columns?: number }> = ({ columns = 3 }) => (
-  <tr className="animate-pulse">
-    {Array.from({ length: columns }).map((_, i) => (
-      <td key={`loading-col-${i}`} className="px-6 py-4">
-        <div className="h-4 w-3/4 rounded bg-muted"></div>
-      </td>
-    ))}
-  </tr>
-)
-
-// Mini empty state for smaller sections
-export const MiniEmptyState: React.FC<{ message: string }> = ({ message }) => (
-  <div className="py-8 text-center text-sm text-muted-foreground">{message}</div>
 )

@@ -19,12 +19,6 @@ class IdeaService:
     """Service for idea-related business logic."""
 
     def __init__(self, db: AsyncSession):
-        """
-        Initialize idea service.
-
-        Args:
-            db: Async database session
-        """
         self.db = db
 
     async def get_ideas(
@@ -56,7 +50,6 @@ class IdeaService:
         Returns:
             Dict with 'ideas' list and 'pagination' info
         """
-        # Build query
         stmt = select(IdeaCandidate).options(selectinload(IdeaCandidate.raw_post))
 
         # Apply filters
@@ -99,7 +92,6 @@ class IdeaService:
         else:
             stmt = stmt.order_by(primary_sort, IdeaCandidate.extracted_at.desc())
 
-        # Get total count
         count_stmt = select(func.count()).select_from(IdeaCandidate)
         if domain:
             count_stmt = count_stmt.where(IdeaCandidate.domain == domain)
@@ -193,7 +185,6 @@ class IdeaService:
             result = await self.db.execute(stmt)
             rows = result.all()
 
-            # Format results with similarity score
             results = []
             for idea, distance in rows:
                 # Approximate similarity
@@ -208,7 +199,7 @@ class IdeaService:
             has_more = False
 
         else:
-            # Strategy 2: Keyword Search (Legacy)
+            # Strategy 2: Keyword Search
             escaped_q = escape_like_pattern(q)
             pattern = f"%{escaped_q}%"
             stmt = (

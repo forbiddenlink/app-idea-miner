@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import delete, func, select
@@ -117,20 +117,18 @@ class SavedSearchService:
         if not saved_search:
             return None
 
-        saved_search_any = cast(Any, saved_search)
-
         if name is not None:
-            saved_search_any.name = name.strip()
+            saved_search.name = name.strip()
         if query_params is not None:
-            saved_search_any.query_params = query_params
+            saved_search.query_params = query_params
         if alert_enabled is not None:
-            saved_search_any.alert_enabled = alert_enabled
+            saved_search.alert_enabled = alert_enabled
         if alert_frequency is not None:
-            saved_search_any.alert_frequency = alert_frequency
+            saved_search.alert_frequency = alert_frequency
         if webhook_url is not None:
-            saved_search_any.webhook_url = webhook_url if webhook_url else None
+            saved_search.webhook_url = webhook_url if webhook_url else None
         if webhook_type is not None:
-            saved_search_any.webhook_type = webhook_type if webhook_type else None
+            saved_search.webhook_type = webhook_type if webhook_type else None
 
         await self.db.flush()
         await self.db.refresh(saved_search)

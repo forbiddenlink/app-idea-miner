@@ -18,12 +18,6 @@ class ClusterService:
     """Service for cluster-related business logic."""
 
     def __init__(self, db: AsyncSession):
-        """
-        Initialize cluster service.
-
-        Args:
-            db: Async database session
-        """
         self.db = db
 
     async def get_all_clusters(
@@ -51,7 +45,6 @@ class ClusterService:
         Returns:
             Dict containing 'clusters' list and 'pagination' info
         """
-        # Build query
         query = select(Cluster)
 
         # Apply filters
@@ -88,7 +81,6 @@ class ClusterService:
         else:
             query = query.order_by(sort_field)
 
-        # Get total count
         count_query = select(func.count()).select_from(Cluster)
         if min_size is not None:
             count_query = count_query.where(Cluster.idea_count >= min_size)
@@ -140,22 +132,12 @@ class ClusterService:
         Returns:
             Cluster model with optional 'evidence' list, or None if not found
         """
-        # Fetch cluster
         query = select(Cluster).where(Cluster.id == cluster_id)
         result = await self.db.execute(query)
         cluster = result.scalar_one_or_none()
 
         if not cluster:
             return None
-
-        # Convert to dict to allow attaching evidence
-        # Note: In a real Pydantic world, we might return the ORM object and let response model handle it,
-        # but here we follow the existing pattern of returning a dict/structure for the router.
-        # Actually, let's return a construct that the router can easily digest.
-
-        # Taking a slight divergence from the router's manual dict construction to keep it cleaner.
-        # We will return the ORM object and let the router format it, OR return a rich dict.
-        # Given the router logic, it constructs a specific response shape. Let's return that shape.
 
         response = {
             "id": str(cluster.id),
@@ -172,7 +154,6 @@ class ClusterService:
 
         # Include evidence if requested
         if include_evidence:
-            # Fetch representative ideas
             evidence_query = (
                 select(ClusterMembership, IdeaCandidate)
                 .join(IdeaCandidate, ClusterMembership.idea_id == IdeaCandidate.id)
@@ -241,7 +222,6 @@ class ClusterService:
         Returns:
             Dict with 'source_cluster' and 'similar_clusters' list, or None if source not found
         """
-        # Fetch source cluster
         query = select(Cluster).where(Cluster.id == cluster_id)
         result = await self.db.execute(query)
         source_cluster = result.scalar_one_or_none()
@@ -270,7 +250,6 @@ class ClusterService:
 
             similar_clusters = []
             for cluster, distance in rows:
-                # Convert distance to similarity score (approximate)
                 similarity_score = 1 - distance if distance <= 1 else 0
 
                 similar_clusters.append(
@@ -293,10 +272,9 @@ class ClusterService:
                 "similar_clusters": similar_clusters,
             }
 
-        # Strategy 2: Keyword Jaccard Fallback (Legacy)
+        # Strategy 2: Keyword Jaccard Fallback
         source_keywords = set(source_cluster.keywords)
 
-        # Fetch all other clusters
         query = select(Cluster).where(Cluster.id != cluster_id)
         result = await self.db.execute(query)
         all_clusters = result.scalars().all()
@@ -366,7 +344,6 @@ class ClusterService:
                 "message": "No topic hierarchy available. Run clustering first.",
             }
 
-        # Convert HierarchicalTopic objects to dicts
         def topic_to_dict(topic):
             result = {
                 "topic_id": topic.topic_id,
@@ -438,7 +415,6 @@ class ClusterService:
 
             def check_topic(topic):
                 nonlocal best_match, best_score
-                # Calculate keyword overlap
                 topic_kw_set = set(kw.lower() for kw in topic.keywords)
                 cluster_kw_set = set(kw.lower() for kw in (cluster_keywords or []))
 

@@ -96,7 +96,6 @@ class OpportunityService:
 
     async def get_cluster_opportunity(self, cluster_id: UUID) -> dict | None:
         """Get opportunity score for a single cluster."""
-        # Fetch cluster
         stmt = select(Cluster).where(Cluster.id == cluster_id)
         result = await self.db.execute(stmt)
         cluster = result.scalar_one_or_none()
@@ -104,7 +103,6 @@ class OpportunityService:
         if not cluster:
             return None
 
-        # Get unique domains for this cluster
         domain_stmt = (
             select(func.count(func.distinct(IdeaCandidate.domain)))
             .join(ClusterMembership, ClusterMembership.idea_id == IdeaCandidate.id)
@@ -136,12 +134,10 @@ class OpportunityService:
         sort_by: str = "score",
     ) -> dict:
         """Get opportunity scores for all clusters, ranked."""
-        # Fetch all clusters
         stmt = select(Cluster).order_by(Cluster.idea_count.desc())
         result = await self.db.execute(stmt)
         clusters = result.scalars().all()
 
-        # Get unique domains per cluster in one query
         domain_stmt = (
             select(
                 ClusterMembership.cluster_id,
@@ -154,7 +150,6 @@ class OpportunityService:
         domain_result = await self.db.execute(domain_stmt)
         domain_map = {row.cluster_id: row.unique_domains for row in domain_result}
 
-        # Compute scores
         opportunities = []
         for cluster in clusters:
             unique_domains = domain_map.get(cluster.id, 0)

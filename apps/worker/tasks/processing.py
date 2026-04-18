@@ -13,6 +13,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.worker.celery_app import celery_app
+from packages.core import env_is_truthy
 from packages.core.competitors import extract_competitors
 from packages.core.database import AsyncSessionLocal
 from packages.core.models import IdeaCandidate, RawPost
@@ -43,24 +44,7 @@ logger = logging.getLogger(__name__)
 def process_raw_posts(
     self, batch_size: int = 100, min_quality: float = 0.3
 ) -> dict[str, Any]:
-    """
-    Process unprocessed raw posts to extract ideas.
-
-    This task:
-    1. Fetches unprocessed RawPost records
-    2. Extracts need statements using NLP
-    3. Analyzes sentiment
-    4. Calculates quality scores
-    5. Creates IdeaCandidate records
-    6. Marks posts as processed
-
-    Args:
-        batch_size: Maximum number of posts to process
-        min_quality: Minimum quality score to save idea (0-1)
-
-    Returns:
-        Dict with processing statistics
-    """
+    """Process unprocessed raw posts to extract ideas."""
     logger.info(
         f"Starting post processing (batch_size={batch_size}, min_quality={min_quality})"
     )
@@ -78,16 +62,6 @@ def process_raw_posts(
 
 
 async def _process_posts_async(batch_size: int, min_quality: float) -> dict[str, Any]:
-    """
-    Async implementation of post processing.
-
-    Args:
-        batch_size: Maximum posts to process
-        min_quality: Minimum quality threshold
-
-    Returns:
-        Processing statistics
-    """
     stats = {
         "processed": 0,
         "ideas_created": 0,
@@ -100,11 +74,9 @@ async def _process_posts_async(batch_size: int, min_quality: float) -> dict[str,
     # Reset LLM call counter at start of processing cycle
     reset_llm_call_count()
 
-    # Check if LLM extraction is enabled
-    use_llm = os.getenv("USE_LLM_EXTRACTION", "").lower() in ("1", "true", "yes")
+    use_llm = env_is_truthy("USE_LLM_EXTRACTION")
 
     async with AsyncSessionLocal() as session:
-        # Fetch unprocessed posts
         posts = await _fetch_unprocessed_posts(session, batch_size)
 
         if not posts:
@@ -113,7 +85,6 @@ async def _process_posts_async(batch_size: int, min_quality: float) -> dict[str,
 
         logger.info(f"Found {len(posts)} unprocessed posts (LLM={use_llm})")
 
-        # Process each post with savepoint for atomic per-post commits
         for post in posts:
             try:
                 # Use savepoint to ensure partial failures don't corrupt data
@@ -155,16 +126,6 @@ async def _process_posts_async(batch_size: int, min_quality: float) -> dict[str,
 
 
 async def _fetch_unprocessed_posts(session: AsyncSession, limit: int) -> list[RawPost]:
-    """
-    Fetch unprocessed posts from database.
-
-    Args:
-        session: Database session
-        limit: Maximum posts to fetch
-
-    Returns:
-        List of RawPost objects
-    """
     stmt = (
         select(RawPost)
         .where(RawPost.is_processed == False)
@@ -181,22 +142,9 @@ async def _fetch_unprocessed_posts(session: AsyncSession, limit: int) -> list[Ra
 async def _process_single_post(
     session: AsyncSession, post: RawPost, min_quality: float, use_llm: bool = False
 ) -> tuple[int, int]:
-    """
-    Process a single post to extract ideas.
-
-    Args:
-        session: Database session
-        post: RawPost to process
-        min_quality: Minimum quality threshold
-        use_llm: Whether to use LLM for enhanced extraction
-
-    Returns:
-        Tuple of (total ideas created, ideas from LLM)
-    """
     # Combine title and content for analysis
     full_text = f"{post.title}\n\n{post.content or ''}"
 
-    # Extract need statements (optionally using LLM)
     need_statements = extract_need_statements(full_text, use_llm=use_llm)
 
     if not need_statements:
@@ -208,7 +156,6 @@ async def _process_single_post(
     ideas_created = 0
     llm_ideas_created = 0
 
-    # Process each need statement
     for statement_data in need_statements:
         problem_statement = statement_data["statement"]
         context = statement_data.get("context", "")
@@ -217,7 +164,6 @@ async def _process_single_post(
         # Analyze sentiment
         sentiment_data = analyze_sentiment(context or problem_statement)
 
-        # Calculate quality score
         quality_score = calculate_quality_score(problem_statement)
 
         # Skip low quality ideas
@@ -227,11 +173,9 @@ async def _process_single_post(
             )
             continue
 
-        # Extract domain and features
         domain = extract_domain(problem_statement)
         features = extract_features(problem_statement)
 
-        # Extract competitor mentions from problem statement and context
         combined_text = f"{problem_statement} {context}"
         competitors = extract_competitors(combined_text, domain=domain)
 
@@ -241,10 +185,8 @@ async def _process_single_post(
         # Detect urgency level
         urgency = detect_urgency_level(combined_text)
 
-        # Generate embedding for similarity search
         embedding = generate_embedding(problem_statement)
 
-        # Create IdeaCandidate
         idea = IdeaCandidate(
             raw_post_id=post.id,
             problem_statement=problem_statement,
@@ -277,16 +219,6 @@ async def _process_single_post(
 
 
 def _extract_solution_hint(problem_statement: str, context: str) -> str:
-    """
-    Extract solution hint from problem statement or context.
-
-    Args:
-        problem_statement: The main problem statement
-        context: Surrounding context
-
-    Returns:
-        Solution hint or empty string
-    """
     # Look for "with", "using", "that has" patterns
     hint_patterns = [
         r"(?:with|using|via|through)\s+(.+?)(?:[.!?]|$)",
@@ -364,5 +296,4 @@ async def _reprocess_failed_async() -> dict[str, Any]:
 
         logger.info(f"Marked {len(post_ids)} posts for reprocessing")
 
-        # Process them
         return await _process_posts_async(len(post_ids), min_quality=0.3)

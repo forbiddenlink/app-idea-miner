@@ -37,7 +37,6 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   );
   const [isLoading, setIsLoading] = useState(!!token);
 
-  // Fetch /me whenever we have a token
   useEffect(() => {
     if (!token) {
       setUser(null);

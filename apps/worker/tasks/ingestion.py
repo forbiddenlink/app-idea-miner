@@ -124,39 +124,6 @@ async def _save_if_new(session, post: RawPost) -> bool:
         logger.debug(f"Duplicate URL found: {post.url}")
         return False
 
-    # 2. Check Title Similarity (Fuzzy Match)
-    # Only check recent posts to avoid full table scan performance hit
-    # This logic was in the original monolithic task.
-    # Optimization: pgvector could handle this much better!
-    # For now, we keep the simpler check.
-    # query = select(RawPost).order_by(RawPost.fetched_at.desc()).limit(500)
-    # result = await session.execute(query)
-    # recent_posts = result.scalars().all()
-    # for recent in recent_posts:
-    #     if is_duplicate_title(post.title, recent.title):
-    #          logger.debug(f"Duplicate title found: {post.title}")
-    #          return False
-
-    # 3. Save
+    # 2. Save
     session.add(post)
     return True
-
-
-# Legacy wrapper to keep existing scheduled tasks working until Beat is updated
-@celery_app.task(bind=True, name="apps.worker.tasks.ingestion.fetch_rss_feeds")
-def fetch_rss_feeds(self):
-    """
-    DEPRECATED: Use run_ingestion_cycle instead.
-    Kept for backward compatibility with existing Celery Beat schedule.
-    """
-    logger.warning(
-        "fetch_rss_feeds is deprecated. Please update Celery Beat schedule to use run_ingestion_cycle."
-    )
-    # Run the same async implementation directly
-    total_stats = {"fetched": 0, "new": 0, "duplicates": 0, "errors": 0}
-    try:
-        asyncio.run(_run_ingestion_async(total_stats))
-    except Exception as e:
-        logger.error(f"Ingestion cycle failed: {e}", exc_info=True)
-    logger.info(f"Ingestion cycle complete: {total_stats}")
-    return total_stats

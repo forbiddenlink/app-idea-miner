@@ -6,7 +6,19 @@ Handles text extraction, sentiment analysis, quality scoring, and embedding gene
 import logging
 import os
 import re
-from typing import Any
+from typing import Any, TypedDict
+
+from packages.core import env_is_truthy
+
+
+class SentimentResult(TypedDict):
+    label: str
+    score: float
+    positive: float
+    neutral: float
+    negative: float
+    emotions: dict[str, float]
+
 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
@@ -55,48 +67,15 @@ def generate_embedding(text: str) -> list[float] | None:
     Returns:
         List of 384 floats (normalized embedding), or None if model unavailable
     """
-    if os.getenv("GENERATE_EMBEDDINGS", "").lower() not in ("1", "true", "yes"):
+    if not env_is_truthy("GENERATE_EMBEDDINGS"):
         return None
 
     model = get_embedding_model()
     if model is None:
         return None
 
-    try:
-        embedding = model.encode(text, normalize_embeddings=True)
-        return embedding.tolist()
-    except Exception as e:
-        logger.error(f"Error generating embedding: {e}")
-        return None
-
-
-def generate_embeddings_batch(texts: list[str]) -> list[list[float] | None]:
-    """
-    Generate embeddings for multiple texts efficiently.
-
-    Uses batch encoding for better performance.
-
-    Args:
-        texts: List of texts to embed
-
-    Returns:
-        List of embeddings (384 floats each), None entries for failures
-    """
-    if os.getenv("GENERATE_EMBEDDINGS", "").lower() not in ("1", "true", "yes"):
-        return [None] * len(texts)
-
-    model = get_embedding_model()
-    if model is None:
-        return [None] * len(texts)
-
-    try:
-        embeddings = model.encode(
-            texts, normalize_embeddings=True, show_progress_bar=False
-        )
-        return [emb.tolist() for emb in embeddings]
-    except Exception as e:
-        logger.error(f"Error generating batch embeddings: {e}")
-        return [None] * len(texts)
+    embedding = model.encode(text, normalize_embeddings=True)
+    return embedding.tolist()
 
 
 # LLM extraction state
@@ -126,7 +105,7 @@ def extract_ideas_llm(text: str) -> list[dict]:
     global _llm_call_count
 
     # Check if LLM extraction is enabled
-    if os.getenv("USE_LLM_EXTRACTION", "").lower() not in ("1", "true", "yes"):
+    if not env_is_truthy("USE_LLM_EXTRACTION"):
         return []
 
     # Cost control: skip if quota exceeded
@@ -443,7 +422,7 @@ class TextProcessor:
 
         return context
 
-    def analyze_sentiment(self, text: str) -> dict[str, Any]:
+    def analyze_sentiment(self, text: str) -> SentimentResult:
         """
         Analyze sentiment using VADER.
 
@@ -957,14 +936,14 @@ def extract_need_statements(text: str, use_llm: bool = False) -> list[dict[str, 
     """
     regex_ideas = text_processor.extract_need_statements(text)
 
-    if use_llm and os.getenv("USE_LLM_EXTRACTION", "").lower() in ("1", "true", "yes"):
+    if use_llm and env_is_truthy("USE_LLM_EXTRACTION"):
         llm_ideas = extract_ideas_llm(text)
         return _merge_ideas(regex_ideas, llm_ideas)
 
     return regex_ideas
 
 
-def analyze_sentiment(text: str) -> dict[str, Any]:
+def analyze_sentiment(text: str) -> SentimentResult:
     """Analyze sentiment using singleton processor."""
     return text_processor.analyze_sentiment(text)
 
@@ -982,11 +961,6 @@ def extract_domain(text: str) -> str:
 def extract_features(text: str) -> list[str]:
     """Extract features using singleton processor."""
     return text_processor.extract_features(text)
-
-
-def extract_keywords(text: str, top_n: int = 5) -> list[str]:
-    """Extract keywords using singleton processor."""
-    return text_processor.extract_keywords(text, top_n)
 
 
 # Default aspects for aspect-based sentiment analysis
@@ -1047,22 +1021,6 @@ def analyze_aspect_sentiment(
             results[aspect] = sum(sentiments) / len(sentiments)
 
     return results
-
-
-def extract_aspect_sentiments_batch(
-    texts: list[str], aspects: list[str] | None = None
-) -> list[dict[str, float]]:
-    """
-    Extract aspect sentiments for multiple texts.
-
-    Args:
-        texts: List of texts to analyze
-        aspects: List of aspects to check
-
-    Returns:
-        List of dicts with aspect sentiments for each text
-    """
-    return [analyze_aspect_sentiment(text, aspects) for text in texts]
 
 
 def detect_urgency_level(text: str) -> str:

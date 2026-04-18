@@ -21,6 +21,8 @@ import hdbscan
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from packages.core import env_is_truthy
+
 logger = logging.getLogger(__name__)
 
 
@@ -805,15 +807,9 @@ def get_cluster_engine(**kwargs) -> ClusterEngine:
 
     if _cluster_engine is None:
         if "use_embeddings" not in kwargs:
-            kwargs["use_embeddings"] = os.getenv(
-                "USE_SENTENCE_EMBEDDINGS", ""
-            ).lower() in ("1", "true", "yes")
+            kwargs["use_embeddings"] = env_is_truthy("USE_SENTENCE_EMBEDDINGS")
         if "use_bertopic" not in kwargs:
-            kwargs["use_bertopic"] = os.getenv("USE_BERTOPIC", "").lower() in (
-                "1",
-                "true",
-                "yes",
-            )
+            kwargs["use_bertopic"] = env_is_truthy("USE_BERTOPIC")
         _cluster_engine = ClusterEngine(**kwargs)
 
     return _cluster_engine

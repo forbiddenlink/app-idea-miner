@@ -98,15 +98,3 @@ export const useKeyboardShortcuts = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [navigate]);
 };
-
-// Hook to get all shortcuts for help UI
-export const useShortcutList = () => {
-  return [
-    { keys: 'Alt + H', description: 'Go to Dashboard' },
-    { keys: 'Alt + C', description: 'Go to Cluster Explorer' },
-    { keys: 'Alt + A', description: 'Go to Analytics' },
-    { keys: 'Ctrl + /', description: 'Focus Search' },
-    { keys: 'Shift + ?', description: 'Show Keyboard Shortcuts' },
-    { keys: 'Esc', description: 'Clear Focus' },
-  ];
-};

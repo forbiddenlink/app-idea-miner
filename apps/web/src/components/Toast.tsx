@@ -1,6 +1,3 @@
-// Toast Notification System
-// Modern feedback for user actions (success, error, info, warning)
-
 import { useEffect, useState } from 'react';
 import { X, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 
@@ -40,7 +37,7 @@ const ToastIcon = ({ type }: { type: ToastType }) => {
   }
 };
 
-export const ToastItem = ({ toast, onClose }: ToastProps) => {
+const ToastItem = ({ toast, onClose }: ToastProps) => {
   const [isExiting, setIsExiting] = useState(false);
   const [progress, setProgress] = useState(100);
 
@@ -48,7 +45,6 @@ export const ToastItem = ({ toast, onClose }: ToastProps) => {
     const duration = toast.duration || 5000;
     const startTime = Date.now();
 
-    // Update progress bar
     const progressInterval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
@@ -120,29 +116,4 @@ export const ToastContainer = ({ toasts, onClose }: { toasts: Toast[]; onClose: 
       ))}
     </div>
   );
-};
-
-// Toast hook for easy usage
-export const useToast = () => {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const addToast = (type: ToastType, message: string, duration?: number) => {
-    const id = Math.random().toString(36).substring(2, 11);
-    const newToast: Toast = { id, type, message, duration };
-    setToasts((prev) => [...prev, newToast]);
-  };
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  };
-
-  return {
-    toasts,
-    addToast,
-    removeToast,
-    success: (message: string, duration?: number) => addToast('success', message, duration),
-    error: (message: string, duration?: number) => addToast('error', message, duration),
-    info: (message: string, duration?: number) => addToast('info', message, duration),
-    warning: (message: string, duration?: number) => addToast('warning', message, duration),
-  };
 };
