@@ -39,7 +39,7 @@ export default defineConfig({
           // Router
           "vendor-router": ["react-router-dom"],
           // Data fetching + state
-          "vendor-query": ["@tanstack/react-query", "axios", "zustand"],
+          "vendor-query": ["@tanstack/react-query", "axios"],
           // Animation
           "vendor-motion": ["framer-motion"],
           // Charts (large – keep isolated for selective loading)
@@ -52,7 +52,7 @@ export default defineConfig({
             "@radix-ui/react-slot",
           ],
           // Icons (tree-shaken per page, but common core)
-          "vendor-icons": ["lucide-react", "@heroicons/react"],
+          "vendor-icons": ["lucide-react"],
         },
       },
     },
