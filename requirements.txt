@@ -484,7 +484,7 @@ umap-learn==0.5.11
     #   core
 update-checker==0.18.0
     # via asyncpraw
-urllib3==2.6.3
+urllib3==2.7.0
     # via requests
 uvicorn==0.41.0
     # via api
