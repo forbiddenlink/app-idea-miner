@@ -164,7 +164,7 @@ humanize==4.15.0
     # via flower
 identify==2.6.16
     # via pre-commit
-idna==3.11
+idna==3.15
     # via
     #   anyio
     #   email-validator
