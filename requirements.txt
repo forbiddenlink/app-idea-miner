@@ -2,7 +2,7 @@
 #    uv export --format requirements-txt --no-hashes --all-packages
 aiofiles==25.1.0
     # via asyncpraw
-aiohappyeyeballs==2.6.1
+aiohappyeyeballs==2.6.2
     # via aiohttp
 aiohttp==3.14.0
     # via
@@ -11,7 +11,7 @@ aiohttp==3.14.0
     #   asyncprawcore
 aiosignal==1.4.0
     # via aiohttp
-aiosqlite==0.17.0
+aiosqlite==0.22.1
     # via asyncpraw
 alembic==1.18.4
     # via
@@ -25,9 +25,9 @@ annotated-doc==0.0.4
     #   typer
 annotated-types==0.7.0
     # via pydantic
-anthropic==0.89.0
+anthropic==0.105.2
     # via core
-anyio==4.12.1
+anyio==4.13.0
     # via
     #   anthropic
     #   httpx
@@ -45,7 +45,7 @@ asyncprawcore==2.4.0
     # via asyncpraw
 attrs==25.4.0
     # via aiohttp
-bcrypt==4.0.1
+bcrypt==4.3.0
     # via
     #   api
     #   passlib
@@ -57,20 +57,20 @@ bertopic==0.17.4
     # via core
 billiard==4.2.4
     # via celery
-celery==5.6.2
+celery==5.6.3
     # via
     #   flower
     #   worker
-certifi==2026.1.4
+certifi==2026.5.20
     # via
     #   httpcore
     #   httpx
     #   requests
 cfgv==3.5.0
     # via pre-commit
-charset-normalizer==3.4.4
+charset-normalizer==3.4.7
     # via requests
-click==8.3.1
+click==8.4.1
     # via
     #   celery
     #   click-didyoumean
@@ -91,33 +91,33 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   pytest
     #   tqdm
     #   uvicorn
-coverage==7.13.4
+coverage==7.14.1
     # via pytest-cov
-cuda-bindings==13.2.0 ; sys_platform == 'linux'
+cuda-bindings==13.3.1 ; sys_platform == 'linux'
     # via torch
-cuda-pathfinder==1.5.0 ; sys_platform == 'linux'
+cuda-pathfinder==1.5.5 ; sys_platform == 'linux'
     # via cuda-bindings
-cuda-toolkit==13.0.2 ; sys_platform == 'linux'
+cuda-toolkit==13.3.0 ; sys_platform == 'linux'
     # via torch
 deprecated==1.3.1
     # via limits
-distlib==0.4.0
+distlib==0.4.1
     # via virtualenv
 distro==1.9.0
     # via anthropic
 dnspython==2.8.0
     # via email-validator
-docstring-parser==0.17.0
+docstring-parser==0.18.0
     # via anthropic
 email-validator==2.3.0
     # via
     #   api
     #   app-idea-miner
-fastapi==0.129.0
+fastapi==0.136.3
     # via api
 feedparser==6.0.12
     # via worker
-filelock==3.24.3
+filelock==3.29.1
     # via
     #   huggingface-hub
     #   torch
@@ -128,25 +128,25 @@ frozenlist==1.8.0
     # via
     #   aiohttp
     #   aiosignal
-fsspec==2026.2.0
+fsspec==2026.4.0
     # via
     #   huggingface-hub
     #   torch
-greenlet==3.3.1
+greenlet==3.5.1
     # via sqlalchemy
 h11==0.16.0
     # via
     #   httpcore
     #   uvicorn
-hdbscan==0.8.41
+hdbscan==0.8.44
     # via
     #   bertopic
     #   core
-hf-xet==1.4.2 ; platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
+hf-xet==1.5.0 ; platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
     # via huggingface-hub
 httpcore==1.0.9
     # via httpx
-httptools==0.7.1
+httptools==0.8.0
     # via uvicorn
 httpx==0.28.1
     # via
@@ -155,16 +155,16 @@ httpx==0.28.1
     #   app-idea-miner
     #   huggingface-hub
     #   worker
-huggingface-hub==1.8.0
+huggingface-hub==1.18.0
     # via
     #   sentence-transformers
     #   tokenizers
     #   transformers
 humanize==4.15.0
     # via flower
-identify==2.6.16
+identify==2.6.19
     # via pre-commit
-idna==3.15
+idna==3.18
     # via
     #   anyio
     #   email-validator
@@ -175,7 +175,7 @@ iniconfig==2.3.0
     # via pytest
 jinja2==3.1.6
     # via torch
-jiter==0.13.0
+jiter==0.15.0
     # via anthropic
 joblib==1.5.3
     # via
@@ -194,7 +194,7 @@ llvmlite==0.47.0
     #   pynndescent
 mako==1.3.12
     # via alembic
-markdown-it-py==4.0.0
+markdown-it-py==4.2.0
     # via rich
 markupsafe==3.0.3
     # via
@@ -202,13 +202,13 @@ markupsafe==3.0.3
     #   mako
 mdurl==0.1.2
     # via markdown-it-py
-mpmath==1.3.0
+mpmath==1.4.1
     # via sympy
 multidict==6.7.1
     # via
     #   aiohttp
     #   yarl
-narwhals==2.19.0
+narwhals==2.22.1
     # via plotly
 networkx==3.6.1
     # via torch
@@ -216,11 +216,11 @@ nltk>=3.9.4
     # via core
 nodeenv==1.10.0
     # via pre-commit
-numba==0.65.0
+numba==0.65.1
     # via
     #   pynndescent
     #   umap-learn
-numpy==2.4.2
+numpy==2.4.6
     # via
     #   bertopic
     #   core
@@ -233,46 +233,46 @@ numpy==2.4.2
     #   sentence-transformers
     #   transformers
     #   umap-learn
-nvidia-cublas==13.1.0.3 ; sys_platform == 'linux'
+nvidia-cublas==13.5.1.27 ; sys_platform == 'linux'
     # via
     #   cuda-toolkit
     #   nvidia-cudnn-cu13
     #   nvidia-cusolver
-nvidia-cuda-cupti==13.0.85 ; sys_platform == 'linux'
+nvidia-cuda-cupti==13.3.35 ; sys_platform == 'linux'
     # via cuda-toolkit
-nvidia-cuda-nvrtc==13.0.88 ; sys_platform == 'linux'
+nvidia-cuda-nvrtc==13.3.33 ; sys_platform == 'linux'
     # via cuda-toolkit
-nvidia-cuda-runtime==13.0.96 ; sys_platform == 'linux'
+nvidia-cuda-runtime==13.3.29 ; sys_platform == 'linux'
     # via cuda-toolkit
-nvidia-cudnn-cu13==9.19.0.56 ; sys_platform == 'linux'
+nvidia-cudnn-cu13==9.23.0.39 ; sys_platform == 'linux'
     # via torch
-nvidia-cufft==12.0.0.61 ; sys_platform == 'linux'
+nvidia-cufft==12.3.0.29 ; sys_platform == 'linux'
     # via cuda-toolkit
-nvidia-cufile==1.15.1.6 ; sys_platform == 'linux'
+nvidia-cufile==1.18.0.66 ; sys_platform == 'linux'
     # via cuda-toolkit
-nvidia-curand==10.4.0.35 ; sys_platform == 'linux'
+nvidia-curand==10.4.3.29 ; sys_platform == 'linux'
     # via cuda-toolkit
-nvidia-cusolver==12.0.4.66 ; sys_platform == 'linux'
+nvidia-cusolver==12.2.2.18 ; sys_platform == 'linux'
     # via cuda-toolkit
-nvidia-cusparse==12.6.3.3 ; sys_platform == 'linux'
+nvidia-cusparse==12.8.1.7 ; sys_platform == 'linux'
     # via
     #   cuda-toolkit
     #   nvidia-cusolver
-nvidia-cusparselt-cu13==0.8.0 ; sys_platform == 'linux'
+nvidia-cusparselt-cu13==0.9.1 ; sys_platform == 'linux'
     # via torch
-nvidia-nccl-cu13==2.28.9 ; sys_platform == 'linux'
+nvidia-nccl-cu13==2.30.4 ; sys_platform == 'linux'
     # via torch
-nvidia-nvjitlink==13.0.88 ; sys_platform == 'linux'
+nvidia-nvjitlink==13.3.33 ; sys_platform == 'linux'
     # via
     #   cuda-toolkit
     #   nvidia-cufft
     #   nvidia-cusolver
     #   nvidia-cusparse
-nvidia-nvshmem-cu13==3.4.5 ; sys_platform == 'linux'
+nvidia-nvshmem-cu13==3.6.5 ; sys_platform == 'linux'
     # via torch
-nvidia-nvtx==13.0.85 ; sys_platform == 'linux'
+nvidia-nvtx==13.3.29 ; sys_platform == 'linux'
     # via cuda-toolkit
-packaging==26.0
+packaging==26.2
     # via
     #   huggingface-hub
     #   kombu
@@ -280,7 +280,7 @@ packaging==26.0
     #   plotly
     #   pytest
     #   transformers
-pandas==3.0.1
+pandas==3.0.3
     # via
     #   bertopic
     #   core
@@ -293,40 +293,40 @@ pgvector==0.4.2
     #   api
     #   app-idea-miner
     #   core
-platformdirs==4.9.2
+platformdirs==4.10.0
     # via virtualenv
-plotly==6.6.0
+plotly==6.8.0
     # via bertopic
 pluggy==1.6.0
     # via
     #   pytest
     #   pytest-cov
-pre-commit==4.5.1
-prometheus-client==0.24.1
+pre-commit==4.6.0
+prometheus-client==0.25.0
     # via flower
 prompt-toolkit==3.0.52
     # via click-repl
-propcache==0.4.1
+propcache==0.5.2
     # via
     #   aiohttp
     #   yarl
-psycopg2-binary==2.9.11
+psycopg2-binary==2.9.12
     # via app-idea-miner
-pydantic==2.12.5
+pydantic==2.13.4
     # via
     #   anthropic
     #   api
     #   fastapi
     #   pydantic-settings
-pydantic-core==2.41.5
+pydantic-core==2.47.0
     # via pydantic
-pydantic-settings==2.13.0
+pydantic-settings==2.14.1
     # via api
 Pygments>=2.20.0
     # via
     #   pytest
     #   rich
-pyjwt==2.12.1
+pyjwt==2.13.0
     # via
     #   api
     #   app-idea-miner
@@ -336,8 +336,8 @@ pytest==9.0.3
     # via
     #   pytest-asyncio
     #   pytest-cov
-pytest-asyncio==1.3.0
-pytest-cov==7.0.0
+pytest-asyncio==1.4.0
+pytest-cov==7.1.0
 python-dateutil==2.9.0.post0
     # via
     #   celery
@@ -349,7 +349,7 @@ python-dotenv==1.2.2
     #   pydantic-settings
     #   uvicorn
     #   worker
-python-multipart==0.0.27
+python-multipart==0.0.32
     # via api
 pytz==2025.2
     # via flower
@@ -359,12 +359,12 @@ pyyaml==6.0.3
     #   pre-commit
     #   transformers
     #   uvicorn
-redis==7.2.0
+redis==7.4.1
     # via
     #   api
     #   core
     #   worker
-regex==2026.1.15
+regex==2026.5.9
     # via
     #   nltk
     #   transformers
@@ -372,12 +372,12 @@ requests>=2.34.2
     # via
     #   update-checker
     #   vadersentiment
-rich==14.3.3
+rich==14.3.4
     # via typer
-ruff==0.15.1
+ruff==0.15.16
 safetensors==0.7.0
     # via transformers
-scikit-learn==1.8.0
+scikit-learn==1.9.0
     # via
     #   bertopic
     #   core
@@ -385,14 +385,14 @@ scikit-learn==1.8.0
     #   pynndescent
     #   sentence-transformers
     #   umap-learn
-scipy==1.17.0
+scipy==1.17.1
     # via
     #   hdbscan
     #   pynndescent
     #   scikit-learn
     #   sentence-transformers
     #   umap-learn
-sentence-transformers==5.3.0
+sentence-transformers==5.5.1
     # via
     #   app-idea-miner
     #   bertopic
@@ -410,9 +410,9 @@ slowapi==0.1.9
     # via api
 sniffio==1.3.1
     # via anthropic
-soupsieve==2.8.3
+soupsieve==2.8.4
     # via beautifulsoup4
-sqlalchemy==2.0.46
+sqlalchemy==2.0.50
     # via
     #   alembic
     #   api
@@ -423,15 +423,15 @@ sympy==1.14.0
     # via torch
 threadpoolctl==3.6.0
     # via scikit-learn
-tokenizers==0.22.2
+tokenizers==0.23.1
     # via transformers
-torch==2.11.0
+torch==2.12.0
     # via sentence-transformers
-tornado==6.5.5
+tornado==6.5.6
     # via
     #   app-idea-miner
     #   flower
-tqdm==4.67.3
+tqdm==4.68.1
     # via
     #   bertopic
     #   huggingface-hub
@@ -439,11 +439,11 @@ tqdm==4.67.3
     #   sentence-transformers
     #   transformers
     #   umap-learn
-transformers==5.4.0
+transformers==5.10.2
     # via sentence-transformers
-triton==3.6.0 ; sys_platform == 'linux'
+triton==3.7.0 ; sys_platform == 'linux'
     # via torch
-typer==0.24.1
+typer==0.26.7
     # via
     #   huggingface-hub
     #   transformers
@@ -478,7 +478,7 @@ tzdata==2025.3
     #   tzlocal
 tzlocal==5.3.1
     # via celery
-umap-learn==0.5.11
+umap-learn==0.5.12
     # via
     #   bertopic
     #   core
@@ -486,7 +486,7 @@ update-checker==0.18.0
     # via asyncpraw
 urllib3==2.7.0
     # via requests
-uvicorn==0.41.0
+uvicorn==0.49.0
     # via api
 uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
     # via uvicorn
@@ -497,19 +497,19 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.36.1
+virtualenv==20.39.1
     # via pre-commit
-watchfiles==1.1.1
+watchfiles==1.2.0
     # via uvicorn
-wcwidth==0.6.0
+wcwidth==0.7.0
     # via prompt-toolkit
 websockets==16.0
     # via
     #   api
     #   uvicorn
-wrapt==2.1.1
+wrapt==2.2.1
     # via deprecated
-yarl==1.22.0
+yarl==1.24.2
     # via
     #   aiohttp
     #   asyncprawcore
