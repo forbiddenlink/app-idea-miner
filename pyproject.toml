@@ -20,7 +20,7 @@ dependencies = [
     "psycopg2-binary>=2.9.11",
     "pyjwt>=2.12.1",
     "sentence-transformers>=5.3.0",
-    "tornado>=6.5.5",
+    "tornado>=6.5.6",
 ]
 
 [tool.uv.workspace]
