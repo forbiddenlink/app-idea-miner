@@ -27,7 +27,7 @@ annotated-types==0.7.0
     # via pydantic
 anthropic==0.116.0
     # via core
-anyio==4.14.1
+anyio==4.14.2
     # via
     #   anthropic
     #   httpx
@@ -68,7 +68,7 @@ certifi==2026.6.17
     #   requests
 cfgv==3.5.0
     # via pre-commit
-charset-normalizer==3.4.7
+charset-normalizer==3.4.9
     # via requests
 click==8.4.2
     # via
@@ -91,7 +91,7 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   pytest
     #   tqdm
     #   uvicorn
-coverage==7.15.0
+coverage==7.15.1
     # via pytest-cov
 cuda-bindings==13.3.1 ; sys_platform == 'linux'
     # via torch
@@ -117,7 +117,7 @@ fastapi==0.139.0
     # via api
 feedparser==6.0.12
     # via worker
-filelock==3.29.5
+filelock==3.29.7
     # via
     #   huggingface-hub
     #   torch
@@ -155,7 +155,7 @@ httpx==0.28.1
     #   app-idea-miner
     #   huggingface-hub
     #   worker
-huggingface-hub==1.22.0
+huggingface-hub==1.23.0
     # via
     #   sentence-transformers
     #   tokenizers
@@ -208,7 +208,7 @@ multidict==6.7.1
     # via
     #   aiohttp
     #   yarl
-narwhals==2.23.0
+narwhals==2.24.0
     # via plotly
 networkx==3.6.1
     # via torch
@@ -288,14 +288,14 @@ passlib==1.7.4
     # via
     #   api
     #   app-idea-miner
-pgvector==0.4.2
+pgvector==0.5.0
     # via
     #   api
     #   app-idea-miner
     #   core
 platformdirs==4.10.0
     # via virtualenv
-plotly==6.8.0
+plotly==6.9.0
     # via bertopic
 pluggy==1.6.0
     # via
@@ -364,7 +364,7 @@ redis==7.4.1
     #   api
     #   core
     #   worker
-regex==2026.6.28
+regex==2026.7.10
     # via
     #   nltk
     #   transformers
@@ -374,7 +374,7 @@ requests>=2.34.2
     #   vadersentiment
 rich==14.3.4
     # via typer
-ruff==0.15.20
+ruff==0.15.21
 safetensors==0.8.0
     # via transformers
 scikit-learn==1.9.0
@@ -425,13 +425,13 @@ threadpoolctl==3.6.0
     # via scikit-learn
 tokenizers==0.23.1
     # via transformers
-torch==2.12.1
+torch==2.13.0
     # via sentence-transformers
 tornado==6.5.7
     # via
     #   app-idea-miner
     #   flower
-tqdm==4.68.3
+tqdm==4.68.4
     # via
     #   bertopic
     #   huggingface-hub
@@ -439,7 +439,7 @@ tqdm==4.68.3
     #   sentence-transformers
     #   transformers
     #   umap-learn
-transformers==5.13.0
+transformers==5.13.1
     # via sentence-transformers
 triton==3.7.1 ; sys_platform == 'linux'
     # via torch
@@ -486,7 +486,7 @@ update-checker==0.18.0
     # via asyncpraw
 urllib3==2.7.0
     # via requests
-uvicorn==0.50.2
+uvicorn==0.51.0
     # via api
 uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
     # via uvicorn
@@ -503,7 +503,7 @@ watchfiles==1.2.0
     # via uvicorn
 wcwidth==0.8.2
     # via prompt-toolkit
-websockets==16.0
+websockets==16.1
     # via
     #   api
     #   uvicorn
