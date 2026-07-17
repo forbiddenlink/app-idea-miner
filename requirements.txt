@@ -212,7 +212,7 @@ narwhals==2.24.0
     # via plotly
 networkx==3.6.1
     # via torch
-nltk>=3.9.4
+nltk>=3.10.0
     # via core
 nodeenv==1.10.0
     # via pre-commit
