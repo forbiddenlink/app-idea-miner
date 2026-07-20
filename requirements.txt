@@ -25,7 +25,7 @@ annotated-doc==0.0.4
     #   typer
 annotated-types==0.7.0
     # via pydantic
-anthropic==0.116.0
+anthropic==0.117.0
     # via core
 anyio==4.14.2
     # via
@@ -91,7 +91,7 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   pytest
     #   tqdm
     #   uvicorn
-coverage==7.15.1
+coverage==7.15.2
     # via pytest-cov
 cuda-bindings==13.3.1 ; sys_platform == 'linux'
     # via torch
@@ -113,11 +113,11 @@ email-validator==2.3.0
     # via
     #   api
     #   app-idea-miner
-fastapi==0.139.0
+fastapi==0.139.2
     # via api
 feedparser==6.0.12
     # via worker
-filelock==3.29.7
+filelock==3.31.1
     # via
     #   huggingface-hub
     #   torch
@@ -142,7 +142,7 @@ hdbscan==0.8.44
     # via
     #   bertopic
     #   core
-hf-xet==1.5.1 ; platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
+hf-xet==1.5.2 ; platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
     # via huggingface-hub
 httpcore==1.0.9
     # via httpx
@@ -155,7 +155,7 @@ httpx==0.28.1
     #   app-idea-miner
     #   huggingface-hub
     #   worker
-huggingface-hub==1.23.0
+huggingface-hub==1.24.0
     # via
     #   sentence-transformers
     #   tokenizers
@@ -268,7 +268,7 @@ nvidia-nvjitlink==13.3.33 ; sys_platform == 'linux'
     #   nvidia-cufft
     #   nvidia-cusolver
     #   nvidia-cusparse
-nvidia-nvshmem-cu13==3.7.1 ; sys_platform == 'linux'
+nvidia-nvshmem-cu13==3.7.2 ; sys_platform == 'linux'
     # via torch
 nvidia-nvtx==13.3.29 ; sys_platform == 'linux'
     # via cuda-toolkit
@@ -293,7 +293,7 @@ pgvector==0.5.0
     #   api
     #   app-idea-miner
     #   core
-platformdirs==4.10.0
+platformdirs==4.10.1
     # via virtualenv
 plotly==6.9.0
     # via bertopic
@@ -364,7 +364,7 @@ redis==7.4.1
     #   api
     #   core
     #   worker
-regex==2026.7.10
+regex==2026.7.19
     # via
     #   nltk
     #   transformers
@@ -374,7 +374,7 @@ requests>=2.34.2
     #   vadersentiment
 rich==14.3.4
     # via typer
-ruff==0.15.21
+ruff==0.15.22
 safetensors==0.8.0
     # via transformers
 scikit-learn==1.9.0
@@ -410,7 +410,7 @@ slowapi==0.1.10
     # via api
 sniffio==1.3.1
     # via anthropic
-soupsieve==2.8.4
+soupsieve==2.9
     # via beautifulsoup4
 sqlalchemy==2.0.51
     # via
@@ -431,7 +431,7 @@ tornado==6.5.7
     # via
     #   app-idea-miner
     #   flower
-tqdm==4.68.4
+tqdm==4.69.0
     # via
     #   bertopic
     #   huggingface-hub
@@ -439,11 +439,11 @@ tqdm==4.68.4
     #   sentence-transformers
     #   transformers
     #   umap-learn
-transformers==5.13.1
+transformers==5.14.1
     # via sentence-transformers
 triton==3.7.1 ; sys_platform == 'linux'
     # via torch
-typer==0.26.8
+typer==0.27.0
     # via
     #   huggingface-hub
     #   transformers
@@ -503,13 +503,13 @@ watchfiles==1.2.0
     # via uvicorn
 wcwidth==0.8.2
     # via prompt-toolkit
-websockets==16.1
+websockets==16.1.1
     # via
     #   api
     #   uvicorn
 wrapt==2.2.2
     # via deprecated
-yarl==1.24.2
+yarl==1.24.5
     # via
     #   aiohttp
     #   asyncprawcore
