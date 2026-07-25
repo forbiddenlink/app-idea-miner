@@ -398,7 +398,7 @@ sentence-transformers==5.6.0
     #   bertopic
     #   core
     #   worker
-setuptools==81.0.0
+setuptools==83.0.0
     # via torch
 sgmllib3k==1.0.0
     # via feedparser
