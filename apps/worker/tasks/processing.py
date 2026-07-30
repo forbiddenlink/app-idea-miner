@@ -200,8 +200,6 @@ async def _process_single_post(
             competitors_mentioned=competitors if competitors else None,
             aspect_sentiments=aspect_sentiments if aspect_sentiments else {},
             urgency_level=urgency,
-            wtp_score=statement_data.get("wtp_score", 0.0),
-            has_wtp_signal=statement_data.get("has_wtp_signal", False),
             idea_vector=embedding,
             extracted_at=datetime.utcnow(),
         )

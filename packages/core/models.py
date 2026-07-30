@@ -142,10 +142,6 @@ class IdeaCandidate(Base):
         Boolean, default=True, index=True
     )  # False if flagged as spam/noise
 
-    # Willingness-to-pay signal (monetization intent detected in source text)
-    wtp_score = Column(Float, default=0.0)  # 0 to 1 heuristic strength
-    has_wtp_signal = Column(Boolean, default=False, index=True)
-
     # Vector embedding (384 dim for all-MiniLM-L6-v2)
     idea_vector = Column(Vector(384))
 
