@@ -27,7 +27,12 @@ class RedditSource(BaseSource):
         self.user_agent = os.getenv("REDDIT_USER_AGENT", "AppIdeaMiner/0.1.0")
 
         if not self.client_id or not self.client_secret:
-            logger.warning("Reddit credentials not found. Falling back to MOCK mode.")
+            logger.error(
+                "Reddit credentials not found — running in MOCK mode. Fabricated "
+                "posts (tagged source_metadata['mock']=True) will be ingested instead "
+                "of real Reddit data. Set REDDIT_CLIENT_ID/REDDIT_CLIENT_SECRET to "
+                "restore live ingestion."
+            )
             self.is_mock = True
         else:
             self.is_mock = False
@@ -133,6 +138,7 @@ class RedditSource(BaseSource):
                 "subreddit": subreddit,
                 "upvotes": random.randint(1, 400),
                 "comments": random.randint(0, 50),
+                "mock": True,
             },
             is_processed=False,
         )

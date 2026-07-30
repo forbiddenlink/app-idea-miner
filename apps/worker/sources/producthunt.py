@@ -23,7 +23,12 @@ class ProductHuntSource(BaseSource):
         self.api_url = "https://api.producthunt.com/v2/api/graphql"
 
         if not self.api_token:
-            logger.warning("Product Hunt token not found. Falling back to MOCK mode.")
+            logger.error(
+                "Product Hunt token not found — running in MOCK mode. Fabricated "
+                "posts (tagged source_metadata['mock']=True) will be ingested instead "
+                "of real Product Hunt data. Set PRODUCT_HUNT_TOKEN to restore live "
+                "ingestion."
+            )
             self.is_mock = True
         else:
             self.is_mock = False
@@ -194,6 +199,7 @@ class ProductHuntSource(BaseSource):
                 "votesCount": random.randint(100, 5000),
                 "commentsCount": random.randint(10, 200),
                 "topics": ["productivity", "ai", "tech"],
+                "mock": True,
             },
             is_processed=False,
         )

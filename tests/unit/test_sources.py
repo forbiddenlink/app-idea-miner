@@ -6,6 +6,7 @@ No network requests or external services required.
 """
 
 import asyncio
+import logging
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -17,6 +18,7 @@ from apps.worker.sources.hackernews import (
     HackerNewsSource,
     _strip_html,
 )
+from apps.worker.sources.reddit import RedditSource
 from apps.worker.sources.rss import RSSSource
 from packages.core.models import RawPost
 
@@ -626,3 +628,59 @@ class TestHNFetch:
         # MAX_CONCURRENCY in hackernews.py is 10
         assert max_concurrent <= 10
         assert len(posts) == 15
+
+
+class TestRedditMockMode:
+    """Mock mode must be loud + tagged so fabricated data never masquerades as real Reddit data."""
+
+    def _clear_creds(self, monkeypatch):
+        monkeypatch.delenv("REDDIT_CLIENT_ID", raising=False)
+        monkeypatch.delenv("REDDIT_CLIENT_SECRET", raising=False)
+
+    def test_missing_creds_logs_at_error_level(self, monkeypatch, caplog):
+        """Missing creds is an integrity risk, so it must log at ERROR, not warning."""
+        self._clear_creds(monkeypatch)
+        with caplog.at_level(logging.ERROR, logger="apps.worker.sources.reddit"):
+            source = RedditSource()
+        assert source.is_mock is True
+        assert any(
+            r.levelno >= logging.ERROR and "MOCK" in r.message.upper()
+            for r in caplog.records
+        ), "expected a loud ERROR-level MOCK warning"
+
+    @pytest.mark.asyncio
+    async def test_mock_posts_are_tagged(self, monkeypatch):
+        """Every fabricated post must carry source_metadata[mock]=True for downstream filtering."""
+        self._clear_creds(monkeypatch)
+        source = RedditSource()
+        posts = await source.fetch()
+        assert posts, "mock fetch should return at least one post"
+        assert all(
+            p.source_metadata.get("mock") is True for p in posts
+        ), "mock posts must be tagged source_metadata[mock]=True"
+
+
+class TestProductHuntMockMode:
+    """Same integrity contract as Reddit: mock mode is loud + tagged."""
+
+    def test_missing_token_logs_at_error_level(self, monkeypatch, caplog):
+        monkeypatch.delenv("PRODUCT_HUNT_TOKEN", raising=False)
+        with caplog.at_level(logging.ERROR, logger="apps.worker.sources.producthunt"):
+            from apps.worker.sources.producthunt import ProductHuntSource
+
+            source = ProductHuntSource()
+        assert source.is_mock is True
+        assert any(
+            r.levelno >= logging.ERROR and "MOCK" in r.message.upper()
+            for r in caplog.records
+        )
+
+    @pytest.mark.asyncio
+    async def test_mock_posts_are_tagged(self, monkeypatch):
+        monkeypatch.delenv("PRODUCT_HUNT_TOKEN", raising=False)
+        from apps.worker.sources.producthunt import ProductHuntSource
+
+        source = ProductHuntSource()
+        posts = await source.fetch()
+        assert posts
+        assert all(p.source_metadata.get("mock") is True for p in posts)
