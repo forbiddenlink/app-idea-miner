@@ -54,15 +54,6 @@ from apps.worker.tasks.saved_search_alerts import (  # noqa: E402
 )
 from apps.worker.tasks.weekly_digest import generate_weekly_digest  # noqa: E402
 
-# Diagnostic: confirm the effective engine URL is asyncpg-clean (no secret values).
-from packages.core.database import engine as _diag_engine  # noqa: E402
-
-logger.info(
-    "effective engine: driver=%s query_keys=%s",
-    _diag_engine.url.drivername,
-    sorted(_diag_engine.url.query.keys()),
-)
-
 
 def _run_step(name: str, func) -> dict:
     logger.info("=== %s: starting ===", name)
