@@ -114,3 +114,8 @@ out/
 htmlcov/
 coverage/
 .nyc_output/
+.audit-report.md
+.env*
+
+# Local-only compose port overrides (machine-specific)
+docker-compose.override.yml
