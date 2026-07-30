@@ -16,6 +16,7 @@ import {
   JobStatus,
   Opportunity,
   OpportunityQueryParams,
+  CompetitorMention,
   OpportunityScore,
   Pagination,
   ReclusterParams,
@@ -237,6 +238,7 @@ class ApiClient {
     cluster_id: string;
     cluster_label: string;
     opportunity_score: OpportunityScore;
+    top_competitors?: CompetitorMention[];
   }> {
     const response = await this.client.get(
       `/api/v1/opportunities/${clusterId}`,

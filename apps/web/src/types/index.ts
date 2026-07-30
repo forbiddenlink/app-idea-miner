@@ -181,12 +181,18 @@ export interface OpportunityScore {
   };
 }
 
+export interface CompetitorMention {
+  name: string;
+  count: number;
+}
+
 export interface Opportunity {
   cluster_id: string;
   cluster_label: string;
   keywords: string[];
   idea_count: number;
   opportunity_score: OpportunityScore;
+  top_competitors?: CompetitorMention[];
 }
 
 export interface OpportunityQueryParams {

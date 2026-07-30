@@ -150,6 +150,25 @@ function OpportunityCard({
             </span>
           )}
         </div>
+
+        {/* Incumbents mentioned — market-gap signal */}
+        {opportunity.top_competitors && opportunity.top_competitors.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 mt-3">
+            <span className="text-xs font-medium text-muted-foreground">
+              Incumbents:
+            </span>
+            {opportunity.top_competitors.slice(0, 5).map((competitor) => (
+              <span
+                key={competitor.name}
+                title={`Named as inadequate by ${competitor.count} post${competitor.count === 1 ? "" : "s"} in this cluster`}
+                className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400"
+              >
+                <span className="capitalize">{competitor.name}</span>
+                <span className="opacity-70">{competitor.count}</span>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Expandable Breakdown */}
