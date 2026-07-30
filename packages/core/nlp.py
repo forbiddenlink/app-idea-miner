@@ -938,9 +938,20 @@ def extract_need_statements(text: str, use_llm: bool = False) -> list[dict[str, 
 
     if use_llm and env_is_truthy("USE_LLM_EXTRACTION"):
         llm_ideas = extract_ideas_llm(text)
-        return _merge_ideas(regex_ideas, llm_ideas)
+        ideas = _merge_ideas(regex_ideas, llm_ideas)
+    else:
+        ideas = regex_ideas
 
-    return regex_ideas
+    # Attach willingness-to-pay signal (computed once over the full post
+    # text) to every extracted idea, alongside quality/sentiment which are
+    # attached downstream by the same callers that score these ideas.
+    wtp = detect_willingness_to_pay(text)
+    for idea in ideas:
+        idea["has_wtp_signal"] = wtp["has_wtp_signal"]
+        idea["matched_phrases"] = wtp["matched_phrases"]
+        idea["wtp_score"] = wtp["wtp_score"]
+
+    return ideas
 
 
 def analyze_sentiment(text: str) -> SentimentResult:
@@ -1071,3 +1082,88 @@ def detect_urgency_level(text: str) -> str:
         return "medium"
     else:
         return "low"
+
+
+# Willingness-to-pay (WTP) phrase and price patterns.
+# Word-boundary matched (\b) to avoid false positives, same convention as
+# packages/core/competitors.py's extract_competitors().
+_WTP_PHRASE_PATTERNS: list[re.Pattern[str]] = [
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\bshut up and take my money\b",
+        r"\btake my money\b",
+        r"\bwould (?:definitely |absolutely |happily |gladly )?pay\b",
+        r"\bhappy to pay\b",
+        r"\bwilling to pay\b",
+        r"\bworth paying for\b",
+        r"\bi'?d\s+(?:pay|subscribe|buy)\b",
+        r"\bwould subscribe\b",
+        r"\bsign me up\b",
+    )
+]
+
+_WTP_PRICE_PATTERNS: list[re.Pattern[str]] = [
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\$\d+(?:\.\d{1,2})?(?:\s*/\s*(?:month|mo|year|yr))?",
+        r"\b\d+\s*/\s*(?:month|mo)\b",
+        r"\b\d+\s+(?:dollars|bucks|usd)?\s*(?:a|per)\s+month\b",
+    )
+]
+
+
+def detect_willingness_to_pay(text: str) -> dict:
+    """
+    Detect willingness-to-pay / monetization-intent signals in text.
+
+    Pure, deterministic, stdlib-only (no external calls). Matches a curated
+    set of WTP phrases ("would pay", "take my money", "happy to pay", "worth
+    paying for", "id subscribe", etc.) and price patterns ($X, $X/month,
+    X/mo, "X a month") using word-boundary regex to avoid false positives
+    (e.g. "wouldn't pay" does not match "would pay").
+
+    Args:
+        text: Text to analyze (post body, comment, etc.)
+
+    Returns:
+        Dict with:
+        - has_wtp_signal: True if any phrase or price pattern matched
+        - matched_phrases: deduplicated list of matched substrings, original case
+        - wtp_score: heuristic signal strength, 0.0-1.0
+    """
+    if not text:
+        return {"has_wtp_signal": False, "matched_phrases": [], "wtp_score": 0.0}
+
+    matched: list[str] = []
+    seen: set[str] = set()
+    phrase_hits = 0
+    price_hits = 0
+
+    for pattern in _WTP_PHRASE_PATTERNS:
+        for match in pattern.finditer(text):
+            phrase_hits += 1
+            key = match.group(0).lower()
+            if key not in seen:
+                seen.add(key)
+                matched.append(match.group(0))
+
+    for pattern in _WTP_PRICE_PATTERNS:
+        for match in pattern.finditer(text):
+            price_hits += 1
+            key = match.group(0).lower()
+            if key not in seen:
+                seen.add(key)
+                matched.append(match.group(0))
+
+    if not matched:
+        return {"has_wtp_signal": False, "matched_phrases": [], "wtp_score": 0.0}
+
+    # Phrases are a stronger signal than a bare price mention; multiple
+    # distinct signals compound but the total is capped at 1.0.
+    score = min(0.35 * phrase_hits, 0.7) + min(0.3 * price_hits, 0.5)
+
+    return {
+        "has_wtp_signal": True,
+        "matched_phrases": matched,
+        "wtp_score": round(min(score, 1.0), 2),
+    }
