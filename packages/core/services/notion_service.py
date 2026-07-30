@@ -50,7 +50,9 @@ class NotionService:
             "Content-Type": "application/json",
         }
 
-    async def push_cluster(self, cluster: Any) -> bool:
+    async def push_cluster(
+        self, cluster: Any, top_competitors: list[dict] | None = None
+    ) -> bool:
         """
         Push a single cluster to the Notion Ideas Pipeline database.
 
@@ -59,6 +61,8 @@ class NotionService:
 
         Args:
             cluster: A Cluster model instance (label, description, keywords, id)
+            top_competitors: Optional ranked ``[{"name", "count"}]`` incumbent
+                mentions for this cluster (market-gap signal), rendered into Notes.
 
         Returns:
             True if the page was created or updated, False otherwise (including no-op
@@ -74,7 +78,7 @@ class NotionService:
 
         try:
             existing_page_id = await self._find_existing_page(source_id)
-            properties = self._build_properties(cluster)
+            properties = self._build_properties(cluster, top_competitors)
 
             async with httpx.AsyncClient(timeout=self.REQUEST_TIMEOUT) as client:
                 if existing_page_id:
@@ -141,17 +145,26 @@ class NotionService:
             results = response.json().get("results", [])
             return results[0]["id"] if results else None
 
-    def _build_properties(self, cluster: Any) -> dict[str, Any]:
+    def _build_properties(
+        self, cluster: Any, top_competitors: list[dict] | None = None
+    ) -> dict[str, Any]:
         """
         Map a Cluster to Notion page properties.
 
         Only sets the fields the miner owns (Idea, Notes, Context, Status, Date Added,
         Source ID). Potential Revenue/Confidence/Complexity/Skill Fit/Stack are left
-        untouched for manual curation.
+        untouched for manual curation. Competitor mentions are appended to Notes
+        rather than a dedicated property so no Notion DB schema change is required.
         """
         keywords = ", ".join(cluster.keywords or [])
         description = cluster.description or ""
-        notes = f"{description}\nKeywords: {keywords}\n[auto-mined by app-idea-miner]"
+        notes = f"{description}\nKeywords: {keywords}"
+        if top_competitors:
+            incumbents = ", ".join(
+                f"{c['name']} ({c['count']})" for c in top_competitors
+            )
+            notes += f"\nIncumbents mentioned: {incumbents}"
+        notes += "\n[auto-mined by app-idea-miner]"
 
         today = datetime.now(UTC).date().isoformat()
 

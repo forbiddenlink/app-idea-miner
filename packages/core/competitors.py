@@ -8,8 +8,35 @@ indicating market gaps and competitive opportunities.
 import logging
 import os
 import re
+from collections import Counter
+from collections.abc import Iterable
 
 logger = logging.getLogger(__name__)
+
+
+def aggregate_competitors(
+    competitor_lists: Iterable[list[str] | None],
+    limit: int = 5,
+) -> list[dict]:
+    """
+    Aggregate per-idea competitor mentions into a ranked market-gap signal.
+
+    Each entry in ``competitor_lists`` is one idea's ``competitors_mentioned``
+    (or None). Names are lower-cased and counted across ideas, so the result
+    reads "N distinct posts in this cluster named incumbent X as inadequate".
+
+    Returns a list of ``{"name": str, "count": int}`` sorted by count desc,
+    truncated to ``limit``.
+    """
+    counter: Counter[str] = Counter()
+    for competitors in competitor_lists:
+        if not competitors:
+            continue
+        for name in competitors:
+            if not name or not name.strip():
+                continue
+            counter[name.strip().lower()] += 1
+    return [{"name": name, "count": count} for name, count in counter.most_common(limit)]
 
 # Known competitors by domain
 # Can be extended via environment variable COMPETITOR_LIST_EXTRA

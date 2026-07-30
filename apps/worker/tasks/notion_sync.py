@@ -16,8 +16,9 @@ from typing import Any
 from sqlalchemy import select
 
 from apps.worker.celery_app import celery_app
+from packages.core.competitors import aggregate_competitors
 from packages.core.database import AsyncSessionLocal
-from packages.core.models import Cluster
+from packages.core.models import Cluster, ClusterMembership, IdeaCandidate
 from packages.core.services.notion_service import NotionService
 
 logger = logging.getLogger(__name__)
@@ -113,7 +114,18 @@ async def _push_clusters_to_notion_async() -> dict[str, Any]:
         failed = 0
 
         for cluster in clusters:
-            success = await notion_service.push_cluster(cluster)
+            competitor_result = await session.execute(
+                select(IdeaCandidate.competitors_mentioned)
+                .join(
+                    ClusterMembership,
+                    ClusterMembership.idea_id == IdeaCandidate.id,
+                )
+                .where(ClusterMembership.cluster_id == cluster.id)
+                .where(IdeaCandidate.competitors_mentioned.isnot(None))
+            )
+            top_competitors = aggregate_competitors(competitor_result.scalars().all())
+
+            success = await notion_service.push_cluster(cluster, top_competitors)
             if success:
                 pushed += 1
             else:

@@ -104,6 +104,27 @@ class TestFieldMapping:
         assert "Keywords: \n[auto-mined by app-idea-miner]" in notes
 
 
+    def test_build_properties_renders_top_competitors_in_notes(self, service):
+        cluster = _make_cluster()
+        top_competitors = [
+            {"name": "notion", "count": 7},
+            {"name": "todoist", "count": 3},
+        ]
+
+        properties = service._build_properties(cluster, top_competitors)
+
+        notes = properties["Notes"]["rich_text"][0]["text"]["content"]
+        assert "Incumbents mentioned: notion (7), todoist (3)" in notes
+
+    def test_build_properties_omits_incumbents_line_when_none(self, service):
+        cluster = _make_cluster()
+
+        properties = service._build_properties(cluster, None)
+
+        notes = properties["Notes"]["rich_text"][0]["text"]["content"]
+        assert "Incumbents mentioned" not in notes
+
+
 class TestIdempotency:
     @pytest.mark.asyncio
     async def test_queries_by_source_id_before_writing(self, service):

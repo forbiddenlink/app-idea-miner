@@ -24,6 +24,13 @@ class OpportunityScore(BaseModel):
     breakdown: dict[str, ScoreBreakdownItem]
 
 
+class CompetitorMention(BaseModel):
+    """An incumbent named across a cluster's ideas — a market-gap signal."""
+
+    name: str
+    count: int
+
+
 class OpportunityItem(BaseModel):
     """An opportunity in list results."""
 
@@ -32,6 +39,7 @@ class OpportunityItem(BaseModel):
     keywords: list[str]
     idea_count: int
     opportunity_score: OpportunityScore
+    top_competitors: list[CompetitorMention] = []
 
 
 class OpportunityListResponse(BaseModel):
@@ -47,3 +55,4 @@ class OpportunityDetailResponse(BaseModel):
     cluster_id: str
     cluster_label: str
     opportunity_score: OpportunityScore
+    top_competitors: list[CompetitorMention] = []

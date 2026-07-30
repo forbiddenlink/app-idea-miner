@@ -12,6 +12,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from packages.core.competitors import aggregate_competitors
 from packages.core.models import Cluster, ClusterMembership, IdeaCandidate
 
 logger = logging.getLogger(__name__)
@@ -112,6 +113,15 @@ class OpportunityService:
         domain_result = await self.db.execute(domain_stmt)
         unique_domains = domain_result.scalar_one() or 0
 
+        competitor_stmt = (
+            select(IdeaCandidate.competitors_mentioned)
+            .join(ClusterMembership, ClusterMembership.idea_id == IdeaCandidate.id)
+            .where(ClusterMembership.cluster_id == cluster_id)
+            .where(IdeaCandidate.competitors_mentioned.isnot(None))
+        )
+        competitor_result = await self.db.execute(competitor_stmt)
+        top_competitors = aggregate_competitors(competitor_result.scalars().all())
+
         score = compute_opportunity_score(
             idea_count=cluster.idea_count or 0,
             avg_sentiment=cluster.avg_sentiment or 0.0,
@@ -124,6 +134,7 @@ class OpportunityService:
             "cluster_id": str(cluster.id),
             "cluster_label": cluster.label,
             "opportunity_score": score,
+            "top_competitors": top_competitors,
         }
 
     async def get_all_opportunities(
@@ -150,6 +161,20 @@ class OpportunityService:
         domain_result = await self.db.execute(domain_stmt)
         domain_map = {row.cluster_id: row.unique_domains for row in domain_result}
 
+        # Aggregate competitor mentions per cluster (market-gap signal)
+        competitor_stmt = (
+            select(
+                ClusterMembership.cluster_id,
+                IdeaCandidate.competitors_mentioned,
+            )
+            .join(IdeaCandidate, ClusterMembership.idea_id == IdeaCandidate.id)
+            .where(IdeaCandidate.competitors_mentioned.isnot(None))
+        )
+        competitor_result = await self.db.execute(competitor_stmt)
+        competitor_lists_map: dict = {}
+        for cluster_id, competitors in competitor_result:
+            competitor_lists_map.setdefault(cluster_id, []).append(competitors)
+
         opportunities = []
         for cluster in clusters:
             unique_domains = domain_map.get(cluster.id, 0)
@@ -169,6 +194,9 @@ class OpportunityService:
                         "keywords": cluster.keywords or [],
                         "idea_count": cluster.idea_count or 0,
                         "opportunity_score": score,
+                        "top_competitors": aggregate_competitors(
+                            competitor_lists_map.get(cluster.id, [])
+                        ),
                     }
                 )
 
