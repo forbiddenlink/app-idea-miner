@@ -26,15 +26,13 @@ def _normalize_for_asyncpg(url: str) -> tuple[str, dict]:
     unchanged with no connect_args, so an already-clean URL (e.g. the working
     prod value) is untouched.
     """
-    if "sslmode" not in url and "channel_binding" not in url:
-        return url, {}
     parts = urlsplit(url)
+    query = parse_qsl(parts.query, keep_blank_values=True)
+    ssl_keys = {"sslmode", "channel_binding", "ssl"}
+    if not (ssl_keys & {key for key, _ in query}):
+        return url, {}
     scheme = "postgresql+asyncpg" if parts.scheme in ("postgres", "postgresql") else parts.scheme
-    pairs = [
-        (key, value)
-        for key, value in parse_qsl(parts.query, keep_blank_values=True)
-        if key not in ("sslmode", "channel_binding", "ssl")
-    ]
+    pairs = [(key, value) for key, value in query if key not in ssl_keys]
     clean = urlunsplit((scheme, parts.netloc, parts.path, urlencode(pairs), parts.fragment))
     return clean, {"ssl": True}
 
