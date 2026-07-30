@@ -19,7 +19,6 @@ import argparse
 import logging
 import os
 import sys
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 # Running `python scripts/run_pipeline.py` puts scripts/ on sys.path[0], not the
 # repo root, so the `apps`/`packages` workspace packages are not importable.
@@ -32,55 +31,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger("run_pipeline")
 
-
-def normalize_database_url_for_asyncpg() -> None:
-    """
-    Rewrite DATABASE_URL (if set) so the asyncpg driver can consume it.
-
-    Neon issues connection strings like
-    `postgresql://user:pass@host/db?sslmode=require&channel_binding=require`.
-    asyncpg (via SQLAlchemy's async engine) does not understand `sslmode` or
-    `channel_binding` as query params, so:
-      - force the `postgresql+asyncpg://` scheme
-      - rename `sslmode` -> `ssl` (asyncpg's equivalent connect param)
-      - drop `channel_binding` entirely (unsupported, would raise on connect)
-
-    Must run before any project module is imported: `packages.core.database`
-    reads DATABASE_URL at import time to build the SQLAlchemy engine, and
-    that module is pulled in transitively as soon as `apps.worker.celery_app`
-    (or any task module) is imported below.
-    """
-    raw = os.environ.get("DATABASE_URL")
-    if not raw:
-        return
-
-    parts = urlsplit(raw)
-
-    scheme = parts.scheme
-    if scheme in ("postgres", "postgresql"):
-        scheme = "postgresql+asyncpg"
-
-    new_pairs = []
-    for key, value in parse_qsl(parts.query, keep_blank_values=True):
-        if key == "channel_binding":
-            continue
-        if key == "sslmode":
-            new_pairs.append(("ssl", value))
-            continue
-        new_pairs.append((key, value))
-
-    normalized = urlunsplit(
-        (scheme, parts.netloc, parts.path, urlencode(new_pairs), parts.fragment)
-    )
-
-    if normalized != raw:
-        logger.info("Normalized DATABASE_URL for asyncpg (scheme/ssl params rewritten)")
-    os.environ["DATABASE_URL"] = normalized
-
-
-# Must happen before any apps/packages import below.
-normalize_database_url_for_asyncpg()
-
+# DATABASE_URL normalization for asyncpg (Neon sslmode/channel_binding) is
+# handled once at the engine-build site in packages.core.database, so the raw
+# env value is passed through untouched here.
 from apps.worker.celery_app import celery_app  # noqa: E402
 
 # One-shot cron run, not a long-lived worker: force eager execution so tasks
