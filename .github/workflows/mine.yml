@@ -1,0 +1,74 @@
+name: Mine
+
+on:
+  schedule:
+    # Regular pipeline (ingestion -> processing -> clustering): every 6 hours
+    - cron: "0 */6 * * *"
+    # Weekly digest run: Mondays 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Pipeline mode"
+        required: true
+        default: "regular"
+        type: choice
+        options:
+          - regular
+          - weekly
+
+jobs:
+  mine:
+    name: Run mining pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Determine pipeline mode
+        id: mode
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE_CRON: ${{ github.event.schedule }}
+          DISPATCH_MODE: ${{ inputs.mode }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "mode=$DISPATCH_MODE" >> "$GITHUB_OUTPUT"
+          elif [ "$SCHEDULE_CRON" = "0 6 * * 1" ]; then
+            echo "mode=weekly" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=regular" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-packages
+
+      - name: Run mining pipeline (${{ steps.mode.outputs.mode }})
+        env:
+          PIPELINE_MODE: ${{ steps.mode.outputs.mode }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
+          PRODUCT_HUNT_TOKEN: ${{ secrets.PRODUCT_HUNT_TOKEN }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_IDEAS_DB_ID: ${{ secrets.NOTION_IDEAS_DB_ID }}
+          APPSTORE_APP_IDS: ${{ secrets.APPSTORE_APP_IDS }}
+          APPSTORE_COUNTRY: ${{ secrets.APPSTORE_COUNTRY }}
+          RSS_FEEDS: ${{ secrets.RSS_FEEDS }}
+          USE_SENTENCE_EMBEDDINGS: ${{ secrets.USE_SENTENCE_EMBEDDINGS }}
+          USE_LLM_EXTRACTION: ${{ secrets.USE_LLM_EXTRACTION }}
+          WEEKLY_DIGEST_SIZE: ${{ secrets.WEEKLY_DIGEST_SIZE }}
+          NOTION_MIN_QUALITY: ${{ secrets.NOTION_MIN_QUALITY }}
+        run: uv run python scripts/run_pipeline.py "$PIPELINE_MODE"
