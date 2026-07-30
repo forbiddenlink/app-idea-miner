@@ -21,6 +21,11 @@ import os
 import sys
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+# Running `python scripts/run_pipeline.py` puts scripts/ on sys.path[0], not the
+# repo root, so the `apps`/`packages` workspace packages are not importable.
+# Prepend the repo root (parent of scripts/) so imports resolve regardless of CWD.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
