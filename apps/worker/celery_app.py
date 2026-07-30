@@ -26,6 +26,7 @@ celery_app.conf.update(
         "apps.worker.tasks.clustering",
         "apps.worker.tasks.saved_search_alerts",
         "apps.worker.tasks.notion_sync",
+        "apps.worker.tasks.weekly_digest",
     ],
     # Task Routing
     task_routes={
@@ -34,6 +35,7 @@ celery_app.conf.update(
         "apps.worker.tasks.clustering.*": {"queue": "clustering"},
         "apps.worker.tasks.saved_search_alerts.*": {"queue": "alerts"},
         "apps.worker.tasks.notion_sync.*": {"queue": "alerts"},
+        "apps.worker.tasks.weekly_digest.*": {"queue": "alerts"},
     },
     # Task Queues
     task_queues=(
@@ -81,6 +83,10 @@ celery_app.conf.update(
         },
         "send-weekly-saved-search-alerts": {
             "task": "apps.worker.tasks.saved_search_alerts.send_weekly_saved_search_alerts",
+            "schedule": 604800.0,  # Every 7 days
+        },
+        "generate-weekly-idea-digest": {
+            "task": "apps.worker.tasks.weekly_digest.generate_weekly_digest",
             "schedule": 604800.0,  # Every 7 days
         },
     },
