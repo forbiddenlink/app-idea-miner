@@ -25,6 +25,7 @@ celery_app.conf.update(
         "apps.worker.tasks.processing",
         "apps.worker.tasks.clustering",
         "apps.worker.tasks.saved_search_alerts",
+        "apps.worker.tasks.notion_sync",
     ],
     # Task Routing
     task_routes={
@@ -32,6 +33,7 @@ celery_app.conf.update(
         "apps.worker.tasks.processing.*": {"queue": "processing"},
         "apps.worker.tasks.clustering.*": {"queue": "clustering"},
         "apps.worker.tasks.saved_search_alerts.*": {"queue": "alerts"},
+        "apps.worker.tasks.notion_sync.*": {"queue": "alerts"},
     },
     # Task Queues
     task_queues=(
