@@ -56,6 +56,9 @@ jobs:
       - name: Run mining pipeline (${{ steps.mode.outputs.mode }})
         env:
           PIPELINE_MODE: ${{ steps.mode.outputs.mode }}
+          # One-shot run: several tasks each in their own asyncio loop, so use
+          # NullPool to avoid cross-loop "Event loop is closed" from a shared pool.
+          DB_DISABLE_POOL: "1"
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}

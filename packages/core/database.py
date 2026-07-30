@@ -7,6 +7,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
 
 def _normalize_for_asyncpg(url: str) -> tuple[str, dict]:
@@ -44,16 +45,30 @@ DATABASE_URL, _connect_args = _normalize_for_asyncpg(
     )
 )
 
-# Create async engine
-engine = create_async_engine(
-    DATABASE_URL,
-    pool_size=10,
-    max_overflow=20,
-    pool_recycle=1800,
-    pool_pre_ping=True,
-    echo=False,
-    connect_args=_connect_args,
-)
+# Create async engine.
+# One-shot runners (e.g. the GH Actions cron) invoke several Celery tasks in
+# sequence, each in its own asyncio.run() loop. A shared connection pool binds
+# its connections to the first loop and raises "Event loop is closed" on the
+# next task, so those contexts set DB_DISABLE_POOL=1 to use NullPool (a fresh
+# connection per use). Long-lived services (API) keep the pool.
+if os.getenv("DB_DISABLE_POOL"):
+    engine = create_async_engine(
+        DATABASE_URL,
+        poolclass=NullPool,
+        pool_pre_ping=True,
+        echo=False,
+        connect_args=_connect_args,
+    )
+else:
+    engine = create_async_engine(
+        DATABASE_URL,
+        pool_size=10,
+        max_overflow=20,
+        pool_recycle=1800,
+        pool_pre_ping=True,
+        echo=False,
+        connect_args=_connect_args,
+    )
 
 # Create async session factory
 AsyncSessionLocal = sessionmaker(
