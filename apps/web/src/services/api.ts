@@ -239,6 +239,8 @@ class ApiClient {
     cluster_label: string;
     opportunity_score: OpportunityScore;
     top_competitors?: CompetitorMention[];
+    pay_intent_count?: number;
+    avg_wtp_score?: number;
   }> {
     const response = await this.client.get(
       `/api/v1/opportunities/${clusterId}`,

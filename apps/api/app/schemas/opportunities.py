@@ -40,6 +40,8 @@ class OpportunityItem(BaseModel):
     idea_count: int
     opportunity_score: OpportunityScore
     top_competitors: list[CompetitorMention] = []
+    pay_intent_count: int = 0
+    avg_wtp_score: float = 0.0
 
 
 class OpportunityListResponse(BaseModel):
@@ -56,3 +58,5 @@ class OpportunityDetailResponse(BaseModel):
     cluster_label: str
     opportunity_score: OpportunityScore
     top_competitors: list[CompetitorMention] = []
+    pay_intent_count: int = 0
+    avg_wtp_score: float = 0.0

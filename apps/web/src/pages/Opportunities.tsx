@@ -149,6 +149,14 @@ function OpportunityCard({
               {opportunity.idea_count} ideas
             </span>
           )}
+          {(opportunity.pay_intent_count ?? 0) > 0 && (
+            <span
+              title={`${opportunity.pay_intent_count} post${opportunity.pay_intent_count === 1 ? "" : "s"} in this cluster signal willingness to pay`}
+              className="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400"
+            >
+              💰 {opportunity.pay_intent_count} pay-intent
+            </span>
+          )}
         </div>
 
         {/* Incumbents mentioned — market-gap signal */}

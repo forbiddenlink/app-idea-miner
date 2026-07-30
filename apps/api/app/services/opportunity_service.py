@@ -122,6 +122,18 @@ class OpportunityService:
         competitor_result = await self.db.execute(competitor_stmt)
         top_competitors = aggregate_competitors(competitor_result.scalars().all())
 
+        wtp_stmt = (
+            select(
+                func.count()
+                .filter(IdeaCandidate.has_wtp_signal.is_(True))
+                .label("pay_intent_count"),
+                func.avg(IdeaCandidate.wtp_score).label("avg_wtp"),
+            )
+            .join(ClusterMembership, ClusterMembership.idea_id == IdeaCandidate.id)
+            .where(ClusterMembership.cluster_id == cluster_id)
+        )
+        wtp_row = (await self.db.execute(wtp_stmt)).one()
+
         score = compute_opportunity_score(
             idea_count=cluster.idea_count or 0,
             avg_sentiment=cluster.avg_sentiment or 0.0,
@@ -135,6 +147,8 @@ class OpportunityService:
             "cluster_label": cluster.label,
             "opportunity_score": score,
             "top_competitors": top_competitors,
+            "pay_intent_count": wtp_row.pay_intent_count or 0,
+            "avg_wtp_score": round(float(wtp_row.avg_wtp or 0.0), 3),
         }
 
     async def get_all_opportunities(
@@ -160,6 +174,27 @@ class OpportunityService:
         )
         domain_result = await self.db.execute(domain_stmt)
         domain_map = {row.cluster_id: row.unique_domains for row in domain_result}
+
+        # Aggregate willingness-to-pay per cluster (monetization signal)
+        wtp_stmt = (
+            select(
+                ClusterMembership.cluster_id,
+                func.count()
+                .filter(IdeaCandidate.has_wtp_signal.is_(True))
+                .label("pay_intent_count"),
+                func.avg(IdeaCandidate.wtp_score).label("avg_wtp"),
+            )
+            .join(IdeaCandidate, ClusterMembership.idea_id == IdeaCandidate.id)
+            .group_by(ClusterMembership.cluster_id)
+        )
+        wtp_result = await self.db.execute(wtp_stmt)
+        wtp_map = {
+            row.cluster_id: {
+                "pay_intent_count": row.pay_intent_count or 0,
+                "avg_wtp_score": round(float(row.avg_wtp or 0.0), 3),
+            }
+            for row in wtp_result
+        }
 
         # Aggregate competitor mentions per cluster (market-gap signal)
         competitor_stmt = (
@@ -196,6 +231,12 @@ class OpportunityService:
                         "opportunity_score": score,
                         "top_competitors": aggregate_competitors(
                             competitor_lists_map.get(cluster.id, [])
+                        ),
+                        "pay_intent_count": wtp_map.get(cluster.id, {}).get(
+                            "pay_intent_count", 0
+                        ),
+                        "avg_wtp_score": wtp_map.get(cluster.id, {}).get(
+                            "avg_wtp_score", 0.0
                         ),
                     }
                 )

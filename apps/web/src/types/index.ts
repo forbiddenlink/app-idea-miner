@@ -193,6 +193,8 @@ export interface Opportunity {
   idea_count: number;
   opportunity_score: OpportunityScore;
   top_competitors?: CompetitorMention[];
+  pay_intent_count?: number;
+  avg_wtp_score?: number;
 }
 
 export interface OpportunityQueryParams {
