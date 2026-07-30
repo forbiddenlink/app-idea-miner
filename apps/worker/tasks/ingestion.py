@@ -11,6 +11,7 @@ from sqlalchemy import select
 from apps.worker.celery_app import celery_app
 
 # Source Plugins
+from apps.worker.sources.appstore import AppStoreSource
 from apps.worker.sources.base import BaseSource
 from apps.worker.sources.hackernews import HackerNewsSource
 from apps.worker.sources.indiehackers import IndieHackersSource
@@ -30,6 +31,7 @@ SOURCE_REGISTRY: list[type[BaseSource]] = [
     ProductHuntSource,
     HackerNewsSource,
     IndieHackersSource,
+    AppStoreSource,
 ]
 
 
