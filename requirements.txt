@@ -322,7 +322,7 @@ pydantic-core==2.48.0
     # via pydantic
 pydantic-settings==2.15.0
     # via api
-Pygments>=2.20.0
+Pygments>=2.21.0
     # via
     #   pytest
     #   rich
