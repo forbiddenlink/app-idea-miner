@@ -25,7 +25,7 @@ annotated-doc==0.0.5
     #   typer
 annotated-types==0.8.0
     # via pydantic
-anthropic==0.122.0
+anthropic==0.125.0
     # via core
 anyio==4.14.2
     # via
@@ -68,7 +68,7 @@ certifi==2026.7.22
     #   requests
 cfgv==3.5.0
     # via pre-commit
-charset-normalizer==3.5.0
+charset-normalizer==3.5.1
     # via requests
 click==8.4.2
     # via
@@ -95,7 +95,7 @@ coverage==7.15.4
     # via pytest-cov
 cuda-bindings==13.3.1 ; sys_platform == 'linux'
     # via torch
-cuda-pathfinder==1.6.0 ; sys_platform == 'linux'
+cuda-pathfinder==1.6.1 ; sys_platform == 'linux'
     # via cuda-bindings
 cuda-toolkit==13.3.1 ; sys_platform == 'linux'
     # via torch
@@ -122,7 +122,7 @@ filelock==3.32.3
     #   huggingface-hub
     #   torch
     #   virtualenv
-flower==2.0.1
+flower==2.1.0
     # via worker
 frozenlist==1.8.0
     # via
@@ -155,7 +155,7 @@ httpx==0.28.1
     #   app-idea-miner
     #   huggingface-hub
     #   worker
-huggingface-hub==1.27.0
+huggingface-hub==1.28.0
     # via
     #   sentence-transformers
     #   tokenizers
@@ -164,7 +164,7 @@ humanize==4.16.0
     # via flower
 identify==2.6.19
     # via pre-commit
-idna==3.18
+idna==3.19
     # via
     #   anyio
     #   email-validator
@@ -208,7 +208,7 @@ multidict==6.7.1
     # via
     #   aiohttp
     #   yarl
-narwhals==2.24.0
+narwhals==2.25.0
     # via plotly
 networkx==3.6.1
     # via torch
@@ -342,7 +342,7 @@ python-dateutil==2.9.0.post0
     # via
     #   celery
     #   pandas
-python-dotenv==1.2.2
+python-dotenv==1.2.3
     # via
     #   api
     #   core
@@ -374,7 +374,7 @@ requests>=2.34.2
     #   vadersentiment
 rich==14.3.4
     # via typer
-ruff==0.16.3
+ruff==0.16.4
 safetensors==0.8.0
     # via transformers
 scikit-learn==1.9.0
@@ -439,7 +439,7 @@ tqdm==4.70.0
     #   sentence-transformers
     #   transformers
     #   umap-learn
-transformers==5.15.0
+transformers==5.15.1
     # via sentence-transformers
 triton==3.7.1 ; sys_platform == 'linux'
     # via torch
@@ -486,7 +486,7 @@ update-checker==0.18.0
     # via asyncpraw
 urllib3==2.7.0
     # via requests
-uvicorn==0.52.3
+uvicorn==0.52.4
     # via api
 uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
     # via uvicorn
