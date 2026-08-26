@@ -655,9 +655,9 @@ class TestRedditMockMode:
         source = RedditSource()
         posts = await source.fetch()
         assert posts, "mock fetch should return at least one post"
-        assert all(
-            p.source_metadata.get("mock") is True for p in posts
-        ), "mock posts must be tagged source_metadata[mock]=True"
+        assert all(p.source_metadata.get("mock") is True for p in posts), (
+            "mock posts must be tagged source_metadata[mock]=True"
+        )
 
 
 class TestProductHuntMockMode:
