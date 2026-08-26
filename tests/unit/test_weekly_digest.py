@@ -54,9 +54,7 @@ class TestRankClustersForDigest:
     def test_picks_correct_top_n_in_right_order(self):
         low = _cluster(quality_score=0.1, trend_score=0.1, idea_count=1, label="low")
         mid = _cluster(quality_score=0.5, trend_score=0.2, idea_count=5, label="mid")
-        high = _cluster(
-            quality_score=0.9, trend_score=0.5, idea_count=20, label="high"
-        )
+        high = _cluster(quality_score=0.9, trend_score=0.5, idea_count=20, label="high")
 
         ranked = rank_clusters_for_digest([low, mid, high], top_n=2)
 
@@ -64,7 +62,8 @@ class TestRankClustersForDigest:
 
     def test_respects_default_top_n(self):
         clusters = [
-            _cluster(idea_count=i, label=f"c{i}") for i in range(DEFAULT_WEEKLY_DIGEST_SIZE + 5)
+            _cluster(idea_count=i, label=f"c{i}")
+            for i in range(DEFAULT_WEEKLY_DIGEST_SIZE + 5)
         ]
 
         ranked = rank_clusters_for_digest(clusters)

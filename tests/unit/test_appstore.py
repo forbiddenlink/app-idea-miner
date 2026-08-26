@@ -129,9 +129,9 @@ class TestAppStoreMockMode:
         source = AppStoreSource()
         posts = await source.fetch()
         assert posts, "mock fetch should return at least one post"
-        assert all(
-            p.source_metadata.get("mock") is True for p in posts
-        ), "mock posts must be tagged source_metadata[mock]=True"
+        assert all(p.source_metadata.get("mock") is True for p in posts), (
+            "mock posts must be tagged source_metadata[mock]=True"
+        )
         assert all(p.source == "appstore" for p in posts)
 
     def test_configured_app_ids_disables_mock(self, monkeypatch):

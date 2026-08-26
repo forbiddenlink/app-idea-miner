@@ -162,18 +162,15 @@ class AppStoreSource(BaseSource):
         mock_reviews = [
             (
                 "Great app but missing dark mode",
-                "I really wish this app had a dark mode option, my eyes hurt "
-                "at night.",
+                "I really wish this app had a dark mode option, my eyes hurt at night.",
             ),
             (
                 "Needs offline support",
-                "This app should really work offline, I lose all my data on "
-                "flights.",
+                "This app should really work offline, I lose all my data on flights.",
             ),
             (
                 "Frustrating export flow",
-                "So frustrated that I can't export my data to CSV. Please "
-                "add this.",
+                "So frustrated that I can't export my data to CSV. Please add this.",
             ),
         ]
 

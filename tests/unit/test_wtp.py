@@ -25,7 +25,9 @@ class TestPhraseSignals:
         assert any("take my money" in p.lower() for p in result["matched_phrases"])
 
     def test_happy_to_pay(self):
-        result = detect_willingness_to_pay("I'd be happy to pay for something like this.")
+        result = detect_willingness_to_pay(
+            "I'd be happy to pay for something like this."
+        )
         assert result["has_wtp_signal"] is True
 
     def test_worth_paying_for(self):
@@ -54,7 +56,9 @@ class TestPricePatterns:
         assert any("$5/month" in p for p in result["matched_phrases"])
 
     def test_dollar_amount_only(self):
-        result = detect_willingness_to_pay("Would pay around $20 for a lifetime license.")
+        result = detect_willingness_to_pay(
+            "Would pay around $20 for a lifetime license."
+        )
         assert result["has_wtp_signal"] is True
 
     def test_number_slash_mo(self):
