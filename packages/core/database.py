@@ -32,9 +32,15 @@ def _normalize_for_asyncpg(url: str) -> tuple[str, dict]:
     ssl_keys = {"sslmode", "channel_binding", "ssl"}
     if not (ssl_keys & {key for key, _ in query}):
         return url, {}
-    scheme = "postgresql+asyncpg" if parts.scheme in ("postgres", "postgresql") else parts.scheme
+    scheme = (
+        "postgresql+asyncpg"
+        if parts.scheme in ("postgres", "postgresql")
+        else parts.scheme
+    )
     pairs = [(key, value) for key, value in query if key not in ssl_keys]
-    clean = urlunsplit((scheme, parts.netloc, parts.path, urlencode(pairs), parts.fragment))
+    clean = urlunsplit(
+        (scheme, parts.netloc, parts.path, urlencode(pairs), parts.fragment)
+    )
     return clean, {"ssl": True}
 
 

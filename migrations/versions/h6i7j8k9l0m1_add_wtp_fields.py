@@ -41,8 +41,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Remove willingness-to-pay fields."""
-    op.drop_index(
-        "idx_idea_candidates_has_wtp_signal", table_name="idea_candidates"
-    )
+    op.drop_index("idx_idea_candidates_has_wtp_signal", table_name="idea_candidates")
     op.drop_column("idea_candidates", "has_wtp_signal")
     op.drop_column("idea_candidates", "wtp_score")

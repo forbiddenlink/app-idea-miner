@@ -36,7 +36,10 @@ def aggregate_competitors(
             if not name or not name.strip():
                 continue
             counter[name.strip().lower()] += 1
-    return [{"name": name, "count": count} for name, count in counter.most_common(limit)]
+    return [
+        {"name": name, "count": count} for name, count in counter.most_common(limit)
+    ]
+
 
 # Known competitors by domain
 # Can be extended via environment variable COMPETITOR_LIST_EXTRA

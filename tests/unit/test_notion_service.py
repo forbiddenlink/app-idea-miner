@@ -103,7 +103,6 @@ class TestFieldMapping:
         notes = properties["Notes"]["rich_text"][0]["text"]["content"]
         assert "Keywords: \n[auto-mined by app-idea-miner]" in notes
 
-
     def test_build_properties_renders_top_competitors_in_notes(self, service):
         cluster = _make_cluster()
         top_competitors = [
