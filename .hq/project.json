@@ -1,0 +1,19 @@
+{
+	"allowedForCodex": true,
+	"automationLevel": "manual",
+	"confidentialContext": "none",
+	"context": "personal",
+	"hosting": [],
+	"kind": "tool",
+	"lastReviewedAt": "2026-08-27",
+	"lifecycle": "prototype",
+	"observability": [],
+	"ownerContext": "personal",
+	"surface": "internal",
+	"systems": ["solo-control-tower", "idea-intelligence"],
+	"tags": ["ideas", "market-research", "pytest", "ruff", "uv"],
+	"urls": {
+		"repository": "https://github.com/forbiddenlink/app-idea-miner"
+	},
+	"notes": "Idea-mining tool that should feed hq ideas with validation evidence and kill criteria."
+}

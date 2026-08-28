@@ -1,4 +1,4 @@
-.PHONY: help dev down logs logs-api logs-worker logs-web migrate migration db-reset db-shell seed ingest cluster test test-coverage test-file lint format shell-api shell-worker stats backup clean clean-data
+.PHONY: help dev down logs logs-api logs-worker logs-web migrate migration db-reset db-shell seed ingest cluster check test test-coverage test-file lint format typecheck-baseline security python-security web-security web-test web-build shell-api shell-worker stats backup clean clean-data
 
 help: ## Show this help message
 	@echo "App-Idea Miner - Development Commands"
@@ -64,6 +64,8 @@ cluster: ## Run clustering
 	docker-compose exec api sh -lc 'curl -sS -X POST -H "X-API-Key: $${API_KEY:-dev-api-key}" http://localhost:8000/api/v1/jobs/recluster'
 
 # Testing Commands
+check: lint test web-test web-build ## Run backend lint/tests plus web tests/build
+
 test: ## Run all tests
 	uv run pytest
 
@@ -79,6 +81,23 @@ lint: ## Lint code with Ruff
 
 format: ## Format code with Ruff
 	uv run ruff format apps packages
+
+typecheck-baseline: ## Run Python typecheck baseline (currently advisory)
+	uv run mypy apps packages
+
+security: python-security web-security ## Run Python audit plus high-severity web audit
+
+python-security: ## Audit Python dependencies
+	uv run pip-audit
+
+web-security: ## Audit web dependencies at high severity
+	cd apps/web && pnpm audit --audit-level high
+
+web-test: ## Run web unit tests
+	cd apps/web && pnpm test
+
+web-build: ## Build web app
+	cd apps/web && pnpm run build
 
 # Utility Commands
 shell-api: ## Enter API container shell
