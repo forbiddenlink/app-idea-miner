@@ -70,7 +70,7 @@ cfgv==3.5.0
     # via pre-commit
 charset-normalizer==3.5.1
     # via requests
-click==8.4.2
+click==8.5.0
     # via
     #   celery
     #   click-didyoumean
@@ -95,7 +95,7 @@ coverage==7.15.4
     # via pytest-cov
 cuda-bindings==13.3.1 ; sys_platform == 'linux'
     # via torch
-cuda-pathfinder==1.6.1 ; sys_platform == 'linux'
+cuda-pathfinder==1.8.0 ; sys_platform == 'linux'
     # via cuda-bindings
 cuda-toolkit==13.3.1 ; sys_platform == 'linux'
     # via torch
@@ -117,7 +117,7 @@ fastapi==0.141.1
     # via api
 feedparser==6.0.14
     # via worker
-filelock==3.32.3
+filelock==3.32.4
     # via
     #   huggingface-hub
     #   torch
@@ -155,7 +155,7 @@ httpx==0.28.1
     #   app-idea-miner
     #   huggingface-hub
     #   worker
-huggingface-hub==1.28.0
+huggingface-hub==1.29.0
     # via
     #   sentence-transformers
     #   tokenizers
@@ -293,7 +293,7 @@ pgvector==0.5.0
     #   api
     #   app-idea-miner
     #   core
-platformdirs==4.11.3
+platformdirs==4.11.5
     # via virtualenv
 plotly==6.9.0
     # via bertopic
@@ -374,7 +374,7 @@ requests>=2.34.2
     #   vadersentiment
 rich==14.3.4
     # via typer
-ruff==0.16.4
+ruff==0.16.5
 safetensors==0.8.0
     # via transformers
 scikit-learn==1.9.0
@@ -385,7 +385,7 @@ scikit-learn==1.9.0
     #   pynndescent
     #   sentence-transformers
     #   umap-learn
-scipy==1.18.0
+scipy==1.18.1
     # via
     #   hdbscan
     #   pynndescent
@@ -439,11 +439,11 @@ tqdm==4.70.0
     #   sentence-transformers
     #   transformers
     #   umap-learn
-transformers==5.15.1
+transformers==5.16.1
     # via sentence-transformers
 triton==3.7.1 ; sys_platform == 'linux'
     # via torch
-typer==0.27.1
+typer==0.27.2
     # via
     #   huggingface-hub
     #   transformers
