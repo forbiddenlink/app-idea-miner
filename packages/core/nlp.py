@@ -134,7 +134,7 @@ def extract_ideas_llm(text: str) -> list[dict]:
         client = Anthropic(api_key=api_key)
 
         response = client.messages.create(
-            model="claude-3-haiku-20240307",
+            model="claude-haiku-4-5",
             max_tokens=1024,
             messages=[
                 {
