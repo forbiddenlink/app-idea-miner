@@ -27,7 +27,7 @@ annotated-types==0.8.0
     # via pydantic
 anthropic==0.125.0
     # via core
-anyio==4.14.2
+anyio==4.15.0
     # via
     #   anthropic
     #   httpx
@@ -91,11 +91,11 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   pytest
     #   tqdm
     #   uvicorn
-coverage==7.15.4
+coverage==7.16.0
     # via pytest-cov
 cuda-bindings==13.3.1 ; sys_platform == 'linux'
     # via torch
-cuda-pathfinder==1.8.0 ; sys_platform == 'linux'
+cuda-pathfinder==1.8.1 ; sys_platform == 'linux'
     # via cuda-bindings
 cuda-toolkit==13.3.1 ; sys_platform == 'linux'
     # via torch
@@ -117,7 +117,7 @@ fastapi==0.141.1
     # via api
 feedparser==6.0.14
     # via worker
-filelock==3.32.4
+filelock==3.32.5
     # via
     #   huggingface-hub
     #   torch
@@ -155,7 +155,7 @@ httpx==0.28.1
     #   app-idea-miner
     #   huggingface-hub
     #   worker
-huggingface-hub==1.29.0
+huggingface-hub==1.30.0
     # via
     #   sentence-transformers
     #   tokenizers
@@ -177,7 +177,7 @@ jinja2==3.1.6
     # via torch
 jiter==0.16.0
     # via anthropic
-joblib==1.5.3
+joblib==1.6.0
     # via
     #   hdbscan
     #   nltk
@@ -244,7 +244,7 @@ nvidia-cuda-nvrtc==13.3.33 ; sys_platform == 'linux'
     # via cuda-toolkit
 nvidia-cuda-runtime==13.3.29 ; sys_platform == 'linux'
     # via cuda-toolkit
-nvidia-cudnn-cu13==9.24.0.43 ; sys_platform == 'linux'
+nvidia-cudnn-cu13==9.25.1.1 ; sys_platform == 'linux'
     # via torch
 nvidia-cufft==12.3.0.29 ; sys_platform == 'linux'
     # via cuda-toolkit
@@ -293,7 +293,7 @@ pgvector==0.5.0
     #   api
     #   app-idea-miner
     #   core
-platformdirs==4.11.5
+platformdirs==4.11.7
     # via virtualenv
 plotly==6.9.0
     # via bertopic
@@ -312,7 +312,7 @@ propcache==0.5.2
     #   yarl
 psycopg2-binary==2.9.12
     # via app-idea-miner
-pydantic==2.13.4
+pydantic==2.13.5
     # via
     #   anthropic
     #   api
@@ -364,7 +364,7 @@ redis==7.4.1
     #   api
     #   core
     #   worker
-regex==2026.7.19
+regex==2026.9.3
     # via
     #   nltk
     #   transformers
@@ -374,7 +374,7 @@ requests>=2.34.2
     #   vadersentiment
 rich==14.3.4
     # via typer
-ruff==0.16.5
+ruff==0.16.6
 safetensors==0.8.0
     # via transformers
 scikit-learn==1.9.0
@@ -423,9 +423,9 @@ sympy==1.14.0
     # via torch
 threadpoolctl==3.6.0
     # via scikit-learn
-tokenizers==0.23.1
+tokenizers==0.23.2
     # via transformers
-torch==2.13.0
+torch==2.14.0
     # via sentence-transformers
 tornado==6.5.8
     # via
@@ -441,7 +441,7 @@ tqdm==4.70.0
     #   umap-learn
 transformers==5.16.1
     # via sentence-transformers
-triton==3.7.1 ; sys_platform == 'linux'
+triton==3.8.0 ; sys_platform == 'linux'
     # via torch
 typer==0.27.2
     # via
@@ -501,13 +501,13 @@ virtualenv==20.39.1
     # via pre-commit
 watchfiles==1.2.0
     # via uvicorn
-wcwidth==0.8.2
+wcwidth==0.8.3
     # via prompt-toolkit
 websockets==16.1.1
     # via
     #   api
     #   uvicorn
-wrapt==2.3.0
+wrapt==2.4.0
     # via deprecated
 yarl==1.24.5
     # via
