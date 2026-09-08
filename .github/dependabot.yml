@@ -7,8 +7,11 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "America/New_York"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 0
     groups:
+      security-updates:
+        applies-to: security-updates
+        patterns: ["*"]
       patches:
         patterns: ["*"]
         update-types: ["patch", "minor"]
@@ -17,9 +20,13 @@ updates:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
+    open-pull-requests-limit: 0
     directory: "/"
     schedule:
       interval: "monthly"
     groups:
+      security-updates:
+        applies-to: security-updates
+        patterns: ["*"]
       gha:
         patterns: ["*"]
