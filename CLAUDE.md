@@ -9,7 +9,8 @@ evidence and quality. FastAPI backend, Celery workers, React frontend, Postgres 
 - Backend: Python 3.12, FastAPI, SQLAlchemy 2.0 (async) + asyncpg, Alembic migrations,
   Celery 5 (Redis broker/backend), scikit-learn + HDBSCAN + VADER + NLTK for NLP/clustering
 - Frontend (`apps/web/`): React 18, TypeScript, Vite 6, Tailwind CSS 3, TanStack Query,
-  Zustand, React Router, Recharts, Playwright for E2E
+  React Context (`AuthContext`, `ToastContext`) for global state, React Router, Recharts,
+  Playwright for E2E
 - Package manager: uv for Python (`uv.lock`, `pyproject.toml`, uv workspace across
   `apps/api`, `apps/worker`, `packages/core`); pnpm for the web app
   (`apps/web/pnpm-lock.yaml`, `packageManager: pnpm@10.34.5`)

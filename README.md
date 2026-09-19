@@ -9,7 +9,7 @@ An intelligent opportunity detection platform that automatically collects, clust
 [![PostgreSQL 16](https://img.shields.io/badge/postgresql-16-blue.svg)](https://www.postgresql.org/)
 [![Redis 7](https://img.shields.io/badge/redis-7-red.svg)](https://redis.io/)
 [![React 18](https://img.shields.io/badge/react-18-blue.svg)](https://react.dev/)
-[![FastAPI](https://img.shields.io/badge/fastapi-0.115-green.svg)](https://fastapi.tiangolo.com/)
+[![FastAPI](https://img.shields.io/badge/fastapi-0.135-green.svg)](https://fastapi.tiangolo.com/)
 
 ---
 
@@ -23,7 +23,7 @@ An intelligent opportunity detection platform that automatically collects, clust
 | NLP extraction + sentiment                          | ✅ Complete |
 | HDBSCAN clustering                                  | ✅ Complete |
 | FastAPI backend (21+ endpoints)                     | ✅ Complete |
-| React UI (5 pages, 30+ components)                  | ✅ Complete |
+| React UI (10 pages, 30+ components)                 | ✅ Complete |
 | JWT authentication + API key auth                   | ✅ Complete |
 | User-owned bookmarks                                | ✅ Complete |
 | Saved searches + alert scheduling                   | ✅ Complete |
@@ -148,13 +148,13 @@ You should see 10–15 clusters with evidence links and quality scores.
 
 | Layer    | Technology                                                    |
 | -------- | ------------------------------------------------------------- |
-| API      | Python 3.12, FastAPI 0.115, SQLAlchemy 2.0 (async), asyncpg   |
+| API      | Python 3.12, FastAPI 0.135, SQLAlchemy 2.0 (async), asyncpg   |
 | Auth     | JWT (python-jose), passlib/bcrypt, per-route rate limiting    |
-| Workers  | Celery 5.4, Redis 7 (broker + result backend)                 |
+| Workers  | Celery 5.6, Redis 7 (broker + result backend)                 |
 | ML       | scikit-learn (TF-IDF), HDBSCAN, VADER sentiment, NLTK         |
 | Database | PostgreSQL 16 (JSONB, full-text search), Alembic migrations   |
 | Frontend | React 18, TypeScript 5, Vite 6, Tailwind CSS 3, Framer Motion |
-| State    | TanStack Query 5, Zustand 4                                   |
+| State    | TanStack Query 5, React Context                               |
 | Testing  | pytest + pytest-asyncio, Vitest, Playwright                   |
 | Tooling  | UV (packages), Ruff (lint/format), mypy (types)               |
 | Infra    | Docker Compose, GitHub Actions CI                             |
@@ -181,9 +181,9 @@ app-idea-miner/
 │   └── web/                    # React frontend
 │       └── src/
 │           ├── components/     # Reusable UI components
-│           ├── contexts/       # AuthContext
+│           ├── contexts/       # AuthContext, ToastContext
 │           ├── hooks/          # useFavorites, useKeyboard, …
-│           ├── pages/          # Dashboard, ClusterExplorer, Ideas, Saved, Settings, Login
+│           ├── pages/          # Dashboard, ClusterExplorer, Ideas, Saved, Settings, Login, …
 │           ├── services/       # Typed API client
 │           └── types/          # Shared TypeScript interfaces
 ├── packages/
@@ -278,8 +278,8 @@ make clean-data   # Truncate all data tables
 make test                                        # All tests
 make test-coverage                               # With HTML coverage report
 make test-file path=tests/test_api_auth.py       # Single file
-cd apps/web && npm test                          # Frontend unit tests
-cd apps/web && npm run test:e2e                  # Playwright E2E tests
+cd apps/web && pnpm test                         # Frontend unit tests
+cd apps/web && pnpm run test:e2e                 # Playwright E2E tests
 ```
 
 > Tests marked `@pytest.mark.requires_db` are skipped locally unless `DATABASE_URL` points to a live Postgres instance. They always run in CI (GitHub Actions provides a Postgres service).
@@ -289,8 +289,8 @@ cd apps/web && npm run test:e2e                  # Playwright E2E tests
 ```bash
 make lint         # Ruff linter
 make format       # Ruff auto-format
-cd apps/web && npm run lint    # ESLint (0 warnings policy)
-cd apps/web && npm run build   # TypeScript + Vite build check
+cd apps/web && pnpm lint       # ESLint (0 warnings policy)
+cd apps/web && pnpm run build  # TypeScript + Vite build check
 ```
 
 ---
@@ -369,9 +369,9 @@ make test-coverage            # HTML report at htmlcov/index.html
 
 # Frontend
 cd apps/web
-npm test                      # Vitest unit tests
-npm run test:coverage         # With coverage
-npm run test:e2e              # Playwright smoke + flow tests
+pnpm test                     # Vitest unit tests
+pnpm run test:coverage        # With coverage
+pnpm run test:e2e             # Playwright smoke + flow tests
 ```
 
 CI runs both suites on every push. The backend job provides a Postgres 16 service container so all tests (including `requires_db`) execute in CI.
