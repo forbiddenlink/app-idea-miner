@@ -275,14 +275,14 @@ async def test_list_clusters(client: AsyncClient):
 ## Documentation Files (Read These)
 
 **Must-Read Before Making Changes:**
-- [CHECKLIST.md](../docs/CHECKLIST.md) - Implementation phases (Phases 1-8E complete)
 - [ARCHITECTURE.md](../docs/ARCHITECTURE.md) - System design decisions
 - [API_SPEC.md](../docs/API_SPEC.md) - All 21+ endpoints documented
 - [SCHEMA.md](../docs/SCHEMA.md) - Database tables and relationships
 
 **Reference When Needed:**
 - [CLUSTERING.md](../docs/CLUSTERING.md) - HDBSCAN algorithm deep dive
-- [PHASE_8E_COMPLETE.md](../docs/PHASE_8E_COMPLETE.md) - Latest features (Favorites, Tooltips, Command Palette, Context Menus)
+- [DEPLOYMENT.md](../docs/DEPLOYMENT.md) - Production deployment guide
+- [TESTING.md](../docs/TESTING.md) - Testing strategy and patterns
 - [README.md](../README.md) - Quick start, setup, troubleshooting
 
 ## Decision Rationale (The "Why")

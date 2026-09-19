@@ -2,20 +2,20 @@
 
 > Discover validated app opportunities from real user needs
 
-An intelligent opportunity detection platform that automatically collects, clusters, and analyzes "I wish there was an app..." posts from across the web — giving you evidence-backed insights on what people actually want built.
+An intelligent opportunity detection platform that automatically collects, clusters, and analyzes "I wish there was an app..." posts from across the web, giving you evidence-backed insights on what people actually want built.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![PostgreSQL 16](https://img.shields.io/badge/postgresql-16-blue.svg)](https://www.postgresql.org/)
 [![Redis 7](https://img.shields.io/badge/redis-7-red.svg)](https://redis.io/)
 [![React 18](https://img.shields.io/badge/react-18-blue.svg)](https://react.dev/)
-[![FastAPI](https://img.shields.io/badge/fastapi-0.115-green.svg)](https://fastapi.tiangolo.com/)
+[![FastAPI](https://img.shields.io/badge/fastapi-0.135-green.svg)](https://fastapi.tiangolo.com/)
 
 ---
 
 ## Status
 
-**MVP complete** — all core phases shipped and security-hardened.
+**MVP complete**, all core phases shipped and security-hardened.
 
 | Area                                                | Status      |
 | --------------------------------------------------- | ----------- |
@@ -23,7 +23,7 @@ An intelligent opportunity detection platform that automatically collects, clust
 | NLP extraction + sentiment                          | ✅ Complete |
 | HDBSCAN clustering                                  | ✅ Complete |
 | FastAPI backend (21+ endpoints)                     | ✅ Complete |
-| React UI (5 pages, 30+ components)                  | ✅ Complete |
+| React UI (10 pages, 30+ components)                 | ✅ Complete |
 | JWT authentication + API key auth                   | ✅ Complete |
 | User-owned bookmarks                                | ✅ Complete |
 | Saved searches + alert scheduling                   | ✅ Complete |
@@ -74,7 +74,7 @@ An intelligent opportunity detection platform that automatically collects, clust
 
 ### Prerequisites
 
-- [UV](https://astral.sh/uv) 0.5+ — `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- [UV](https://astral.sh/uv) 0.5+: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - Docker Desktop 4.0+ (with Compose V2)
 - Make
 - 4 GB RAM, 2 GB free disk
@@ -148,13 +148,13 @@ You should see 10–15 clusters with evidence links and quality scores.
 
 | Layer    | Technology                                                    |
 | -------- | ------------------------------------------------------------- |
-| API      | Python 3.12, FastAPI 0.115, SQLAlchemy 2.0 (async), asyncpg   |
+| API      | Python 3.12, FastAPI 0.135, SQLAlchemy 2.0 (async), asyncpg   |
 | Auth     | JWT (python-jose), passlib/bcrypt, per-route rate limiting    |
-| Workers  | Celery 5.4, Redis 7 (broker + result backend)                 |
+| Workers  | Celery 5.6, Redis 7 (broker + result backend)                 |
 | ML       | scikit-learn (TF-IDF), HDBSCAN, VADER sentiment, NLTK         |
 | Database | PostgreSQL 16 (JSONB, full-text search), Alembic migrations   |
 | Frontend | React 18, TypeScript 5, Vite 6, Tailwind CSS 3, Framer Motion |
-| State    | TanStack Query 5, Zustand 4                                   |
+| State    | TanStack Query 5, React Context                               |
 | Testing  | pytest + pytest-asyncio, Vitest, Playwright                   |
 | Tooling  | UV (packages), Ruff (lint/format), mypy (types)               |
 | Infra    | Docker Compose, GitHub Actions CI                             |
@@ -181,9 +181,9 @@ app-idea-miner/
 │   └── web/                    # React frontend
 │       └── src/
 │           ├── components/     # Reusable UI components
-│           ├── contexts/       # AuthContext
+│           ├── contexts/       # AuthContext, ToastContext
 │           ├── hooks/          # useFavorites, useKeyboard, …
-│           ├── pages/          # Dashboard, ClusterExplorer, Ideas, Saved, Settings, Login
+│           ├── pages/          # Dashboard, ClusterExplorer, Ideas, Saved, Settings, Login, …
 │           ├── services/       # Typed API client
 │           └── types/          # Shared TypeScript interfaces
 ├── packages/
@@ -206,7 +206,7 @@ Copy `.env.example` to `.env` and adjust as needed:
 
 ```bash
 # Database
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgresql:5432/appideas
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/appideas
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=appideas
@@ -238,7 +238,7 @@ MIN_CLUSTER_SIZE=3
 MAX_FEATURES=500
 ```
 
-> All Docker inter-service URLs use service names (`postgresql`, `redis`), not `localhost`.
+> All Docker inter-service URLs use service names (`postgres`, `redis`), not `localhost`.
 
 ---
 
@@ -278,8 +278,8 @@ make clean-data   # Truncate all data tables
 make test                                        # All tests
 make test-coverage                               # With HTML coverage report
 make test-file path=tests/test_api_auth.py       # Single file
-cd apps/web && npm test                          # Frontend unit tests
-cd apps/web && npm run test:e2e                  # Playwright E2E tests
+cd apps/web && pnpm test                         # Frontend unit tests
+cd apps/web && pnpm run test:e2e                 # Playwright E2E tests
 ```
 
 > Tests marked `@pytest.mark.requires_db` are skipped locally unless `DATABASE_URL` points to a live Postgres instance. They always run in CI (GitHub Actions provides a Postgres service).
@@ -289,8 +289,8 @@ cd apps/web && npm run test:e2e                  # Playwright E2E tests
 ```bash
 make lint         # Ruff linter
 make format       # Ruff auto-format
-cd apps/web && npm run lint    # ESLint (0 warnings policy)
-cd apps/web && npm run build   # TypeScript + Vite build check
+cd apps/web && pnpm lint       # ESLint (0 warnings policy)
+cd apps/web && pnpm run build  # TypeScript + Vite build check
 ```
 
 ---
@@ -352,7 +352,7 @@ Each post is run through:
 Ideas are grouped using:
 
 1. **TF-IDF vectorization** (500 features, 1–3 grams, L2-normalized)
-2. **HDBSCAN** (min_cluster_size=2, euclidean distance) — auto-detects cluster count and handles noise
+2. **HDBSCAN** (min_cluster_size=2, euclidean distance): auto-detects cluster count and handles noise
 3. **Keyword extraction:** top-10 TF-IDF terms per cluster
 4. **Quality scoring:** silhouette score + average sentiment + source diversity
 
@@ -369,9 +369,9 @@ make test-coverage            # HTML report at htmlcov/index.html
 
 # Frontend
 cd apps/web
-npm test                      # Vitest unit tests
-npm run test:coverage         # With coverage
-npm run test:e2e              # Playwright smoke + flow tests
+pnpm test                     # Vitest unit tests
+pnpm run test:coverage        # With coverage
+pnpm run test:e2e             # Playwright smoke + flow tests
 ```
 
 CI runs both suites on every push. The backend job provides a Postgres 16 service container so all tests (including `requires_db`) execute in CI.
