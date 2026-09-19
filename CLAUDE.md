@@ -56,8 +56,8 @@ Web (`cd apps/web`):
 - Auth: API key (`X-API-Key` header, server-to-server) or JWT bearer (user sessions).
 - Migrations always through Alembic, never raw DDL (`make migration name=...`).
 - Docker inter-service URLs use compose service names, not `localhost` - the Postgres
-  service is named `postgres` (matches `.env.example`'s `DATABASE_URL`; the README's config
-  example using `postgresql` as the hostname is stale, do not follow it).
+  service is named `postgres` (matches `.env.example`'s `DATABASE_URL` and the README's
+  config example).
 - Tests marked `@pytest.mark.requires_db` skip locally without a live Postgres at
   `DATABASE_URL`; they always run in CI (Postgres 16 service container).
 

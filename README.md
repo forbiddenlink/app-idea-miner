@@ -2,7 +2,7 @@
 
 > Discover validated app opportunities from real user needs
 
-An intelligent opportunity detection platform that automatically collects, clusters, and analyzes "I wish there was an app..." posts from across the web — giving you evidence-backed insights on what people actually want built.
+An intelligent opportunity detection platform that automatically collects, clusters, and analyzes "I wish there was an app..." posts from across the web, giving you evidence-backed insights on what people actually want built.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
@@ -15,7 +15,7 @@ An intelligent opportunity detection platform that automatically collects, clust
 
 ## Status
 
-**MVP complete** — all core phases shipped and security-hardened.
+**MVP complete**, all core phases shipped and security-hardened.
 
 | Area                                                | Status      |
 | --------------------------------------------------- | ----------- |
@@ -74,7 +74,7 @@ An intelligent opportunity detection platform that automatically collects, clust
 
 ### Prerequisites
 
-- [UV](https://astral.sh/uv) 0.5+ — `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- [UV](https://astral.sh/uv) 0.5+: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - Docker Desktop 4.0+ (with Compose V2)
 - Make
 - 4 GB RAM, 2 GB free disk
@@ -206,7 +206,7 @@ Copy `.env.example` to `.env` and adjust as needed:
 
 ```bash
 # Database
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgresql:5432/appideas
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/appideas
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=appideas
@@ -238,7 +238,7 @@ MIN_CLUSTER_SIZE=3
 MAX_FEATURES=500
 ```
 
-> All Docker inter-service URLs use service names (`postgresql`, `redis`), not `localhost`.
+> All Docker inter-service URLs use service names (`postgres`, `redis`), not `localhost`.
 
 ---
 
@@ -352,7 +352,7 @@ Each post is run through:
 Ideas are grouped using:
 
 1. **TF-IDF vectorization** (500 features, 1–3 grams, L2-normalized)
-2. **HDBSCAN** (min_cluster_size=2, euclidean distance) — auto-detects cluster count and handles noise
+2. **HDBSCAN** (min_cluster_size=2, euclidean distance): auto-detects cluster count and handles noise
 3. **Keyword extraction:** top-10 TF-IDF terms per cluster
 4. **Quality scoring:** silhouette score + average sentiment + source diversity
 
