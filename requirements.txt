@@ -13,7 +13,7 @@ aiosignal==1.4.0
     # via aiohttp
 aiosqlite==0.22.1
     # via asyncpraw
-alembic==1.19.1
+alembic==1.20.0
     # via
     #   api
     #   app-idea-miner
