@@ -27,7 +27,7 @@ annotated-types==0.8.0
     # via pydantic
 anthropic==0.125.0
     # via core
-anyio==4.15.0
+anyio==4.15.1
     # via
     #   anthropic
     #   httpx
