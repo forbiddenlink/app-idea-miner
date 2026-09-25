@@ -19,19 +19,29 @@ async function mockAllApis(page: Page) {
     });
   });
 
-  // Analytics
+  // Analytics summary. This shape mirrors AnalyticsSummaryResponse in
+  // apps/api/app/schemas/analytics.py: overview and trending are nested
+  // objects, not flat keys. A flat mock crashes Dashboard's StatsGrid on
+  // `summary.overview.total_clusters` and the page falls into the
+  // ErrorBoundary.
   await page.route("**/api/v1/analytics**", async (route) => {
     await route.fulfill({
       json: {
-        total_posts: 0,
-        total_ideas: 0,
-        total_clusters: 0,
-        avg_quality_score: 0,
-        avg_sentiment_score: 0,
+        overview: {
+          total_posts: 0,
+          total_ideas: 0,
+          total_clusters: 0,
+          avg_cluster_size: 0,
+          avg_sentiment: 0,
+        },
+        trending: {
+          hot_clusters: 0,
+          new_ideas_today: 0,
+          new_clusters_this_week: 0,
+        },
         sentiment_distribution: { positive: 0, neutral: 0, negative: 0 },
         top_domains: [],
-        ideas_per_day: [],
-        quality_distribution: [],
+        updated_at: "2026-01-01T00:00:00Z",
       },
     });
   });
@@ -49,43 +59,53 @@ async function mockAllApis(page: Page) {
   });
 }
 
+/**
+ * A route that throws after mount still renders its nav for a moment, so
+ * `expect(nav).toBeVisible()` passes on a page that has already crashed. Assert
+ * the ErrorBoundary fallback is absent as well.
+ */
+async function expectRendered(page: Page) {
+  await expect(page.locator("nav")).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByText("Something went wrong")).toHaveCount(0);
+}
+
 test.describe("Smoke tests — all pages render", () => {
   test("Dashboard loads", async ({ page }) => {
     await mockAllApis(page);
     await page.goto("/");
     await expect(page).not.toHaveTitle("Error");
-    // Navbar is present
-    await expect(page.locator("nav")).toBeVisible();
+    await expectRendered(page);
   });
 
   test("Cluster Explorer loads", async ({ page }) => {
     await mockAllApis(page);
     await page.goto("/clusters");
-    await expect(page.locator("nav")).toBeVisible();
+    await expectRendered(page);
   });
 
   test("Ideas page loads", async ({ page }) => {
     await mockAllApis(page);
     await page.goto("/ideas");
-    await expect(page.locator("nav")).toBeVisible();
+    await expectRendered(page);
   });
 
   test("Opportunities page loads", async ({ page }) => {
     await mockAllApis(page);
     await page.goto("/opportunities");
-    await expect(page.locator("nav")).toBeVisible();
+    await expectRendered(page);
   });
 
   test("Saved page loads", async ({ page }) => {
     await mockAllApis(page);
     await page.goto("/saved");
-    await expect(page.locator("nav")).toBeVisible();
+    await expectRendered(page);
   });
 
   test("Settings page loads", async ({ page }) => {
     await mockAllApis(page);
     await page.goto("/settings");
-    await expect(page.locator("nav")).toBeVisible();
+    await expectRendered(page);
   });
 
   test("404 page renders for unknown route", async ({ page }) => {
