@@ -23,6 +23,8 @@ dependencies = [
     "psycopg2-binary>=2.9.11",
     "pyjwt>=2.13.0",
     "sentence-transformers>=5.3.0",
+    # Listed directly only so [tool.uv.sources] below can route it to the CPU index.
+    "torch>=2.13.0",
     "tornado>=6.5.7",
 ]
 
@@ -37,6 +39,17 @@ members = [
 constraint-dependencies = [
     "anyio>=4.14.2",
 ]
+
+# PyPI's Linux torch wheel pulls ~4GB of CUDA libraries (nvidia-*, triton) that no deploy
+# target can use: Docker on Apple Silicon and Railway are both CPU-only. macOS keeps PyPI,
+# whose wheel is already CPU-only.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
 
 [dependency-groups]
 dev = [
