@@ -167,6 +167,31 @@ def test_development_allows_default_secrets():
         assert s.API_KEY == "dev-api-key"
 
 
+def test_production_secrets_validation_blocks_wildcard_cors_with_credentials():
+    """CORS_ORIGINS containing '*' must refuse to start in production, since
+    CORSMiddleware is wired with allow_credentials=True (main.py) and a
+    wildcard origin there would let any site read cookie-authenticated
+    responses cross-origin."""
+    with patch.dict(os.environ, {"ENV": "production"}):
+        with pytest.raises(ValueError, match="CORS_ORIGINS must not contain"):
+            Settings(
+                API_KEY="secure-api-key-12345678",
+                SECRET_KEY="secure-secret-key-12345678",
+                CORS_ORIGINS=["https://app-idea-miner.vercel.app", "*"],
+            )
+
+
+def test_production_secrets_validation_allows_explicit_cors_origins():
+    """A concrete origin list (no wildcard) is fine in production."""
+    with patch.dict(os.environ, {"ENV": "production"}):
+        s = Settings(
+            API_KEY="secure-api-key-12345678",
+            SECRET_KEY="secure-secret-key-12345678",
+            CORS_ORIGINS=["https://app-idea-miner.vercel.app"],
+        )
+        assert s.CORS_ORIGINS == ["https://app-idea-miner.vercel.app"]
+
+
 # Tests for IP spoofing prevention
 def test_get_client_ip_from_direct_connection():
     """Test IP extraction from direct connection."""

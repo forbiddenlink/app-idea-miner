@@ -133,6 +133,36 @@ async def test_state_changing_request_without_csrf_header_is_rejected(
 
 
 @pytest.mark.asyncio
+async def test_cookie_session_with_garbage_bearer_header_still_requires_csrf(
+    client: AsyncClient, db_session
+):
+    """A cookie session must not be exempted from CSRF just because the
+    request also carries an (invalid) Authorization header. CSRF exemption
+    is keyed on the ABSENCE of the session cookie, not on which header is
+    present, so a garbage Bearer value alongside a real cookie session must
+    still be rejected for missing CSRF."""
+    await _create_active_user(db_session, "csrf-garbage-bearer@example.com")
+    await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "csrf-garbage-bearer@example.com",
+            "password": "password123",
+        },
+    )
+
+    response = await client.post(
+        "/api/v1/saved-searches",
+        json={"name": "test", "query_params": {}},
+        headers={
+            **API_KEY_HEADER,
+            "Authorization": "Bearer not-a-real-token",
+        },
+    )
+    assert response.status_code == 403
+    assert "csrf" in response.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
 async def test_state_changing_request_with_wrong_csrf_header_is_rejected(
     client: AsyncClient, db_session
 ):
