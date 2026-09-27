@@ -84,6 +84,33 @@ AsyncSessionLocal = sessionmaker(
 )
 
 
+def reset_engine_for_fork() -> None:
+    """
+    Discard this engine's pooled connections and internal asyncio primitives.
+
+    `engine` is created once at import time, in the Celery master process
+    before the prefork pool forks worker child processes. SQLAlchemy's async
+    connection pool lazily creates its internal `asyncio.Lock`/`Event`
+    objects bound to whichever event loop is running the first time a
+    connection is checked out. A forked child process runs its own fresh
+    event loop per task (`asyncio.run(...)` in `process_raw_posts`), so the
+    first task on a newly started worker process reused the parent's
+    inherited (loop-bound) pool and failed with
+    "Future ... attached to a different loop" (or "Event loop is closed").
+
+    Call this once, synchronously, from Celery's `worker_process_init`
+    signal (see `apps/worker/celery_app.py`) so every worker child process
+    starts with an empty pool and lazily creates loop-bound state against
+    its own event loop on first use instead of the parent's.
+
+    `close=False` skips synchronously closing any connections the parent
+    process still had checked out (that would itself need the parent's now
+    gone event loop); those connections are simply dropped, which is safe
+    since the child process has no in-flight work yet.
+    """
+    engine.sync_engine.dispose(close=False)
+
+
 async def get_db():
     """
     Dependency for FastAPI endpoints.
