@@ -183,7 +183,11 @@ function SentimentChart({
       <h2 className="mb-6 text-lg font-semibold">Sentiment Distribution</h2>
       {sentimentData.length > 0 ? (
         <ResponsiveContainer width="100%" height={320}>
-          <PieChart>
+          <PieChart
+            title={`Sentiment distribution: ${sentimentData
+              .map((d) => `${d.name} ${d.value}`)
+              .join(', ')}`}
+          >
             <Pie
               data={sentimentData}
               cx="50%"

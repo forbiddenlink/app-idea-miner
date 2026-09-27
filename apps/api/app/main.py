@@ -3,6 +3,7 @@ App-Idea Miner - FastAPI Application
 Main application entry point with routes, middleware, and configuration.
 """
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -263,14 +264,21 @@ async def _check_redis(has_redis: bool) -> tuple[dict, bool]:
         return {"status": "down", "latency_ms": None, "error": str(e)}, True
 
 
-def _check_worker(has_redis: bool, is_serverless: bool) -> dict:
-    """Check Celery worker status. Returns service_info dict."""
+def _check_worker_sync(has_redis: bool, is_serverless: bool) -> dict:
+    """Check Celery worker status. Returns service_info dict.
+
+    Runs the (unavoidably synchronous) Celery control-inspect call with an
+    explicit short reply timeout so a cold/absent worker fleet can't stall
+    this check indefinitely. Always closes the throwaway Celery app so we
+    don't leak a broker connection per health check.
+    """
     if is_serverless or not has_redis:
         return {
             "status": "not_applicable",
             "message": "Workers not supported in serverless",
         }
 
+    celery_app = None
     try:
         from celery import Celery
 
@@ -280,7 +288,11 @@ def _check_worker(has_redis: bool, is_serverless: bool) -> dict:
             backend=settings.REDIS_URL.replace("/0", "/1"),
         )
 
-        inspect = celery_app.control.inspect()
+        # Without an explicit timeout, inspect() waits on Celery's default
+        # reply window (several seconds) per call when no worker answers,
+        # and this function is entirely synchronous — it was blocking the
+        # whole event loop for every in-flight request during that wait.
+        inspect = celery_app.control.inspect(timeout=1.0)
         active_tasks = inspect.active()
         stats = inspect.stats()
 
@@ -307,6 +319,9 @@ def _check_worker(has_redis: bool, is_serverless: bool) -> dict:
     except Exception as e:
         logger.error(f"Worker health check failed: {e}")
         return {"status": "unknown", "error": str(e)}
+    finally:
+        if celery_app is not None:
+            celery_app.close()
 
 
 @app.get("/health", tags=["System"], response_model=HealthResponse)
@@ -332,7 +347,22 @@ async def health_check():
 
     db_info, db_degraded = await _check_database(has_database, is_serverless)
     redis_info, redis_degraded = await _check_redis(has_redis)
-    worker_info = _check_worker(has_redis, is_serverless)
+    # Celery's inspect API is synchronous and, over the Redis transport, its
+    # own `timeout=` kwarg does not reliably cap the round trip (observed
+    # 5-10s against an idle broker with no worker connected) — so on top of
+    # moving it off the event loop, cap it from the outside too. Worker
+    # status is enrichment only (it never flips overall_status), so a slow
+    # broker should degrade this one field, not the whole health check.
+    try:
+        worker_info = await asyncio.wait_for(
+            asyncio.to_thread(_check_worker_sync, has_redis, is_serverless),
+            timeout=2.0,
+        )
+    except TimeoutError:
+        worker_info = {
+            "status": "unknown",
+            "error": "Worker status check timed out",
+        }
 
     if db_degraded or redis_degraded:
         overall_status = "degraded"

@@ -62,7 +62,7 @@ export default function Navbar() {
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 overflow-x-hidden px-4 sm:px-6">
         <Link to="/" className="group flex items-center gap-2.5" aria-label="App-Idea Miner home">
           <div className="grid h-9 w-9 place-items-center rounded-xl border border-primary/20 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent text-primary shadow-raised">
             <Lightbulb className="h-4 w-4" aria-hidden="true" />
