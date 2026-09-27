@@ -76,7 +76,13 @@ function DomainTable({
   return (
     <div className="card p-6">
       <h2 className="mb-6 text-lg font-semibold">Domain Details</h2>
-      <div className="overflow-x-auto">
+      {/*
+        WCAG SCR34 / axe "scrollable-region-focusable": a scrollable overflow
+        container with no other focusable descendant must itself be
+        keyboard-reachable, or its content is unreachable without a mouse.
+      */}
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+      <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Domain details table">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
