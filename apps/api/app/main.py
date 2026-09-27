@@ -8,13 +8,14 @@ import logging
 from contextlib import asynccontextmanager
 
 import redis.asyncio as aioredis
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from apps.api.app.config import get_settings
+from apps.api.app.core.auth import verify_csrf_token
 from apps.api.app.core.logging_middleware import RequestLoggingMiddleware
 from apps.api.app.database import get_engine
 from apps.api.app.schemas.common import HealthResponse
@@ -152,6 +153,39 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
+# CSRF protection for cookie-authenticated state-changing requests. A
+# global middleware, not a per-route dependency, so no future mutating
+# route can accidentally ship without CSRF coverage — the exact gap a
+# route-by-route opt-in would risk.
+class CSRFMiddleware(BaseHTTPMiddleware):
+    """
+    Double-submit CSRF check for state-changing requests made with the
+    httpOnly session cookie. See apps/api/app/core/auth.py for the cookie
+    names and set_auth_cookies/clear_auth_cookies.
+
+    A Bearer-token API caller has no ambient cookie for a malicious page to
+    ride along on, so requests without the access-token cookie are exempt.
+    Login/register are exempt too — they're what *establish* a session, so
+    there's no pre-existing session to forge yet at that point.
+    """
+
+    UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+    EXEMPT_PATHS = frozenset({"/api/v1/auth/login", "/api/v1/auth/register"})
+
+    async def dispatch(self, request: Request, call_next):
+        if (
+            request.method in self.UNSAFE_METHODS
+            and request.url.path not in self.EXEMPT_PATHS
+        ):
+            try:
+                verify_csrf_token(request)
+            except HTTPException as exc:
+                return JSONResponse(
+                    status_code=exc.status_code, content={"detail": exc.detail}
+                )
+        return await call_next(request)
+
+
 # Cache-Control middleware for GET endpoints
 class CacheControlMiddleware(BaseHTTPMiddleware):
     """Set Cache-Control headers on GET responses based on path."""
@@ -199,6 +233,7 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(CacheControlMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(CSRFMiddleware)
 
 # Request logging middleware (correlation IDs, timing, structured logs)
 app.add_middleware(RequestLoggingMiddleware)

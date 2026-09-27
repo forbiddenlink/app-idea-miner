@@ -39,12 +39,16 @@ class Settings(BaseSettings):
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
     API_WORKERS: int = 4
+    # Note: Starlette's CORSMiddleware matches allow_origins entries literally
+    # (no glob support), so a "https://*.vercel.app" entry here would never
+    # actually match a real preview origin. Removed rather than kept as a
+    # no-op; add allow_origin_regex in main.py, scoped to this project's
+    # preview URL pattern, if preview-deploy CORS is ever needed.
     CORS_ORIGINS: str | list[str] = [
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:5173",
         "https://app-idea-miner.vercel.app",
-        "https://*.vercel.app",
     ]
     LOG_LEVEL: str = "INFO"
     API_KEY: str = "dev-api-key"
@@ -79,6 +83,21 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "SECRET_KEY must be changed from default in production. "
                     "Set a secure SECRET_KEY environment variable."
+                )
+            # CORSMiddleware is wired with allow_credentials=True (main.py), so a
+            # wildcard origin here would let any site read cookie-authenticated
+            # responses cross-origin. Browsers already refuse
+            # "*" + credentialed CORS, but refuse to even start rather than rely
+            # on that browser-side backstop.
+            cors_origins = (
+                self.CORS_ORIGINS
+                if isinstance(self.CORS_ORIGINS, list)
+                else [self.CORS_ORIGINS]
+            )
+            if "*" in cors_origins:
+                raise ValueError(
+                    "CORS_ORIGINS must not contain '*' in production when "
+                    "allow_credentials is enabled. Set an explicit origin list."
                 )
         return self
 

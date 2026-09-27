@@ -6,6 +6,8 @@ import { render, type RenderOptions } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 
+import { AuthProvider } from "@/contexts/AuthContext";
+
 function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
@@ -27,7 +29,9 @@ function AllProviders({
   const queryClient = makeQueryClient();
   return (
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+      <MemoryRouter initialEntries={initialEntries}>
+        <AuthProvider>{children}</AuthProvider>
+      </MemoryRouter>
     </QueryClientProvider>
   );
 }
