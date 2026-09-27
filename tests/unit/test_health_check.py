@@ -57,7 +57,12 @@ async def test_health_check_worker_up_reports_promptly(monkeypatch):
         return {"status": "up", "message": "Connected", "latency_ms": 1.0}, False
 
     def _fast_worker_check(has_redis: bool, is_serverless: bool) -> dict:
-        return {"status": "up", "workers": 2, "active_tasks": 0, "message": "2 worker(s) connected"}
+        return {
+            "status": "up",
+            "workers": 2,
+            "active_tasks": 0,
+            "message": "2 worker(s) connected",
+        }
 
     with (
         patch("apps.api.app.main._check_database", side_effect=_fast_ok),
