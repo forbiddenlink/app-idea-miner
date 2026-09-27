@@ -38,10 +38,27 @@ interface RetryableAxiosRequestConfig extends InternalAxiosRequestConfig {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 const API_KEY = import.meta.env.VITE_API_KEY || "dev-api-key";
-const TOKEN_KEY = "aim_auth_token";
+const CSRF_COOKIE_NAME = "aim_csrf_token";
+const CSRF_HEADER_NAME = "X-CSRF-Token";
+const UNSAFE_METHODS = new Set(["post", "put", "patch", "delete"]);
 
 const MAX_RETRIES = 1;
 const RETRY_BASE_DELAY_MS = 1000;
+
+/**
+ * The auth token now lives in an httpOnly cookie the browser sends
+ * automatically (see AuthContext.tsx) — nothing here reads or writes it.
+ * The CSRF token is a separate, deliberately non-httpOnly cookie so this
+ * can read it and echo it back as a header (double-submit CSRF check on
+ * the API side, see apps/api/app/main.py's CSRFMiddleware).
+ */
+function readCsrfCookie(): string | null {
+  if (globalThis.document === undefined) return null;
+  const match = globalThis.document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(`${CSRF_COOKIE_NAME}=`));
+  return match ? decodeURIComponent(match.split("=")[1]) : null;
+}
 
 export function isRetryable(error: AxiosError, method?: string): boolean {
   const normalizedMethod = (method || "get").toLowerCase();
@@ -70,6 +87,10 @@ class ApiClient {
     this.client = axios.create({
       baseURL: API_BASE_URL,
       timeout: 10000,
+      // Send the httpOnly session cookie on every request. Without this,
+      // axios never attaches cookies to cross-origin requests, and even
+      // same-origin requests wouldn't carry it under some configurations.
+      withCredentials: true,
       headers: {
         "Content-Type": "application/json",
       },
@@ -79,10 +100,11 @@ class ApiClient {
       if (API_KEY) {
         config.headers["X-API-Key"] = API_KEY;
       }
-      if (globalThis.window !== undefined) {
-        const token = globalThis.localStorage.getItem(TOKEN_KEY);
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+      const method = (config.method || "get").toLowerCase();
+      if (UNSAFE_METHODS.has(method)) {
+        const csrfToken = readCsrfCookie();
+        if (csrfToken) {
+          config.headers[CSRF_HEADER_NAME] = csrfToken;
         }
       }
       return config;
@@ -107,6 +129,11 @@ class ApiClient {
         throw error;
       },
     );
+  }
+
+  // Auth
+  async logout(): Promise<void> {
+    await this.client.post("/api/v1/auth/logout");
   }
 
   // Health check

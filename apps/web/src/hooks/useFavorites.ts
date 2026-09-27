@@ -52,13 +52,13 @@ function removeBookmark(
 
 export const useFavorites = () => {
   const queryClient = useQueryClient();
-  const { user, token, isLoading: isAuthLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const userId = user?.id || "";
 
   const query = useQuery({
     queryKey: bookmarkQueryKey(userId),
     queryFn: () => apiClient.getBookmarks({ limit: 100, offset: 0 }),
-    enabled: Boolean(userId && token),
+    enabled: Boolean(userId && isAuthenticated),
   });
 
   const favorites = query.data?.bookmarks ?? [];
@@ -172,7 +172,7 @@ export const useFavorites = () => {
     addMutation.isPending ||
     removeMutation.isPending ||
     clearMutation.isPending;
-  const isReady = Boolean(userId && token);
+  const isReady = Boolean(userId && isAuthenticated);
   const itemCounts = useMemo(
     () => ({
       cluster: favorites.filter((item) => item.item_type === "cluster").length,

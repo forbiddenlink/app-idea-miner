@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 
 import { apiClient } from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/utils/cn";
 
 // ---------------------------------------------------------------------------
@@ -78,7 +79,7 @@ export default function Settings() {
       10,
     ),
   );
-  const authToken = localStorage.getItem("aim_auth_token");
+  const { isAuthenticated } = useAuth();
 
   const [savedSearchName, setSavedSearchName] = useState("");
   const [savedSearchDomain, setSavedSearchDomain] = useState("");
@@ -91,7 +92,7 @@ export default function Settings() {
   const savedSearchesQuery = useQuery({
     queryKey: ["saved-searches"],
     queryFn: () => apiClient.getSavedSearches({ limit: 20, offset: 0 }),
-    enabled: Boolean(authToken),
+    enabled: isAuthenticated,
   });
 
   const createSavedSearchMutation = useMutation({
@@ -251,7 +252,7 @@ export default function Settings() {
           Save your favorite filter combinations and enable digest alerts.
         </p>
 
-        {authToken ? (
+        {isAuthenticated ? (
           <>
             <form
               onSubmit={handleCreateSavedSearch}
