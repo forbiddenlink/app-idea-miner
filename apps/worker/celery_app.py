@@ -6,6 +6,7 @@ Main Celery instance with task routing and configuration.
 import os
 
 from celery import Celery
+from celery.signals import worker_process_init
 from kombu import Exchange, Queue
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
@@ -91,6 +92,23 @@ celery_app.conf.update(
         },
     },
 )
+
+
+@worker_process_init.connect
+def _reset_db_engine_for_fork(**kwargs) -> None:
+    """
+    Reset the shared async DB engine's pool in each forked worker process.
+
+    The engine in `packages.core.database` is created at import time in the
+    Celery master process, before the prefork pool forks child processes.
+    Without this, the first task run on a freshly started worker process
+    reused loop-bound pool state inherited from the parent and failed with
+    "Future ... attached to a different loop". See
+    `packages.core.database.reset_engine_for_fork` for the full explanation.
+    """
+    from packages.core.database import reset_engine_for_fork
+
+    reset_engine_for_fork()
 
 
 if __name__ == "__main__":

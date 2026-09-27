@@ -4,12 +4,73 @@ Notification service for sending alerts via webhooks.
 Supports Slack, Discord, and generic webhook formats.
 """
 
+import ipaddress
 import logging
+import socket
 from typing import Any
+from urllib.parse import urlsplit
 
 import httpx
 
 logger = logging.getLogger(__name__)
+
+
+class WebhookUrlError(ValueError):
+    """Raised when a user-supplied webhook URL is not safe to request."""
+
+
+def validate_webhook_url(url: str) -> None:
+    """
+    Reject webhook URLs that would let an authenticated user make the
+    server issue requests to internal or cloud-metadata addresses (SSRF).
+
+    `webhook_url` (saved search alerts, the /test-webhook endpoint) is
+    entirely user-supplied and free-text (only `max_length` is validated at
+    the API schema layer). Without this check, a user could set it to
+    `http://169.254.169.254/latest/meta-data/...` (cloud instance metadata),
+    `http://localhost:6379` (an internal service), or any other
+    non-routable address and get the server to make that request on their
+    behalf.
+
+    This resolves the hostname and rejects it if any resolved address is
+    private, loopback, link-local (includes the 169.254.169.254 metadata
+    range), reserved, multicast, or unspecified. It also requires an
+    http(s) scheme. This does not defend against DNS rebinding (the
+    hostname could re-resolve to a different address between this check
+    and the actual request) — closing that fully would mean pinning the
+    resolved IP and connecting to it directly via a custom transport,
+    which is out of scope for this fix; the check here blocks the direct,
+    common exploitation path.
+
+    Raises:
+        WebhookUrlError: if the URL's scheme or resolved address is unsafe.
+    """
+    parsed = urlsplit(url)
+    if parsed.scheme not in ("http", "https"):
+        raise WebhookUrlError(f"Unsupported webhook URL scheme: {parsed.scheme!r}")
+    if not parsed.hostname:
+        raise WebhookUrlError("Webhook URL has no hostname")
+
+    try:
+        addr_infos = socket.getaddrinfo(parsed.hostname, None)
+    except socket.gaierror as exc:
+        raise WebhookUrlError(f"Could not resolve webhook host: {exc}") from exc
+
+    for _family, _type, _proto, _canonname, sockaddr in addr_infos:
+        ip_str = sockaddr[0]
+        ip = ipaddress.ip_address(ip_str)
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_reserved
+            or ip.is_multicast
+            or ip.is_unspecified
+        ):
+            raise WebhookUrlError(
+                f"Webhook host {parsed.hostname!r} resolves to a "
+                f"non-public address ({ip_str}); refusing to send"
+            )
 
 
 class NotificationService:
@@ -39,6 +100,12 @@ class NotificationService:
         """
         if not webhook_url:
             logger.warning("No webhook URL configured")
+            return False
+
+        try:
+            validate_webhook_url(webhook_url)
+        except WebhookUrlError as e:
+            logger.warning(f"Refusing to send webhook to unsafe URL: {e}")
             return False
 
         if webhook_type == "slack":
