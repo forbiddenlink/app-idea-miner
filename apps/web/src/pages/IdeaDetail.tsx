@@ -33,7 +33,7 @@ const formatDate = (value?: string): string => {
 
 const sentimentPillClass = (sentiment: Idea['sentiment']) => {
   if (sentiment === 'positive') return 'bg-success/10 text-success';
-  if (sentiment === 'negative') return 'bg-destructive/10 text-destructive';
+  if (sentiment === 'negative') return 'bg-destructive/10 text-destructive-fg';
   return 'bg-muted text-muted-foreground';
 };
 
@@ -111,7 +111,7 @@ export default function IdeaDetail() {
   if (error || !idea) {
     return (
       <div className="app-page max-w-5xl">
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-destructive">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-destructive-fg">
           <p className="font-medium">Failed to load idea details.</p>
           <p className="mt-1 text-sm">The idea may have been removed or is temporarily unavailable.</p>
           <div className="mt-4 flex items-center gap-2">

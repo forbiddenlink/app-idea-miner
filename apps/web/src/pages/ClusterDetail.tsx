@@ -62,9 +62,9 @@ export default function ClusterDetail() {
   if (error || !cluster) {
     return (
       <div className="app-page max-w-5xl">
-        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-6 text-destructive">
+        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-6 text-destructive-fg">
           <p>Failed to load cluster details. Please try again.</p>
-          <Button variant="link" asChild className="mt-4 px-0 text-destructive hover:text-destructive/80">
+          <Button variant="link" asChild className="mt-4 px-0 text-destructive-fg hover:text-destructive-fg/80">
             <Link to="/clusters">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Clusters
@@ -89,7 +89,7 @@ export default function ClusterDetail() {
 
   const getQualityGrade = (score: number) => {
     if (score >= 0.8) return { grade: 'A', color: 'text-grade-a', bg: 'bg-grade-a/10' };
-    if (score >= 0.6) return { grade: 'B', color: 'text-grade-b', bg: 'bg-grade-b/10' };
+    if (score >= 0.6) return { grade: 'B', color: 'text-grade-b-fg', bg: 'bg-grade-b/10' };
     if (score >= 0.4) return { grade: 'C', color: 'text-grade-c', bg: 'bg-grade-c/10' };
     if (score >= 0.2) return { grade: 'D', color: 'text-grade-d', bg: 'bg-grade-d/10' };
     return { grade: 'F', color: 'text-grade-f', bg: 'bg-grade-f/10' };

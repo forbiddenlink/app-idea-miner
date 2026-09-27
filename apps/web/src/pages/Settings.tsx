@@ -337,7 +337,7 @@ export default function Settings() {
                       onClick={() =>
                         deleteSavedSearchMutation.mutate(savedSearch.id)
                       }
-                      className="focus-ring inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-destructive hover:bg-destructive/10"
+                      className="focus-ring inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-destructive-fg hover:bg-destructive/10"
                       aria-label={`Delete saved search ${savedSearch.name}`}
                     >
                       <Trash2 className="h-3.5 w-3.5" />

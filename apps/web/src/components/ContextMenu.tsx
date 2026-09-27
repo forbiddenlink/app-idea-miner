@@ -124,7 +124,7 @@ export function ContextMenu({ items, children, disabled = false }: Readonly<Cont
                     className={cn(
                       "flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-[padding,background-color,color] duration-150",
                       item.disabled && "cursor-not-allowed opacity-50",
-                      !item.disabled && item.danger && "text-destructive hover:bg-destructive/10",
+                      !item.disabled && item.danger && "text-destructive-fg hover:bg-destructive/10",
                       !item.disabled && !item.danger && "text-foreground hover:bg-muted",
                       !item.disabled && "hover:pl-5"
                     )}

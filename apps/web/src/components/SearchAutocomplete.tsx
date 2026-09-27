@@ -207,7 +207,7 @@ export const SearchAutocomplete = () => {
   const getSentimentColor = (sentiment?: string) => {
     if (!sentiment) return 'text-muted-foreground';
     if (sentiment === 'positive') return 'text-success';
-    if (sentiment === 'negative') return 'text-destructive';
+    if (sentiment === 'negative') return 'text-destructive-fg';
     return 'text-muted-foreground';
   };
 

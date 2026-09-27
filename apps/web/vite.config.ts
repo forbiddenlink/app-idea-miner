@@ -33,26 +33,45 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        manualChunks: {
+        // Function form, not the object form. The object form matches a
+        // module only when Rollup resolves it under the exact bare
+        // specifier given ("react", "react-dom"), but react-dom also pulls
+        // in "scheduler" and other react-dom/* submodules, and every other
+        // vendor chunk below (router, query, motion, charts) itself
+        // imports react. With the object form, Rollup let one of those
+        // other chunks claim react's modules first, leaving "vendor-react"
+        // an empty ~0.05kB chunk and React shipping inside the main
+        // index-*.js bundle instead. The function form is called per
+        // resolved module id, so every react/react-dom/scheduler module
+        // is bucketed correctly regardless of which chunk imports it first.
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
           // React core - very stable, long cache life
-          "vendor-react": ["react", "react-dom"],
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) {
+            return "vendor-react";
+          }
           // Router
-          "vendor-router": ["react-router-dom"],
+          if (id.includes("react-router")) return "vendor-router";
           // Data fetching + state
-          "vendor-query": ["@tanstack/react-query", "axios"],
+          if (id.includes("@tanstack/react-query") || id.includes("axios")) {
+            return "vendor-query";
+          }
           // Animation
-          "vendor-motion": ["framer-motion"],
+          if (id.includes("framer-motion")) return "vendor-motion";
           // Charts (large – keep isolated for selective loading)
-          "vendor-charts": ["recharts"],
+          if (id.includes("recharts")) return "vendor-charts";
           // UI primitives
-          "vendor-ui": [
-            "clsx",
-            "class-variance-authority",
-            "tailwind-merge",
-            "@radix-ui/react-slot",
-          ],
+          if (
+            id.includes("/clsx/") ||
+            id.includes("class-variance-authority") ||
+            id.includes("tailwind-merge") ||
+            id.includes("@radix-ui/react-slot")
+          ) {
+            return "vendor-ui";
+          }
           // Icons (tree-shaken per page, but common core)
-          "vendor-icons": ["lucide-react"],
+          if (id.includes("lucide-react")) return "vendor-icons";
+          return undefined;
         },
       },
     },

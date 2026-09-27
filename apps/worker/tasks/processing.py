@@ -6,7 +6,7 @@ import asyncio
 import logging
 import os
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import func, select, update
@@ -203,7 +203,7 @@ async def _process_single_post(
             wtp_score=statement_data.get("wtp_score", 0.0),
             has_wtp_signal=statement_data.get("has_wtp_signal", False),
             idea_vector=embedding,
-            extracted_at=datetime.utcnow(),
+            extracted_at=datetime.now(UTC),
         )
 
         session.add(idea)

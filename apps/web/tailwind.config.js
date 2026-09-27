@@ -36,6 +36,8 @@ export default {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+          fg: "hsl(var(--destructive-fg))",
+          solid: "hsl(var(--destructive-solid))",
         },
         success: {
           DEFAULT: "hsl(var(--success))",
@@ -70,6 +72,7 @@ export default {
         grade: {
           a: "hsl(var(--grade-a))",
           b: "hsl(var(--grade-b))",
+          "b-fg": "hsl(var(--grade-b-fg))",
           c: "hsl(var(--grade-c))",
           d: "hsl(var(--grade-d))",
           f: "hsl(var(--grade-f))",
