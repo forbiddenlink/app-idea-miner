@@ -17,7 +17,7 @@ interface ToastProps {
 
 const toastStyles = {
   success: 'bg-success/10 text-success border-success/25',
-  error: 'bg-destructive/10 text-destructive border-destructive/25',
+  error: 'bg-destructive/10 text-destructive-fg border-destructive/25',
   info: 'bg-primary/10 text-primary border-primary/25',
   warning: 'bg-warning/10 text-warning border-warning/25',
 };

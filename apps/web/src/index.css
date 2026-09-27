@@ -30,6 +30,8 @@
 
     --destructive: 1 73% 52%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-fg: 1 73% 46%;
+    --destructive-solid: 1 73% 52%;
 
     --success: 148 66% 38%;
     --success-foreground: 0 0% 100%;
@@ -50,6 +52,7 @@
 
     --grade-a: 152 69% 31%;
     --grade-b: 221 83% 53%;
+    --grade-b-fg: 221 83% 52%;
     --grade-c: 38 92% 50%;
     --grade-d: 25 95% 53%;
     --grade-f: 0 84% 60%;
@@ -80,6 +83,8 @@
 
     --destructive: 0 75% 58%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-fg: 0 75% 65%;
+    --destructive-solid: 0 75% 51%;
 
     --success: 148 62% 45%;
     --success-foreground: 0 0% 100%;
@@ -98,6 +103,7 @@
 
     --grade-a: 152 69% 41%;
     --grade-b: 217 91% 60%;
+    --grade-b-fg: 217 91% 64%;
     --grade-c: 38 92% 50%;
     --grade-d: 25 95% 53%;
     --grade-f: 0 63% 51%;

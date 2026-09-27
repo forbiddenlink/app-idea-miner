@@ -95,7 +95,7 @@ const ClusterCard: FC<ClusterCardProps> = ({ cluster }) => {
 
             <span className={cn(
               cluster.avg_sentiment > 0.3 && "text-success",
-              cluster.avg_sentiment < -0.3 && "text-destructive"
+              cluster.avg_sentiment < -0.3 && "text-destructive-fg"
             )}>
               {sentimentDisplay} {sentimentLabel}
             </span>

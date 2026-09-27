@@ -26,7 +26,7 @@ function getGradeColor(grade: string): string {
     case "A":
       return "text-grade-a";
     case "B":
-      return "text-grade-b";
+      return "text-grade-b-fg";
     case "C":
       return "text-grade-c";
     case "D":

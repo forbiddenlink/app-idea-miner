@@ -28,7 +28,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
     idea.sentiment.toLowerCase() === "positive"
       ? "text-success"
       : idea.sentiment.toLowerCase() === "negative"
-        ? "text-destructive"
+        ? "text-destructive-fg"
         : "text-muted-foreground";
 
   return (

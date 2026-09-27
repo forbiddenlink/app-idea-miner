@@ -57,7 +57,7 @@ function OverviewStats({
           className={cn(
             "text-3xl font-semibold",
             data.overview.avg_sentiment >= 0.05 && "text-success",
-            data.overview.avg_sentiment <= -0.05 && "text-destructive",
+            data.overview.avg_sentiment <= -0.05 && "text-destructive-fg",
           )}
         >
           {data.overview.avg_sentiment >= 0 ? "+" : ""}
@@ -122,7 +122,7 @@ function DomainTable({
                       domain.avg_sentiment >= 0.05 &&
                         "bg-success/10 text-success",
                       domain.avg_sentiment <= -0.05 &&
-                        "bg-destructive/10 text-destructive",
+                        "bg-destructive/10 text-destructive-fg",
                       domain.avg_sentiment > -0.05 &&
                         domain.avg_sentiment < 0.05 &&
                         "bg-muted text-muted-foreground",

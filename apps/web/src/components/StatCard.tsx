@@ -27,7 +27,7 @@ export default function StatCard({
       case "up":
         return <TrendingUp className={cn(iconClass, "text-success")} />
       case "down":
-        return <TrendingDown className={cn(iconClass, "text-destructive")} />
+        return <TrendingDown className={cn(iconClass, "text-destructive-fg")} />
       default:
         return <Minus className={cn(iconClass, "text-muted-foreground")} />
     }
@@ -38,7 +38,7 @@ export default function StatCard({
       case "up":
         return "text-success"
       case "down":
-        return "text-destructive"
+        return "text-destructive-fg"
       default:
         return "text-muted-foreground"
     }

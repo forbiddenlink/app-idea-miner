@@ -124,7 +124,7 @@ export const EmptyAnalytics: React.FC = () => (
 export const ErrorState: React.FC<{ error: string; onRetry?: () => void }> = ({ error, onRetry }) => (
   <div className="flex flex-col items-center justify-center py-16 px-4">
     <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-      <AlertCircle className="h-8 w-8 text-destructive" />
+      <AlertCircle className="h-8 w-8 text-destructive-fg" />
     </div>
 
     <h3 className="mb-2 text-lg font-semibold text-foreground">Something Went Wrong</h3>

@@ -72,7 +72,7 @@ class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen flex items-center justify-center bg-background px-4">
           <div className="max-w-md w-full bg-card rounded-lg shadow-xl border border-border p-8">
             <div className="flex items-center justify-center w-16 h-16 bg-destructive/20 rounded-full mx-auto mb-6">
-              <AlertTriangle className="w-8 h-8 text-destructive" />
+              <AlertTriangle className="w-8 h-8 text-destructive-fg" />
             </div>
 
             <h1 className="text-2xl font-bold text-foreground text-center mb-2">
@@ -80,12 +80,12 @@ class ErrorBoundary extends Component<Props, State> {
             </h1>
 
             <p className="text-muted-foreground text-center mb-6">
-              We encountered an unexpected error. Our team has been notified.
+              We encountered an unexpected error. Try reloading the page.
             </p>
 
             {import.meta.env.DEV && this.state.error && (
               <div className="mb-6 p-4 bg-muted rounded border border-border overflow-auto">
-                <p className="text-xs font-mono text-destructive mb-2">
+                <p className="text-xs font-mono text-destructive-fg mb-2">
                   {this.state.error.toString()}
                 </p>
                 {this.state.errorInfo && (

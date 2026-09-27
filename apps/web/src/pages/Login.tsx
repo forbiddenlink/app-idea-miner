@@ -111,7 +111,7 @@ export default function Login() {
             </div>
 
             {error && (
-              <p role="alert" className="text-sm text-destructive">
+              <p role="alert" className="text-sm text-destructive-fg">
                 {error}
               </p>
             )}
