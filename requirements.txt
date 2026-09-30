@@ -326,7 +326,7 @@ Pygments>=2.21.0
     # via
     #   pytest
     #   rich
-pyjwt==2.13.0
+pyjwt==2.14.0
     # via
     #   api
     #   app-idea-miner
