@@ -192,7 +192,7 @@ llvmlite==0.49.0
     #   bertopic
     #   numba
     #   pynndescent
-mako==1.4.1
+mako==1.4.2
     # via alembic
 markdown-it-py==4.2.0
     # via rich
