@@ -17,6 +17,17 @@
         }
     ],
     "routes": [
+        {
+            "src": "/(.*)",
+            "headers": {
+                "X-Content-Type-Options": "nosniff",
+                "Referrer-Policy": "strict-origin-when-cross-origin",
+                "X-Frame-Options": "DENY",
+                "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+                "Content-Security-Policy-Report-Only": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+            },
+            "continue": true
+        },
         { "src": "/api/(.*)", "dest": "api/index.py" },
         { "src": "/health", "dest": "api/index.py" },
         { "src": "/metrics", "dest": "api/index.py" },
@@ -27,6 +38,8 @@
         { "src": "/assets/(.*)", "dest": "apps/web/assets/$1" },
         { "src": "/(favicon\\.svg|favicon\\.ico|apple-touch-icon\\.png|robots\\.txt)", "dest": "apps/web/$1" },
         { "handle": "filesystem" },
-        { "src": "/(.*)", "dest": "apps/web/index.html" }
+        { "src": "^/$", "dest": "apps/web/index.html" },
+        { "src": "^/(?:login|clusters|ideas|saved|analytics|opportunities|settings)(?:/.*)?$", "dest": "apps/web/index.html" },
+        { "src": "/(.*)", "status": 404, "dest": "apps/web/index.html" }
     ]
 }
