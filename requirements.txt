@@ -4,7 +4,7 @@ aiofiles==25.1.0
     # via asyncpraw
 aiohappyeyeballs==2.7.1
     # via aiohttp
-aiohttp==3.14.5
+aiohttp==3.14.4
     # via
     #   app-idea-miner
     #   asyncpraw
