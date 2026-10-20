@@ -136,7 +136,7 @@ jobs:
 
   web-e2e:
     name: Web E2E
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: web-quality
     defaults:
       run:
@@ -194,7 +194,7 @@ jobs:
 
   web-e2e-real-api:
     name: Web E2E Real API Contract
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [quality, web-quality]
 
     services:
