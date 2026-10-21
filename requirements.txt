@@ -497,7 +497,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==21.14.7
+virtualenv==21.14.9
     # via pre-commit
 watchfiles==1.2.0
     # via uvicorn
