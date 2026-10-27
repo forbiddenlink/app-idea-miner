@@ -19,6 +19,11 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-minor-days: 3
+      semver-patch-days: 3
   - package-ecosystem: "github-actions"
     open-pull-requests-limit: 0
     directory: "/"
@@ -30,3 +35,5 @@ updates:
         patterns: ["*"]
       gha:
         patterns: ["*"]
+    cooldown:
+      default-days: 7
