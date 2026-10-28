@@ -105,7 +105,7 @@ distlib==0.4.3
     # via virtualenv
 distro==1.9.0
     # via anthropic
-dnspython==2.8.0
+dnspython==2.9.0
     # via email-validator
 docstring-parser==0.18.0
     # via anthropic
