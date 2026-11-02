@@ -161,7 +161,9 @@ def generate_weekly_digest(self) -> dict[str, Any]:
 
 async def _generate_weekly_digest_async() -> dict[str, Any]:
     """Async implementation of the weekly digest task."""
-    digest_size = int(os.getenv("WEEKLY_DIGEST_SIZE", str(DEFAULT_WEEKLY_DIGEST_SIZE)))
+    digest_size = int(
+        os.getenv("WEEKLY_DIGEST_SIZE", "").strip() or DEFAULT_WEEKLY_DIGEST_SIZE
+    )
 
     notion_service = NotionService()
 

@@ -212,3 +212,31 @@ class TestGenerateWeeklyDigestAsync:
         pushed_record = mock_notion.push_cluster.call_args.args[0]
         assert "high" in pushed_record.description
         assert "low" in pushed_record.description
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("raw", ["", "   "])
+    async def test_blank_digest_size_env_falls_back_to_default(self, monkeypatch, raw):
+        # GitHub Actions passes an unset secret as an empty string, not an absent var.
+        monkeypatch.setenv("WEEKLY_DIGEST_SIZE", raw)
+        clusters = [
+            _cluster(quality_score=0.5, idea_count=1)
+            for _ in range(DEFAULT_WEEKLY_DIGEST_SIZE + 3)
+        ]
+
+        mock_notion = MagicMock()
+        mock_notion.enabled = True
+        mock_notion.push_cluster = AsyncMock(return_value=True)
+
+        with (
+            patch(
+                "apps.worker.tasks.weekly_digest.NotionService",
+                return_value=mock_notion,
+            ),
+            patch(
+                "apps.worker.tasks.weekly_digest.AsyncSessionLocal",
+                _make_session_factory(clusters),
+            ),
+        ):
+            result = await _generate_weekly_digest_async()
+
+        assert result["clusters_in_digest"] == DEFAULT_WEEKLY_DIGEST_SIZE
