@@ -5,11 +5,15 @@ Tests pure Python selection (quality threshold + top-N cap). No database or
 Notion API calls involved.
 """
 
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
+
+import pytest
 
 from apps.worker.tasks.notion_sync import (
     DEFAULT_NOTION_MIN_QUALITY,
     MAX_CLUSTERS_TO_SYNC,
+    _push_clusters_to_notion_async,
     select_clusters_for_notion,
 )
 from packages.core.models import Cluster
@@ -58,3 +62,20 @@ class TestSelectClustersForNotion:
         """0.6 quality threshold default, top-10 cap - both env/spec-configurable."""
         assert DEFAULT_NOTION_MIN_QUALITY == 0.6
         assert MAX_CLUSTERS_TO_SYNC == 10
+
+
+class TestBlankMinQualityEnv:
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("raw", ["", "   "])
+    async def test_blank_min_quality_env_falls_back_to_default(self, monkeypatch, raw):
+        # GitHub Actions passes an unset secret as an empty string, not an absent var.
+        monkeypatch.setenv("NOTION_MIN_QUALITY", raw)
+        mock_notion = MagicMock()
+        mock_notion.enabled = False
+
+        with patch(
+            "apps.worker.tasks.notion_sync.NotionService", return_value=mock_notion
+        ):
+            result = await _push_clusters_to_notion_async()
+
+        assert result["skipped"] is True

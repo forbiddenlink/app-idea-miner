@@ -88,7 +88,7 @@ def push_clusters_to_notion(self) -> dict[str, Any]:
 async def _push_clusters_to_notion_async() -> dict[str, Any]:
     """Async implementation of the Notion sync task."""
     min_quality = float(
-        os.getenv("NOTION_MIN_QUALITY", str(DEFAULT_NOTION_MIN_QUALITY))
+        os.getenv("NOTION_MIN_QUALITY", "").strip() or DEFAULT_NOTION_MIN_QUALITY
     )
 
     notion_service = NotionService()
