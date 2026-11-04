@@ -76,8 +76,8 @@ export default function ClusterDetail() {
   }
 
   const getSentimentColor = (score: number) => {
-    if (score >= 0.05) return 'text-green-500';
-    if (score <= -0.05) return 'text-red-500';
+    if (score >= 0.05) return 'text-success';
+    if (score <= -0.05) return 'text-destructive-fg';
     return 'text-muted-foreground';
   };
 

@@ -80,7 +80,7 @@ const ClusterCard: FC<ClusterCardProps> = ({ cluster }) => {
           <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
             {cluster.keywords.slice(0, 3).join(' · ')}
             {cluster.keywords.length > 3 && (
-              <span className="ml-1 opacity-60">+{cluster.keywords.length - 3}</span>
+              <span className="ml-1">+{cluster.keywords.length - 3}</span>
             )}
           </p>
 
@@ -91,7 +91,7 @@ const ClusterCard: FC<ClusterCardProps> = ({ cluster }) => {
               {' '}ideas
             </span>
 
-            <span className="text-border">·</span>
+            <span className="text-muted-foreground" aria-hidden="true">·</span>
 
             <span className={cn(
               cluster.avg_sentiment > 0.3 && "text-success",
@@ -102,7 +102,7 @@ const ClusterCard: FC<ClusterCardProps> = ({ cluster }) => {
 
             {isHot && (
               <>
-                <span className="text-border">·</span>
+                <span className="text-muted-foreground" aria-hidden="true">·</span>
                 <span className="flex items-center gap-1 text-warning">
                   <TrendingUp className="h-3.5 w-3.5" />
                   Hot

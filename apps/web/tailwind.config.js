@@ -15,8 +15,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Manrope", "Avenir Next", "Segoe UI", "sans-serif"],
-        display: ["Plus Jakarta Sans", "Manrope", "sans-serif"],
+        sans: ["DM Sans", "Avenir Next", "Segoe UI", "sans-serif"],
+        display: ["Unbounded", "DM Sans", "sans-serif"],
         mono: ["JetBrains Mono", "ui-monospace", "monospace"],
       },
       colors: {

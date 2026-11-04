@@ -38,7 +38,7 @@ function NotFound() {
   return (
     <div className="min-h-[calc(100vh-10rem)] flex items-center justify-center px-4">
       <div className="text-center max-w-md">
-        <div className="mb-6 font-display text-[6rem] font-black leading-none tracking-tight text-muted-foreground/20 select-none">
+        <div className="mb-6 font-display text-[6rem] font-black leading-none tracking-tight text-primary select-none" aria-hidden="true">
           404
         </div>
         <h1 className="text-2xl font-bold">Page not found</h1>
