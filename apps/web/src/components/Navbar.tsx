@@ -68,8 +68,8 @@ export default function Navbar() {
             <Lightbulb className="h-4 w-4" aria-hidden="true" />
           </div>
           <div className="leading-none">
-            <div className="font-display text-[0.96rem] font-semibold tracking-tight text-foreground">App-Idea Miner</div>
-            <div className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <div className="whitespace-nowrap font-display text-[0.86rem] font-semibold tracking-tight text-foreground">App-Idea Miner</div>
+            <div className="whitespace-nowrap font-mono text-[0.62rem] font-medium uppercase tracking-[0.14em] text-muted-foreground">
               Product Discovery
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { formatVerdict } from "@/utils/verdict";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -114,7 +115,7 @@ function OpportunityCard({
               </Link>
               <ArrowUpRight className="flex-shrink-0 w-4 h-4 text-muted-foreground" />
             </div>
-            <p className="text-sm text-muted-foreground">{score.verdict}</p>
+            <p className="text-sm text-muted-foreground">{formatVerdict(score.verdict)}</p>
           </div>
 
           {/* Score Badge */}

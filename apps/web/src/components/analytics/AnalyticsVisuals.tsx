@@ -17,9 +17,9 @@ import type { AnalyticsSummary, DomainStats, TrendDataPoint } from '@/types'
 import { cn } from '@/utils/cn'
 
 const COLORS = {
-  primary: 'hsl(218, 80%, 47%)',
-  success: 'hsl(148, 66%, 38%)',
-  danger: 'hsl(1, 73%, 52%)',
+  primary: 'hsl(var(--primary))',
+  success: 'hsl(var(--success))',
+  danger: 'hsl(var(--destructive))',
 }
 
 function TrendsChart({

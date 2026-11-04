@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import {
   ArrowRight,
   Clock,
@@ -12,11 +11,13 @@ import {
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import AssaySlip from "@/components/AssaySlip";
 import ClusterCard from "@/components/ClusterCard";
 import DataFreshness from "@/components/DataFreshness";
 import { EmptyClusterList, ErrorState } from "@/components/EmptyStates";
 import StatCard from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
+import { formatVerdict } from "@/utils/verdict";
 import { useGlobalToast } from "@/contexts/ToastContext";
 import { apiClient } from "@/services/api";
 import { Cluster, Opportunity } from "@/types";
@@ -36,23 +37,6 @@ function getGradeColor(grade: string): string {
       return "text-grade-f";
     default:
       return "text-muted-foreground";
-  }
-}
-
-function getGradeBg(grade: string): string {
-  switch (grade) {
-    case "A":
-      return "bg-grade-a/10 border-grade-a/20";
-    case "B":
-      return "bg-grade-b/10 border-grade-b/20";
-    case "C":
-      return "bg-grade-c/10 border-grade-c/20";
-    case "D":
-      return "bg-grade-d/10 border-grade-d/20";
-    case "F":
-      return "bg-grade-f/10 border-grade-f/20";
-    default:
-      return "bg-muted/10";
   }
 }
 
@@ -249,7 +233,7 @@ export default function Dashboard() {
     refetchInterval: autoRefresh ? refreshInterval * 2 : false,
   });
 
-  const { data: opportunitiesData } = useQuery({
+  const { data: opportunitiesData, isLoading: opportunitiesLoading } = useQuery({
     queryKey: ["opportunities", { sort_by: "score", limit: 3 }],
     queryFn: () => apiClient.getOpportunities({ sort_by: "score", limit: 3 }),
     refetchInterval: autoRefresh ? refreshInterval * 2 : false,
@@ -295,7 +279,7 @@ export default function Dashboard() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="section-kicker">Overview</p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-bold">Dashboard</h1>
+          <h1 className="mt-1 text-2xl sm:text-3xl">Dashboard</h1>
           <p className="mt-1 text-muted-foreground">
             Discover validated app opportunities from real user needs.
           </p>
@@ -321,6 +305,12 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Signature: the top-scored opportunity, as the miner itself scores it */}
+      <AssaySlip
+        opportunity={topOpportunities[0]}
+        isLoading={opportunitiesLoading}
+      />
 
       {/* Stats Grid */}
       <StatsGrid
@@ -391,52 +381,48 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {topOpportunities.map((opp: Opportunity) => (
-              <motion.div
-                key={opp.cluster_id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`card card-hover border p-5 ${getGradeBg(opp.opportunity_score.grade)}`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      to={`/clusters/${opp.cluster_id}`}
-                      className="font-semibold hover:text-primary transition-colors line-clamp-1"
-                    >
-                      {opp.cluster_label}
-                    </Link>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {opp.opportunity_score.verdict}
-                    </p>
-                  </div>
-                  <div className="text-center flex-shrink-0">
-                    <div
-                      className={`text-xl font-bold ${getGradeColor(opp.opportunity_score.grade)}`}
-                    >
-                      {opp.opportunity_score.total}
-                    </div>
-                    <div
-                      className={`text-xs font-semibold ${getGradeColor(opp.opportunity_score.grade)}`}
-                    >
-                      Grade {opp.opportunity_score.grade}
-                    </div>
+          <ol className="card divide-y divide-border">
+            {topOpportunities.map((opp: Opportunity, index: number) => (
+              <li key={opp.cluster_id} className="flex items-center gap-4 px-4 py-4 sm:px-6">
+                <span className="w-8 font-display text-2xl text-muted-foreground" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    to={`/clusters/${opp.cluster_id}`}
+                    className="focus-ring rounded-sm font-semibold hover:text-primary transition-colors line-clamp-1"
+                  >
+                    {opp.cluster_label}
+                  </Link>
+                  <p className="mt-1 text-xs text-muted-foreground line-clamp-1">
+                    {formatVerdict(opp.opportunity_score.verdict)}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {opp.keywords.slice(0, 3).map((kw) => (
+                      <span
+                        key={kw}
+                        className="rounded border border-border px-1.5 py-0.5 font-mono text-xs text-muted-foreground"
+                      >
+                        {kw}
+                      </span>
+                    ))}
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-1 mt-3">
-                  {opp.keywords.slice(0, 3).map((kw) => (
-                    <span
-                      key={kw}
-                      className="rounded-md bg-background/70 px-1.5 py-0.5 text-xs text-muted-foreground"
-                    >
-                      {kw}
-                    </span>
-                  ))}
+                <div className="flex-shrink-0 text-right">
+                  <div
+                    className={`font-display text-2xl ${getGradeColor(opp.opportunity_score.grade)}`}
+                  >
+                    {opp.opportunity_score.total}
+                  </div>
+                  <div
+                    className={`font-mono text-xs ${getGradeColor(opp.opportunity_score.grade)}`}
+                  >
+                    Grade {opp.opportunity_score.grade}
+                  </div>
                 </div>
-              </motion.div>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       )}
 

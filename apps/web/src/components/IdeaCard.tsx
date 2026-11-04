@@ -84,7 +84,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
             {(idea.quality_score * 100).toFixed(0)}% quality
           </span>
 
-          <span className="text-border">·</span>
+          <span className="text-muted-foreground" aria-hidden="true">·</span>
 
           {/* Sentiment */}
           <span className={sentimentColor}>{idea.sentiment}</span>
@@ -92,7 +92,7 @@ export const IdeaCard: React.FC<IdeaCardProps> = ({
           {/* Domain */}
           {idea.domain && (
             <>
-              <span className="text-border">·</span>
+              <span className="text-muted-foreground" aria-hidden="true">·</span>
               <span>{idea.domain}</span>
             </>
           )}
