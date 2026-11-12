@@ -183,7 +183,9 @@ Only include items where confidence >= 0.5.""",
 
         parsed = response.parsed_output
         if parsed is None:
-            logger.warning(f"LLM extraction returned no parsed output (stop_reason={response.stop_reason})")
+            logger.warning(
+                f"LLM extraction returned no parsed output (stop_reason={response.stop_reason})"
+            )
             return []
 
         valid_ideas = [
