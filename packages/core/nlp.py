@@ -6,7 +6,9 @@ Handles text extraction, sentiment analysis, quality scoring, and embedding gene
 import logging
 import os
 import re
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
+
+from pydantic import BaseModel
 
 from packages.core import env_is_truthy
 
@@ -78,6 +80,21 @@ def generate_embedding(text: str) -> list[float] | None:
     return embedding.tolist()
 
 
+class LLMIdea(BaseModel):
+    """One app idea or pain point extracted by the LLM."""
+
+    problem_statement: str
+    target_user: str
+    urgency: Literal["low", "medium", "high"]
+    confidence: float
+
+
+class LLMIdeas(BaseModel):
+    """Structured-output schema for extract_ideas_llm (root must be an object)."""
+
+    ideas: list[LLMIdea]
+
+
 # LLM extraction state
 _llm_call_count = 0
 _LLM_MAX_CALLS_PER_CYCLE = 100  # Cost control: max LLM calls per ingestion cycle
@@ -133,9 +150,10 @@ def extract_ideas_llm(text: str) -> list[dict]:
 
         client = Anthropic(api_key=api_key)
 
-        response = client.messages.create(
+        response = client.messages.parse(
             model="claude-haiku-4-5",
             max_tokens=1024,
+            output_format=LLMIdeas,
             messages=[
                 {
                     "role": "user",
@@ -149,15 +167,13 @@ Look for:
 Post:
 {text}
 
-Return a JSON array (no markdown, just raw JSON):
-[{{
-  "problem_statement": "clear description of the problem or need",
-  "target_user": "who has this problem",
-  "urgency": "low|medium|high",
-  "confidence": 0.0-1.0
-}}]
+For each idea give:
+- problem_statement: clear description of the problem or need
+- target_user: who has this problem
+- urgency: low, medium, or high
+- confidence: 0.0 to 1.0
 
-Return empty array [] if no clear app ideas or pain points found.
+Return an empty ideas list if no clear app ideas or pain points are found.
 Only include items where confidence >= 0.5.""",
                 }
             ],
@@ -165,44 +181,18 @@ Only include items where confidence >= 0.5.""",
 
         _llm_call_count += 1
 
-        # Parse JSON response
-        import json
+        parsed = response.parsed_output
+        if parsed is None:
+            logger.warning(
+                f"LLM extraction returned no parsed output (stop_reason={response.stop_reason})"
+            )
+            return []
 
-        response_text = response.content[0].text.strip()
-
-        # Handle potential markdown code blocks
-        if response_text.startswith("```"):
-            # Extract JSON from code block
-            lines = response_text.split("\n")
-            json_lines = []
-            in_json = False
-            for line in lines:
-                if line.startswith("```") and not in_json:
-                    in_json = True
-                    continue
-                elif line.startswith("```") and in_json:
-                    break
-                elif in_json:
-                    json_lines.append(line)
-            response_text = "\n".join(json_lines)
-
-        ideas = json.loads(response_text)
-
-        # Validate and filter
-        valid_ideas = []
-        for idea in ideas:
-            if isinstance(idea, dict) and "problem_statement" in idea:
-                confidence = idea.get("confidence", 0.5)
-                if confidence >= 0.5:
-                    valid_ideas.append(
-                        {
-                            "problem_statement": idea["problem_statement"],
-                            "target_user": idea.get("target_user", ""),
-                            "urgency": idea.get("urgency", "medium"),
-                            "confidence": confidence,
-                            "source": "llm",
-                        }
-                    )
+        valid_ideas = [
+            {**idea.model_dump(), "source": "llm"}
+            for idea in parsed.ideas
+            if idea.confidence >= 0.5
+        ]
 
         logger.debug(f"LLM extracted {len(valid_ideas)} ideas from text")
         return valid_ideas
