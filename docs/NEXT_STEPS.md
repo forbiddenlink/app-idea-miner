@@ -1,6 +1,8 @@
 # App-Idea Miner — Next Steps & Improvement Roadmap
 
 > Last updated: March 2026
+>
+> Status as of 2026-11-15: this roadmap has not been revised since March 2026. Treat its priorities as historical.
 
 ## Current Status
 
