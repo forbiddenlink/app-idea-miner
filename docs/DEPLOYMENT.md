@@ -32,7 +32,7 @@ This guide covers deploying App-Idea Miner from local development to production 
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/app-idea-miner.git
+git clone https://github.com/forbiddenlink/app-idea-miner.git
 cd app-idea-miner
 
 # Copy environment file
@@ -106,7 +106,7 @@ make clean
 
 3. **Clone Repository:**
    ```bash
-   git clone https://github.com/yourusername/app-idea-miner.git
+   git clone https://github.com/forbiddenlink/app-idea-miner.git
    cd app-idea-miner
    ```
 

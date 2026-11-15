@@ -1,8 +1,6 @@
 # App-Idea Miner
 
-> Discover validated app opportunities from real user needs
-
-An intelligent opportunity detection platform that automatically collects, clusters, and analyzes "I wish there was an app..." posts from across the web, giving you evidence-backed insights on what people actually want built.
+App-Idea Miner collects "I wish there was an app..." posts from RSS feeds, clusters them, and shows you the evidence behind each cluster, so you can see what people ask for.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
@@ -15,23 +13,15 @@ An intelligent opportunity detection platform that automatically collects, clust
 
 ## Status
 
-**MVP complete**, all core phases shipped and security-hardened.
+Working MVP. Each area below exists in the code; see `docs/NEXT_STEPS.md` for open work.
 
-| Area                                                | Status      |
-| --------------------------------------------------- | ----------- |
-| Data ingestion pipeline                             | ✅ Complete |
-| NLP extraction + sentiment                          | ✅ Complete |
-| HDBSCAN clustering                                  | ✅ Complete |
-| FastAPI backend (21+ endpoints)                     | ✅ Complete |
-| React UI (10 pages, 30+ components)                 | ✅ Complete |
-| JWT authentication + API key auth                   | ✅ Complete |
-| User-owned bookmarks                                | ✅ Complete |
-| Saved searches + alert scheduling                   | ✅ Complete |
-| Redis caching                                       | ✅ Complete |
-| Docker Compose orchestration                        | ✅ Complete |
-| CI pipeline (GitHub Actions)                        | ✅ Complete |
-| WCAG 2.2 accessibility                              | ✅ Complete |
-| Security hardened (rate limiting, timing-safe auth) | ✅ Complete |
+- Data ingestion from RSS feeds, with NLP extraction and VADER sentiment.
+- HDBSCAN clustering over TF-IDF vectors.
+- FastAPI backend (39 route handlers under `apps/api/app/routers` and `main.py`).
+- React UI with 10 pages.
+- JWT and API-key authentication, user-owned bookmarks, saved searches with webhook alerts.
+- Redis caching, rate limiting, Docker Compose orchestration, GitHub Actions CI.
+- Accessibility tests (axe and color-contrast checks in `apps/web/src/test`).
 
 ---
 
@@ -44,7 +34,7 @@ An intelligent opportunity detection platform that automatically collects, clust
 - **Evidence-Based:** Every cluster backed by real user quotes with source links
 - **Quality Scoring:** Automatic assessment of idea specificity and actionability (0–1 scale)
 
-### Analytics & Insights
+### Analytics and insights
 
 - **Dashboard:** Key metrics + top clusters at a glance
 - **Trend Analysis:** Time-series charts showing idea growth
@@ -64,13 +54,13 @@ An intelligent opportunity detection platform that automatically collects, clust
 ### Infrastructure
 
 - **Background Workers:** Celery task queues for ingestion, processing, clustering, and alerts
-- **Async API:** FastAPI + asyncpg (8× faster than sync psycopg2)
+- **Async API:** FastAPI + asyncpg
 - **Migrations:** Alembic-managed schema versions, never raw DDL
 - **Monitoring:** Flower (Celery), Prometheus metrics endpoint
 
 ---
 
-## Quick Start
+## Quick start
 
 ### Prerequisites
 
@@ -82,7 +72,7 @@ An intelligent opportunity detection platform that automatically collects, clust
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/app-idea-miner.git
+git clone https://github.com/forbiddenlink/app-idea-miner.git
 cd app-idea-miner
 cp .env.example .env
 make dev
@@ -99,19 +89,19 @@ The following services start automatically:
 | PostgreSQL              | localhost:5432               |
 | Redis                   | localhost:6379               |
 
-### First Run
+### First run
 
 ```bash
 # Seed sample data (20 curated app ideas)
 make seed
 
-# Wait ~30 seconds for the worker to process and cluster
+# Wait for the worker to process and cluster the posts
 
 # Open the UI
 open http://localhost:3000
 ```
 
-You should see 10–15 clusters with evidence links and quality scores.
+The UI then shows clusters with evidence links and quality scores.
 
 ---
 
@@ -144,7 +134,7 @@ You should see 10–15 clusters with evidence links and quality scores.
          └──────────────────┘
 ```
 
-### Tech Stack
+### Tech stack
 
 | Layer    | Technology                                                    |
 | -------- | ------------------------------------------------------------- |
@@ -161,7 +151,7 @@ You should see 10–15 clusters with evidence links and quality scores.
 
 ---
 
-## Project Structure
+## Project structure
 
 ```
 app-idea-miner/
@@ -242,7 +232,7 @@ MAX_FEATURES=500
 
 ---
 
-## Development Commands
+## Development commands
 
 ### Services
 
@@ -284,7 +274,7 @@ cd apps/web && pnpm run test:e2e                 # Playwright E2E tests
 
 > Tests marked `@pytest.mark.requires_db` are skipped locally unless `DATABASE_URL` points to a live Postgres instance. They always run in CI (GitHub Actions provides a Postgres service).
 
-### Code Quality
+### Code quality
 
 ```bash
 make lint         # Ruff linter
@@ -295,7 +285,7 @@ cd apps/web && pnpm run build  # TypeScript + Vite build check
 
 ---
 
-## API Overview
+## API overview
 
 Full reference: [`docs/API_SPEC.md`](docs/API_SPEC.md)
 
@@ -325,14 +315,15 @@ POST /api/v1/saved-searches     Create saved search with alert options
 DELETE /api/v1/saved-searches/{id}
 
 POST /api/v1/jobs/ingest        Trigger ingestion
-POST /api/v1/jobs/cluster       Trigger clustering
+POST /api/v1/jobs/process       Trigger processing
+POST /api/v1/jobs/recluster     Trigger clustering
 GET  /health                    Health check
 GET  /metrics                   Prometheus metrics
 ```
 
 ---
 
-## How It Works
+## How it works
 
 ### 1. Ingestion
 
@@ -352,7 +343,7 @@ Each post is run through:
 Ideas are grouped using:
 
 1. **TF-IDF vectorization** (500 features, 1–3 grams, L2-normalized)
-2. **HDBSCAN** (min_cluster_size=2, euclidean distance): auto-detects cluster count and handles noise
+2. **HDBSCAN** (`min_cluster_size` defaults to 3 in `apps/api/app/config.py`; the `/jobs/recluster` request defaults to 2, euclidean distance): auto-detects cluster count and handles noise
 3. **Keyword extraction:** top-10 TF-IDF terms per cluster
 4. **Quality scoring:** silhouette score + average sentiment + source diversity
 
