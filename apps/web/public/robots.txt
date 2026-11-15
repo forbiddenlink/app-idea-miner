@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /login
+Disallow: /saved
+Disallow: /settings
+
+Sitemap: https://app-idea-miner.vercel.app/sitemap.xml
