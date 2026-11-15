@@ -74,7 +74,7 @@ Playwright (`apps/web/e2e/`, including an API-contract spec runnable against a r
 In `.env.example`: `DATABASE_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`,
 `REDIS_URL`, `CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND`, `CELERY_WORKERS`, `API_HOST`,
 `API_PORT`, `API_WORKERS`, `CORS_ORIGINS`, `LOG_LEVEL`, `API_KEY`, `VITE_API_URL`,
-`VITE_API_KEY`, `RSS_FEEDS`, `FETCH_INTERVAL_HOURS`, `MIN_CLUSTER_SIZE`, `MAX_FEATURES`,
+(no VITE_API_KEY: the web app never holds a key; the server attaches API_KEY, see apps/api/app/core/browser_key.py) `RSS_FEEDS`, `FETCH_INTERVAL_HOURS`, `MIN_CLUSTER_SIZE`, `MAX_FEATURES`,
 `RECLUSTER_THRESHOLD`, `SECRET_KEY`, `NOTION_API_KEY`, `NOTION_IDEAS_DB_ID`,
 `NOTION_MIN_QUALITY` (Notion sink is optional and fails open if `NOTION_API_KEY` is empty).
 

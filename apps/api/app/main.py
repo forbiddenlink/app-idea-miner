@@ -16,6 +16,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from apps.api.app.config import get_settings
 from apps.api.app.core.auth import verify_csrf_token
+from apps.api.app.core.browser_key import ServerSideApiKeyMiddleware
 from apps.api.app.core.logging_middleware import RequestLoggingMiddleware
 from apps.api.app.database import get_engine
 from apps.api.app.schemas.common import HealthResponse
@@ -234,6 +235,8 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
 app.add_middleware(CacheControlMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(CSRFMiddleware)
+# Attach the server-only API_KEY for same-origin browser calls (key never ships in the bundle)
+app.add_middleware(ServerSideApiKeyMiddleware)
 
 # Request logging middleware (correlation IDs, timing, structured logs)
 app.add_middleware(RequestLoggingMiddleware)
