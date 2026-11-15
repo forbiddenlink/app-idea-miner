@@ -37,7 +37,6 @@ interface RetryableAxiosRequestConfig extends InternalAxiosRequestConfig {
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
-const API_KEY = import.meta.env.VITE_API_KEY || "dev-api-key";
 const CSRF_COOKIE_NAME = "aim_csrf_token";
 const CSRF_HEADER_NAME = "X-CSRF-Token";
 const UNSAFE_METHODS = new Set(["post", "put", "patch", "delete"]);
@@ -97,9 +96,6 @@ class ApiClient {
     });
 
     this.client.interceptors.request.use((config) => {
-      if (API_KEY) {
-        config.headers["X-API-Key"] = API_KEY;
-      }
       const method = (config.method || "get").toLowerCase();
       if (UNSAFE_METHODS.has(method)) {
         const csrfToken = readCsrfCookie();
