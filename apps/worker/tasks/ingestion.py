@@ -85,8 +85,24 @@ async def _run_ingestion_async(stats: dict):
                 logger.info(f"Running source: {source_name}")
                 source_instance = SourceClass()
 
+                # Sources with missing credentials fall back to fabricated
+                # posts. Refuse them so a missing secret fails loudly instead
+                # of polluting clusters with made-up data.
+                if getattr(source_instance, "is_mock", False):
+                    logger.error(
+                        f"Source {source_name} is in mock mode (missing "
+                        "credentials or config); skipping so fabricated posts "
+                        "are not ingested."
+                    )
+                    stats["errors"] += 1
+                    continue
+
                 # 1. Fetch
                 raw_posts = await source_instance.fetch()
+                # Defense in depth: drop anything still tagged as mock.
+                raw_posts = [
+                    p for p in raw_posts if not (p.source_metadata or {}).get("mock")
+                ]
                 stats["fetched"] += len(raw_posts)
 
                 # 2. Process & Save with savepoint for atomic per-source commits
