@@ -398,6 +398,8 @@ sentence-transformers==5.6.0
     #   bertopic
     #   core
     #   worker
+sentry-sdk==2.75.0
+    # via api
 setuptools==84.1.0
     # via torch
 sgmllib3k==1.0.0
