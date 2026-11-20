@@ -6,6 +6,19 @@ import traceback
 # Add the project root to the python path
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
+sentry_dsn = os.getenv("SENTRY_DSN")
+if sentry_dsn:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        environment=os.getenv("VERCEL_ENV"),
+        release=os.getenv("VERCEL_GIT_COMMIT_SHA"),
+        send_default_pii=False,
+        max_request_body_size="never",
+        include_local_variables=False,
+    )
+
 error_info = None
 app = None
 
@@ -15,6 +28,8 @@ try:
 
     app = imported_app
 except Exception as e:
+    if sentry_dsn:
+        sentry_sdk.capture_exception(e)
     error_info = {
         "error": str(e),
         "traceback": traceback.format_exc(),

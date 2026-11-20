@@ -23,4 +23,5 @@ dependencies = [
     "passlib[bcrypt]>=1.7.4",
     "bcrypt>=4.0.1,<4.1.0",
     "email-validator>=2.3.0",
+    "sentry-sdk[fastapi]>=2,<3",
 ]
