@@ -14,7 +14,6 @@ from apps.worker.celery_app import celery_app
 from apps.worker.sources.appstore import AppStoreSource
 from apps.worker.sources.base import BaseSource
 from apps.worker.sources.hackernews import HackerNewsSource
-from apps.worker.sources.indiehackers import IndieHackersSource
 from apps.worker.sources.producthunt import ProductHuntSource
 from apps.worker.sources.reddit import RedditSource
 from apps.worker.sources.rss import RSSSource
@@ -30,7 +29,6 @@ SOURCE_REGISTRY: list[type[BaseSource]] = [
     RedditSource,
     ProductHuntSource,
     HackerNewsSource,
-    IndieHackersSource,
     AppStoreSource,
 ]
 

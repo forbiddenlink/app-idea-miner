@@ -14,7 +14,7 @@ import numpy as np
 from sqlalchemy import delete, select
 
 from apps.worker.celery_app import celery_app
-from apps.worker.tasks.notion_sync import push_clusters_to_notion
+from apps.worker.tasks.notion_sync import schedule_notion_sync
 from packages.core.cache import invalidate_analytics_cache, invalidate_clusters_cache
 from packages.core.clustering import cluster_ideas as run_clustering_algorithm
 from packages.core.clustering import get_cluster_engine
@@ -238,12 +238,12 @@ async def _run_clustering_async(
                 )
 
             # Chain: sync top-quality clusters to the Notion Ideas Pipeline.
-            # Fire-and-forget (not awaited), matching the existing
-            # assign_new_ideas_to_clusters -> run_clustering chaining pattern. Wrapped
-            # so a broker hiccup can't fail an otherwise-successful clustering run.
+            # Queued fire-and-forget under a worker, awaited inline when Celery is
+            # eager (see schedule_notion_sync). Wrapped so a broker or Notion failure
+            # can't fail an otherwise-successful clustering run.
             if clusters_created > 0:
                 try:
-                    push_clusters_to_notion.delay()
+                    await schedule_notion_sync()
                 except Exception as notion_error:
                     logger.warning(f"Failed to schedule Notion sync: {notion_error}")
 
