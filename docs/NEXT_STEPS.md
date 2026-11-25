@@ -49,7 +49,6 @@ Plugin architecture in `apps/worker/sources/` with `BaseSource` abstract class +
 | **P0**   | Enable real ProductHunt credentials | Small      | GraphQL integration complete. Needs `PRODUCT_HUNT_TOKEN` env var. API v2: 450 req/day.                                                   |
 | **P1**   | Add HackerNews API source           | Small      | Official HN API is free, no auth. Create `HackerNewsSource(BaseSource)`. Filter "Ask HN"/"Show HN" posts for app ideas.                  |
 | **P1**   | Add Twitter/X source                | Medium     | X API v2 Free tier: 1,500 tweets/month. Search: `"I wish there was an app" OR "someone should build"`.                                   |
-| **P1**   | Add Indie Hackers source            | Medium     | Use RSS feed at `https://www.indiehackers.com/feed.xml` via existing `RSSSource`.                                                        |
 | **P2**   | Add GitHub Discussions source       | Medium     | GitHub GraphQL API to search issues/discussions for "feature request"/"app idea".                                                        |
 | **P2**   | Configure Celery Beat schedule      | Small      | `run_ingestion_cycle` task exists but no periodic schedule. Add to `celery_app.py`.                                                      |
 

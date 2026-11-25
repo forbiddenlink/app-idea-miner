@@ -79,3 +79,46 @@ class TestBlankMinQualityEnv:
             result = await _push_clusters_to_notion_async()
 
         assert result["skipped"] is True
+
+
+class TestNotionSyncInsideRunningLoop:
+    """Regression: the CI cron runs Celery eagerly, so clustering (already inside an
+    event loop) chains the Notion sync inline. The sync Celery task opens its own
+    loop, which raised 'Cannot run the event loop while another loop is running'."""
+
+    @pytest.fixture
+    def eager_celery(self):
+        from apps.worker.celery_app import celery_app
+
+        keys = ("task_always_eager", "task_eager_propagates")
+        before = {k: celery_app.conf[k] for k in keys}
+        celery_app.conf.update(task_always_eager=True, task_eager_propagates=True)
+        yield
+        celery_app.conf.update(**before)
+
+    async def test_schedule_runs_inline_and_skips_when_unconfigured(
+        self, eager_celery, monkeypatch, caplog
+    ):
+        from apps.worker.tasks.notion_sync import schedule_notion_sync
+
+        monkeypatch.delenv("NOTION_API_KEY", raising=False)
+        monkeypatch.delenv("NOTION_IDEAS_DB_ID", raising=False)
+
+        with caplog.at_level("INFO"):
+            result = await schedule_notion_sync()
+
+        assert result is not None
+        assert result["skipped"] is True
+        assert result["pushed"] == 0
+        assert "Notion sink not configured" in caplog.text
+
+    async def test_schedule_uses_delay_when_not_eager(self, monkeypatch):
+        from apps.worker.celery_app import celery_app
+        from apps.worker.tasks import notion_sync
+
+        monkeypatch.setitem(celery_app.conf, "task_always_eager", False)
+        with patch.object(notion_sync.push_clusters_to_notion, "delay") as delay:
+            result = await notion_sync.schedule_notion_sync()
+
+        delay.assert_called_once_with()
+        assert result is None

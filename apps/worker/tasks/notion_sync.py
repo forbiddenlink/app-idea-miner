@@ -1,8 +1,9 @@
 """Celery task for syncing top-quality idea clusters to the Notion Ideas Pipeline.
 
-Chained (fire-and-forget, via .delay()) from apps.worker.tasks.clustering.run_clustering
-after a successful clustering commit, matching the existing
-assign_new_ideas_to_clusters -> run_clustering chaining pattern.
+Chained from apps.worker.tasks.clustering.run_clustering after a successful
+clustering commit via schedule_notion_sync(): fire-and-forget .delay() when a Celery
+worker runs the pipeline, awaited inline when Celery is eager (the GitHub Actions
+cron), because the sync task's own event loop cannot nest inside clustering's.
 """
 
 from __future__ import annotations
@@ -138,3 +139,20 @@ async def _push_clusters_to_notion_async() -> dict[str, Any]:
             "failed": failed,
             "min_quality": min_quality,
         }
+
+
+async def schedule_notion_sync() -> dict[str, Any] | None:
+    """
+    Chain the Notion sync from inside a running event loop.
+
+    With a real worker, queue the Celery task and return None. When Celery is eager
+    (scripts/run_pipeline.py), `.delay()` would run the sync task inline, and that
+    task's `loop.run_until_complete` raises "Cannot run the event loop while another
+    loop is running" because the caller is already async. Await the async
+    implementation directly instead and return its stats.
+    """
+    if celery_app.conf.task_always_eager:
+        return await _push_clusters_to_notion_async()
+
+    push_clusters_to_notion.delay()
+    return None
