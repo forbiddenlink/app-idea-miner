@@ -107,6 +107,7 @@ temp/
 thoughts/
 # Screenshots / local assets
 *.png
+!apps/web/public/*.png
 # Build output
 .next/
 out/

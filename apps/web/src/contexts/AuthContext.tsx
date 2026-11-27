@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { apiClient } from "@/services/api";
+import { hasSessionHint } from "@/services/sessionHint";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
@@ -42,6 +43,13 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCurrentUser = useCallback(async () => {
+    // Anonymous visitors have no session, so asking the API would only log a
+    // 401 in the console. Skip the call when there is no session hint.
+    if (!hasSessionHint()) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       const res = await axios.get<AuthUser>(`${API_BASE_URL}/api/v1/auth/me`, {
