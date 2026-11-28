@@ -4,6 +4,7 @@ Notification service for sending alerts via webhooks.
 Supports Slack, Discord, and generic webhook formats.
 """
 
+import asyncio
 import ipaddress
 import logging
 import socket
@@ -35,12 +36,12 @@ def validate_webhook_url(url: str) -> None:
     This resolves the hostname and rejects it if any resolved address is
     private, loopback, link-local (includes the 169.254.169.254 metadata
     range), reserved, multicast, or unspecified. It also requires an
-    http(s) scheme. This does not defend against DNS rebinding (the
-    hostname could re-resolve to a different address between this check
-    and the actual request) — closing that fully would mean pinning the
-    resolved IP and connecting to it directly via a custom transport,
-    which is out of scope for this fix; the check here blocks the direct,
-    common exploitation path.
+    http(s) scheme. It runs at save time (API schemas) and again
+    immediately before every outbound request, and redirects are never
+    followed. A DNS-rebinding attacker who flips the answer in the tiny
+    window between the final check and the connection is not fully
+    excluded; closing that would mean pinning the resolved IP in a custom
+    transport.
 
     Raises:
         WebhookUrlError: if the URL's scheme or resolved address is unsafe.
@@ -57,16 +58,16 @@ def validate_webhook_url(url: str) -> None:
         raise WebhookUrlError(f"Could not resolve webhook host: {exc}") from exc
 
     for _family, _type, _proto, _canonname, sockaddr in addr_infos:
-        ip_str = sockaddr[0]
+        # Strip an IPv6 zone id ("fe80::1%en0") before parsing.
+        ip_str = str(sockaddr[0]).split("%", 1)[0]
         ip = ipaddress.ip_address(ip_str)
-        if (
-            ip.is_private
-            or ip.is_loopback
-            or ip.is_link_local
-            or ip.is_reserved
-            or ip.is_multicast
-            or ip.is_unspecified
-        ):
+        # Judge IPv4-mapped IPv6 (::ffff:a.b.c.d) by the embedded IPv4 address.
+        if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped is not None:
+            ip = ip.ipv4_mapped
+        # `not is_global` covers private, loopback, link-local (incl. the
+        # 169.254.169.254 metadata address), fc00::/7, fe80::/10, CGNAT
+        # 100.64/10, unspecified and reserved ranges.
+        if not ip.is_global or ip.is_multicast:
             raise WebhookUrlError(
                 f"Webhook host {parsed.hostname!r} resolves to a "
                 f"non-public address ({ip_str}); refusing to send"
@@ -78,6 +79,15 @@ class NotificationService:
 
     # Timeout for webhook requests (seconds)
     WEBHOOK_TIMEOUT = 10.0
+
+    async def _is_safe_target(self, webhook_url: str) -> bool:
+        """Validate the URL right before sending (runs DNS off the event loop)."""
+        try:
+            await asyncio.to_thread(validate_webhook_url, webhook_url)
+        except WebhookUrlError as e:
+            logger.warning(f"Refusing to send webhook to unsafe URL: {e}")
+            return False
+        return True
 
     async def send_alert(
         self,
@@ -100,12 +110,6 @@ class NotificationService:
         """
         if not webhook_url:
             logger.warning("No webhook URL configured")
-            return False
-
-        try:
-            validate_webhook_url(webhook_url)
-        except WebhookUrlError as e:
-            logger.warning(f"Refusing to send webhook to unsafe URL: {e}")
             return False
 
         if webhook_type == "slack":
@@ -172,8 +176,13 @@ class NotificationService:
 
         payload = {"blocks": blocks}
 
+        if not await self._is_safe_target(webhook_url):
+            return False
+
         try:
-            async with httpx.AsyncClient(timeout=self.WEBHOOK_TIMEOUT) as client:
+            async with httpx.AsyncClient(
+                timeout=self.WEBHOOK_TIMEOUT, follow_redirects=False
+            ) as client:
                 response = await client.post(webhook_url, json=payload)
                 if response.status_code == 200:
                     logger.info(f"Slack webhook sent successfully for '{search_name}'")
@@ -264,8 +273,13 @@ class NotificationService:
 
         payload = {"embeds": embeds}
 
+        if not await self._is_safe_target(webhook_url):
+            return False
+
         try:
-            async with httpx.AsyncClient(timeout=self.WEBHOOK_TIMEOUT) as client:
+            async with httpx.AsyncClient(
+                timeout=self.WEBHOOK_TIMEOUT, follow_redirects=False
+            ) as client:
                 response = await client.post(webhook_url, json=payload)
                 if response.status_code in (200, 204):
                     logger.info(
@@ -343,8 +357,13 @@ class NotificationService:
             "ideas": ideas[:10],  # Limit to 10 for payload size
         }
 
+        if not await self._is_safe_target(webhook_url):
+            return False
+
         try:
-            async with httpx.AsyncClient(timeout=self.WEBHOOK_TIMEOUT) as client:
+            async with httpx.AsyncClient(
+                timeout=self.WEBHOOK_TIMEOUT, follow_redirects=False
+            ) as client:
                 response = await client.post(
                     webhook_url,
                     json=payload,

@@ -4,12 +4,26 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, field_validator
 
 from apps.api.app.schemas.common import PaginationInfo
+from packages.core.services.notification_service import (
+    WebhookUrlError,
+    validate_webhook_url,
+)
 
 AlertFrequency = Literal["daily", "weekly"]
 WebhookType = Literal["slack", "discord", "generic"]
+
+
+def _check_webhook_url(value: str | None) -> str | None:
+    """Reject SSRF-prone webhook URLs at save time (empty string clears it)."""
+    if value:
+        try:
+            validate_webhook_url(value)
+        except WebhookUrlError as exc:
+            raise ValueError(str(exc)) from exc
+    return value
 
 
 class SavedSearchItem(BaseModel):
@@ -38,6 +52,11 @@ class SavedSearchCreateRequest(BaseModel):
     webhook_url: str | None = Field(default=None, max_length=500)
     webhook_type: WebhookType | None = None
 
+    @field_validator("webhook_url")
+    @classmethod
+    def _validate_webhook_url(cls, value: str | None) -> str | None:
+        return _check_webhook_url(value)
+
 
 class SavedSearchUpdateRequest(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=120)
@@ -46,6 +65,11 @@ class SavedSearchUpdateRequest(BaseModel):
     alert_frequency: AlertFrequency | None = None
     webhook_url: str | None = Field(default=None, max_length=500)
     webhook_type: WebhookType | None = None
+
+    @field_validator("webhook_url")
+    @classmethod
+    def _validate_webhook_url(cls, value: str | None) -> str | None:
+        return _check_webhook_url(value)
 
 
 class SavedSearchMutationResponse(BaseModel):
@@ -57,6 +81,11 @@ class SavedSearchMutationResponse(BaseModel):
 class WebhookTestRequest(BaseModel):
     webhook_url: str = Field(max_length=500)
     webhook_type: WebhookType
+
+    @field_validator("webhook_url")
+    @classmethod
+    def _validate_webhook_url(cls, value: str | None) -> str | None:
+        return _check_webhook_url(value)
 
 
 class WebhookTestResponse(BaseModel):
